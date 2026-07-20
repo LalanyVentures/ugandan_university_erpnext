@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from ugandan_university_education.doctype.academic_transcript.academic_transcript import AcademicTranscript
+from ugandan_university_education.university.doctype.academic_transcript.academic_transcript import AcademicTranscript
 
 
 def test_transcript_requires_faculty_head_approval_before_submit():
