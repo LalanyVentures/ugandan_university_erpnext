@@ -1,0 +1,20 @@
+{
+ "creation": "2026-07-20 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Number Card",
+ "document_type": "University Application",
+ "filters_json": "[[\"University Application\",\"status\",\"in\",[\"Submitted\",\"Under Review\"]]]",
+ "function": "Count",
+ "idx": 0,
+ "is_public": 1,
+ "is_standard": 1,
+ "label": "Applications Awaiting Review",
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "University",
+ "name": "Applications Awaiting Review",
+ "owner": "Administrator",
+ "show_percentage_stats": 1,
+ "stats_time_interval": "Monthly",
+ "type": "Document Type"
+}

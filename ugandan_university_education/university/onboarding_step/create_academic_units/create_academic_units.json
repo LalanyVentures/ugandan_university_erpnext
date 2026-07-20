@@ -1,0 +1,21 @@
+{
+ "action": "Create Entry",
+ "action_label": "Create Academic Units",
+ "creation": "2026-07-20 00:00:00.000000",
+ "description": "Create the organisational structure of the institution. Use academic units for campuses, faculties, schools, and departments so programmes, staff responsibilities, and approvals have a clear home.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Create Academic Units",
+ "owner": "Administrator",
+ "reference_document": "Academic Unit",
+ "show_form_tour": 0,
+ "show_full_form": 1,
+ "title": "Create Academic Units",
+ "validate_action": 1
+}

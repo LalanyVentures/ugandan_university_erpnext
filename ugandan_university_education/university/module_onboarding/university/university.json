@@ -1,0 +1,50 @@
+{
+ "allow_roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "Academics User"
+  }
+ ],
+ "creation": "2026-07-20 00:00:00.000000",
+ "docstatus": 0,
+ "doctype": "Module Onboarding",
+ "documentation_url": "",
+ "idx": 0,
+ "is_complete": 0,
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "University",
+ "name": "University",
+ "owner": "Administrator",
+ "steps": [
+  {
+   "step": "Configure University Profile"
+  },
+  {
+   "step": "Create Academic Units"
+  },
+  {
+   "step": "Create Academic Programme"
+  },
+  {
+   "step": "Define Academic Calendar"
+  },
+  {
+   "step": "Build Programme Curriculum"
+  },
+  {
+   "step": "Create Student Cohort"
+  },
+  {
+   "step": "Process University Application"
+  },
+  {
+   "step": "Open Semester Registration"
+  }
+ ],
+ "subtitle": "Admissions, programmes, cohorts, registration, teaching, assessment, results, fees, and transcripts.",
+ "success_message": "Your University workspace is ready for academic operations.",
+ "title": "Let's Set Up Your University."
+}

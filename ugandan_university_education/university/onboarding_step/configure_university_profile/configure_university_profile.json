@@ -1,0 +1,21 @@
+{
+ "action": "Update Settings",
+ "action_label": "Update Settings",
+ "creation": "2026-07-20 00:00:00.000000",
+ "description": "Set the university-wide defaults used by admissions, academic records, student finance, results, and transcripts. Review the institution identity, default company, accounts, and academic controls before entering operational records.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 1,
+ "is_skipped": 0,
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Configure University Profile",
+ "owner": "Administrator",
+ "reference_document": "University Education Settings",
+ "show_form_tour": 0,
+ "show_full_form": 1,
+ "title": "Configure University Profile",
+ "validate_action": 1
+}

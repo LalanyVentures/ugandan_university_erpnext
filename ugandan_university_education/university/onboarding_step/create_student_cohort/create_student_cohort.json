@@ -1,0 +1,21 @@
+{
+ "action": "Create Entry",
+ "action_label": "Create a Student Cohort",
+ "creation": "2026-07-20 00:00:00.000000",
+ "description": "Create an intake cohort for students who begin the same programme together. Cohorts make it possible to assign course offerings and manage progression in groups while still allowing individual exceptions.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "name": "Create Student Cohort",
+ "owner": "Administrator",
+ "reference_document": "Student Cohort",
+ "show_form_tour": 0,
+ "show_full_form": 1,
+ "title": "Create Student Cohort",
+ "validate_action": 1
+}

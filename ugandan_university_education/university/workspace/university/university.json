@@ -1,27 +1,619 @@
 {
-  "doctype": "Workspace",
-  "name": "University",
-  "module": "University",
-  "title": "University",
-  "label": "University",
-  "icon": "education",
-  "is_hidden": 0,
-  "hide_custom": 0,
-  "for_user": "",
-  "idx": 0,
-  "public": 1,
-  "content": "[{\"id\":\"university-applications\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Application\",\"col\":3}},{\"id\":\"students\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student\",\"col\":3}},{\"id\":\"programmes\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Programme\",\"col\":3}},{\"id\":\"cohorts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Cohort\",\"col\":3}},{\"id\":\"registration\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Course Registration\",\"col\":3}},{\"id\":\"results\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Course Result\",\"col\":3}},{\"id\":\"transcripts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Transcript\",\"col\":3}},{\"id\":\"fees\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Fee Structure\",\"col\":3}},{\"id\":\"clearance\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Clearance\",\"col\":3}}]",
-  "charts": [],
-  "links": [],
-  "shortcuts": [
-    {"label": "University Application", "link_to": "University Application", "type": "DocType"},
-    {"label": "Student", "link_to": "Student", "type": "DocType"},
-    {"label": "Academic Programme", "link_to": "Academic Programme", "type": "DocType"},
-    {"label": "Student Cohort", "link_to": "Student Cohort", "type": "DocType"},
-    {"label": "Course Registration", "link_to": "Course Registration", "type": "DocType"},
-    {"label": "Student Course Result", "link_to": "Student Course Result", "type": "DocType"},
-    {"label": "Academic Transcript", "link_to": "Academic Transcript", "type": "DocType"},
-    {"label": "University Fee Structure", "link_to": "University Fee Structure", "type": "DocType"},
-    {"label": "Student Clearance", "link_to": "Student Clearance", "type": "DocType"}
-  ]
+ "charts": [
+  {
+   "chart_name": "University Applications by Status",
+   "label": "University Applications by Status"
+  },
+  {
+   "chart_name": "Students by Status",
+   "label": "Students by Status"
+  },
+  {
+   "chart_name": "Course Results by Status",
+   "label": "Course Results by Status"
+  },
+  {
+   "chart_name": "Semester Registration Activity",
+   "label": "Semester Registration Activity"
+  }
+ ],
+ "content": "[{\"id\":\"university-onboarding\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"University\",\"col\":12}},{\"id\":\"overview-heading\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>University at a Glance</b></span>\",\"col\":12}},{\"id\":\"active-students\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active University Students\",\"col\":4}},{\"id\":\"active-programmes\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Academic Programmes\",\"col\":4}},{\"id\":\"active-cohorts\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Active Student Cohorts\",\"col\":4}},{\"id\":\"open-offerings\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Open Course Offerings\",\"col\":4}},{\"id\":\"applications-review\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Applications Awaiting Review\",\"col\":4}},{\"id\":\"results-approval\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Results Awaiting Approval\",\"col\":4}},{\"id\":\"activity-spacer\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"activity-heading\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Admissions and Academic Activity</b></span>\",\"col\":12}},{\"id\":\"applications-chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"University Applications by Status\",\"col\":6}},{\"id\":\"students-chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Students by Status\",\"col\":6}},{\"id\":\"results-chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Course Results by Status\",\"col\":6}},{\"id\":\"registrations-chart\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Semester Registration Activity\",\"col\":6}},{\"id\":\"operations-spacer\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"operations-heading\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Academic Operations</b></span>\",\"col\":12}},{\"id\":\"application-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Application\",\"col\":3}},{\"id\":\"student-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student\",\"col\":3}},{\"id\":\"cohort-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Cohort\",\"col\":3}},{\"id\":\"offering-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Course Offering\",\"col\":3}},{\"id\":\"semester-registration-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Semester Registration\",\"col\":3}},{\"id\":\"course-registration-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Course Registration\",\"col\":3}},{\"id\":\"assessment-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Course Assessment\",\"col\":3}},{\"id\":\"result-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Course Result\",\"col\":3}},{\"id\":\"transcript-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Transcript\",\"col\":3}},{\"id\":\"timetable-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Teaching Timetable\",\"col\":3}},{\"id\":\"fees-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Fee Structure\",\"col\":3}},{\"id\":\"clearance-shortcut\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Clearance\",\"col\":3}},{\"id\":\"management-spacer\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"management-heading\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>University Management</b></span>\",\"col\":12}},{\"id\":\"admissions-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Admissions & Student Records\",\"col\":4}},{\"id\":\"structure-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Academic Structure\",\"col\":4}},{\"id\":\"teaching-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Registration & Teaching\",\"col\":4}},{\"id\":\"results-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Assessment & Results\",\"col\":4}},{\"id\":\"finance-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Fees & Sponsorship\",\"col\":4}},{\"id\":\"governance-card\",\"type\":\"card\",\"data\":{\"card_name\":\"Governance & Clearance\",\"col\":4}},{\"id\":\"configuration-card\",\"type\":\"card\",\"data\":{\"card_name\":\"University Configuration\",\"col\":4}}]",
+ "creation": "2026-07-20 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "education",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "University",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Admissions & Student Records",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "University Application",
+   "link_count": 0,
+   "link_to": "University Application",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student",
+   "link_count": 0,
+   "link_to": "Student",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student Programme Enrolment",
+   "link_count": 0,
+   "link_to": "Student Programme Enrolment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student Cohort",
+   "link_count": 0,
+   "link_to": "Student Cohort",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "University Member",
+   "link_count": 0,
+   "link_to": "University Member",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Structure",
+   "link_count": 6,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Unit",
+   "link_count": 0,
+   "link_to": "Academic Unit",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Programme",
+   "link_count": 0,
+   "link_to": "Academic Programme",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Programme Curriculum",
+   "link_count": 0,
+   "link_to": "Programme Curriculum",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Course",
+   "link_count": 0,
+   "link_to": "Course",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Year",
+   "link_count": 0,
+   "link_to": "Academic Year",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Semester",
+   "link_count": 0,
+   "link_to": "Academic Semester",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Registration & Teaching",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Semester Registration",
+   "link_count": 0,
+   "link_to": "Semester Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Course Offering",
+   "link_count": 0,
+   "link_to": "Course Offering",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Course Registration",
+   "link_count": 0,
+   "link_to": "Course Registration",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Teaching Timetable Entry",
+   "link_count": 0,
+   "link_to": "Teaching Timetable Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student Attendance",
+   "link_count": 0,
+   "link_to": "Student Attendance",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Assessment & Results",
+   "link_count": 6,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Course Assessment",
+   "link_count": 0,
+   "link_to": "Course Assessment",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student Course Result",
+   "link_count": 0,
+   "link_to": "Student Course Result",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Result Approval Batch",
+   "link_count": 0,
+   "link_to": "Result Approval Batch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Result Review Request",
+   "link_count": 0,
+   "link_to": "Result Review Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Grading Scheme",
+   "link_count": 0,
+   "link_to": "Grading Scheme",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Transcript",
+   "link_count": 0,
+   "link_to": "Academic Transcript",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fees & Sponsorship",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "University Fee Structure",
+   "link_count": 0,
+   "link_to": "University Fee Structure",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sponsorship Award",
+   "link_count": 0,
+   "link_to": "Sponsorship Award",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Sales Invoice",
+   "link_count": 0,
+   "link_to": "Sales Invoice",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Payment Entry",
+   "link_count": 0,
+   "link_to": "Payment Entry",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "Accounts Receivable",
+   "link_count": 0,
+   "link_to": "Accounts Receivable",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Governance & Clearance",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Student Clearance",
+   "link_count": 0,
+   "link_to": "Student Clearance",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Transcript",
+   "link_count": 0,
+   "link_to": "Academic Transcript",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Result Approval Batch",
+   "link_count": 0,
+   "link_to": "Result Approval Batch",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Result Review Request",
+   "link_count": 0,
+   "link_to": "Result Review Request",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "University Configuration",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "University Education Settings",
+   "link_count": 0,
+   "link_to": "University Education Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Unit",
+   "link_count": 0,
+   "link_to": "Academic Unit",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Year",
+   "link_count": 0,
+   "link_to": "Academic Year",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Academic Semester",
+   "link_count": 0,
+   "link_to": "Academic Semester",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Grading Scheme",
+   "link_count": 0,
+   "link_to": "Grading Scheme",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-07-20 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "University",
+ "name": "University",
+ "number_cards": [
+  {
+   "label": "Active University Students",
+   "number_card_name": "Active University Students"
+  },
+  {
+   "label": "Active Academic Programmes",
+   "number_card_name": "Active Academic Programmes"
+  },
+  {
+   "label": "Active Student Cohorts",
+   "number_card_name": "Active Student Cohorts"
+  },
+  {
+   "label": "Open Course Offerings",
+   "number_card_name": "Open Course Offerings"
+  },
+  {
+   "label": "Applications Awaiting Review",
+   "number_card_name": "Applications Awaiting Review"
+  },
+  {
+   "label": "Results Awaiting Approval",
+   "number_card_name": "Results Awaiting Approval"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "restrict_to_domain": "",
+ "roles": [],
+ "sequence_id": 1,
+ "shortcuts": [
+  {
+   "color": "Orange",
+   "format": "{} Awaiting Review",
+   "label": "University Application",
+   "link_to": "University Application",
+   "stats_filter": "{\"status\":[\"in\",[\"Submitted\",\"Under Review\"]]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "format": "{} Active",
+   "label": "Student",
+   "link_to": "Student",
+   "stats_filter": "{\"status\":\"Active\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "format": "{} Active",
+   "label": "Student Cohort",
+   "link_to": "Student Cohort",
+   "stats_filter": "{\"status\":\"Active\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "format": "{} Open",
+   "label": "Course Offering",
+   "link_to": "Course Offering",
+   "stats_filter": "{\"status\":\"Open\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "format": "{} Pending",
+   "label": "Semester Registration",
+   "link_to": "Semester Registration",
+   "stats_filter": "{\"status\":\"Pending Approval\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Cyan",
+   "label": "Course Registration",
+   "link_to": "Course Registration",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "format": "{} Open",
+   "label": "Course Assessment",
+   "link_to": "Course Assessment",
+   "stats_filter": "{\"status\":\"Open\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Yellow",
+   "format": "{} Awaiting Approval",
+   "label": "Student Course Result",
+   "link_to": "Student Course Result",
+   "stats_filter": "{\"is_approved\":0}",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "format": "{} Awaiting Faculty Approval",
+   "label": "Academic Transcript",
+   "link_to": "Academic Transcript",
+   "stats_filter": "{\"status\":\"Faculty Head Review\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "format": "{} Published",
+   "label": "Teaching Timetable",
+   "link_to": "Teaching Timetable Entry",
+   "stats_filter": "{\"status\":\"Published\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "format": "{} Active",
+   "label": "University Fee Structure",
+   "link_to": "University Fee Structure",
+   "stats_filter": "{\"status\":\"Active\"}",
+   "type": "DocType"
+  },
+  {
+   "color": "Red",
+   "format": "{} Pending",
+   "label": "Student Clearance",
+   "link_to": "Student Clearance",
+   "stats_filter": "{\"status\":[\"in\",[\"Pending Finance\",\"Pending Academic\"]]}",
+   "type": "DocType"
+  }
+ ],
+ "title": "University"
 }
