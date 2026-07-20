@@ -1,1 +1,4 @@
-# This DocType uses JSON metadata only; no custom controller logic is required.
+from frappe.model.document import Document
+
+class CoursePrerequisite(Document):
+	pass
