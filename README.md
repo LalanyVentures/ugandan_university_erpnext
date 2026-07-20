@@ -1,3 +1,125 @@
+## Running and Updating the University App on a Multi-Tenant ERPNext Bench
+
+The technical Frappe app name is `ugandan_university_education`. The displayed app and module name is `University`.
+
+The current VPS uses Frappe 15.29.0 and ERPNext 15.25.0. The app is installed once in the shared bench, then installed and migrated separately for each tenant site.
+
+### Enter the ERPNext backend container
+
+From the VPS host:
+
+```bash
+docker exec -it erpnext_kibooto_backend bash
+cd /home/frappe/frappe-bench
+```
+
+### List tenant sites
+
+```bash
+find sites -mindepth 1 -maxdepth 1 -type d ! -name assets -printf '%f\n' | sort
+```
+
+### First installation on `kibooto.local`
+
+If `apps/ugandan_university_education` does not exist, clone the current branch:
+
+```bash
+bench get-app --branch develop https://github.com/LalanyVentures/ugandan_university_erpnext.git
+```
+
+Confirm the app and site state:
+
+```bash
+ls -ld apps/ugandan_university_education
+bench --site kibooto.local list-apps
+```
+
+Back up the tenant before installing or migrating:
+
+```bash
+bench --site kibooto.local backup --with-files
+```
+
+Build the app assets:
+
+```bash
+bench build --app ugandan_university_education
+```
+
+Install the app on `kibooto.local`:
+
+```bash
+bench --site kibooto.local install-app ugandan_university_education
+bench --site kibooto.local migrate
+bench --site kibooto.local clear-cache
+bench --site kibooto.local clear-website-cache
+```
+
+If `ugandan_university_education` already appears in `list-apps`, do not run `install-app` again; run the backup, build, migrate and cache commands only.
+
+### Update the app from GitHub
+
+The app code is shared by all sites in this bench. Update it once:
+
+```bash
+cd /home/frappe/frappe-bench/apps/ugandan_university_education
+git fetch upstream develop
+git checkout develop
+git pull upstream develop
+cd /home/frappe/frappe-bench
+bench build --app ugandan_university_education
+```
+
+Then update tenants one at a time. Start with `kibooto.local`:
+
+```bash
+bench --site kibooto.local backup --with-files
+bench --site kibooto.local migrate
+bench --site kibooto.local clear-cache
+bench --site kibooto.local clear-website-cache
+```
+
+Verify the installation:
+
+```bash
+bench --site kibooto.local list-apps
+bench --site kibooto.local doctor
+```
+
+Restart the Docker services from the VPS host after a successful update:
+
+```bash
+exit
+docker restart erpnext_kibooto_backend
+docker restart erpnext_kibooto_frontend
+docker restart erpnext_kibooto_scheduler
+docker restart erpnext_kibooto_queue_short
+docker restart erpnext_kibooto_queue_default
+docker restart erpnext_kibooto_queue_long
+docker restart erpnext_kibooto_websocket
+```
+
+### Update all tenants
+
+Run this only after `kibooto.local` has been tested successfully:
+
+```bash
+for site in $(find sites -mindepth 1 -maxdepth 1 -type d ! -name assets -printf '%f\n' | sort); do
+  echo "===== $site ====="
+  bench --site "$site" backup --with-files
+  bench --site "$site" migrate
+  bench --site "$site" clear-cache
+done
+```
+
+Do not run this bulk command for the first installation of the new schema. A tenant without the app must first receive:
+
+```bash
+bench --site TENANT_NAME install-app ugandan_university_education
+```
+
+Because the current University release replaces the old Education schema, existing tenants containing old Education records must be backed up and tested separately before migration.
+
 <div align="center" markdown="1">
 
 <img src=".github/edu-logo.svg" alt="Frappe Education Logo" width="80">

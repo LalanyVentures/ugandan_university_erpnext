@@ -1,1 +1,2 @@
-import './assessment_result_tool.html'
+// University application bundle entry point.
+// Legacy LMS/tool imports were removed with the old Education schema.
