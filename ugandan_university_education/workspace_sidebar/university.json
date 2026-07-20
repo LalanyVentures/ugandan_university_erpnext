@@ -1,0 +1,19 @@
+{
+  "app": "ugandan_university_education",
+  "doctype": "Workspace Sidebar",
+  "name": "University",
+  "header_icon": "education",
+  "items": [
+    {"type": "Link", "label": "University Applications", "link_type": "DocType", "link_to": "University Application"},
+    {"type": "Link", "label": "Students", "link_type": "DocType", "link_to": "Student"},
+    {"type": "Link", "label": "Academic Programmes", "link_type": "DocType", "link_to": "Academic Programme"},
+    {"type": "Link", "label": "Student Cohorts", "link_type": "DocType", "link_to": "Student Cohort"},
+    {"type": "Link", "label": "Course Offerings", "link_type": "DocType", "link_to": "Course Offering"},
+    {"type": "Link", "label": "Course Registration", "link_type": "DocType", "link_to": "Course Registration"},
+    {"type": "Link", "label": "Assessments", "link_type": "DocType", "link_to": "Course Assessment"},
+    {"type": "Link", "label": "Results", "link_type": "DocType", "link_to": "Student Course Result"},
+    {"type": "Link", "label": "Transcripts", "link_type": "DocType", "link_to": "Academic Transcript"},
+    {"type": "Link", "label": "Fee Structures", "link_type": "DocType", "link_to": "University Fee Structure"},
+    {"type": "Link", "label": "Student Clearance", "link_type": "DocType", "link_to": "Student Clearance"}
+  ]
+}

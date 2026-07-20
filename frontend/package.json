@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --base=/assets/education/frontend/ && yarn copy-html-entry",
+    "build": "vite build --base=/assets/ugandan_university_education/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
-    "copy-html-entry": "cp ../education/public/frontend/index.html ../education/www/student-portal.html"
+    "copy-html-entry": "cp ../ugandan_university_education/public/frontend/index.html ../ugandan_university_education/www/student-portal.html"
   },
   "dependencies": {
     "dayjs": "^1.11.10",

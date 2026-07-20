@@ -3,11 +3,11 @@
 *.egg-info
 *.swp
 tags
-education/docs/current
+ugandan_university_education/docs/current
 dist/
 __pycache__/
 node_modules
-education/public/frontend
-education/www/education.html
-education/www/student-portal.html
+ugandan_university_education/public/frontend
+ugandan_university_education/www/education.html
+ugandan_university_education/www/student-portal.html
 ./node_modules

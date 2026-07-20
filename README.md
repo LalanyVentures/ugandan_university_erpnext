@@ -160,7 +160,7 @@ the necessary configurations in about 5 minutes.
    [Installation Steps](https://frappeframework.com/docs/user/en/installation)
 1. Install ERPNext by running `bench get-app erpnext`
 1. Once ERPNext is installed, install the Education App by using
-   `bench get-app education`
+   `bench get-app ugandan_university_education`
 
 1. In a separate terminal window, create a new site by running
    `bench new-site education.test`
@@ -168,7 +168,7 @@ the necessary configurations in about 5 minutes.
    `bench --site education.test add-to-hosts`
 1. After that, you can install the Education app on the required site by running
    ```jsx
-   $ bench --site sitename install-app education
+   $ bench --site sitename install-app ugandan_university_education
    ```
 1. Now open the URL `http://education.test:8000/education` in your browser, you
    should see the app running

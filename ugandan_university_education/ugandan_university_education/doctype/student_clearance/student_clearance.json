@@ -1,0 +1,20 @@
+{
+  "doctype": "DocType",
+  "name": "Student Clearance",
+  "module": "University",
+  "autoname": "format:CLR-{YYYY}-{#####}",
+  "is_submittable": 1,
+  "fields": [
+    {"fieldname": "student", "label": "Student", "fieldtype": "Link", "options": "Student", "reqd": 1},
+    {"fieldname": "clearance_type", "label": "Clearance Type", "fieldtype": "Select", "options": "Registration\nExamination\nGraduation\nWithdrawal", "reqd": 1},
+    {"fieldname": "academic_semester", "label": "Academic Semester", "fieldtype": "Link", "options": "Academic Semester"},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Draft\nPending Finance\nPending Academic\nCleared\nRejected", "default": "Draft", "reqd": 1},
+    {"fieldname": "financial_status", "label": "Financial Status", "fieldtype": "Select", "options": "Not Checked\nOutstanding\nCleared", "default": "Not Checked"},
+    {"fieldname": "academic_status", "label": "Academic Status", "fieldtype": "Select", "options": "Not Checked\nHolds Found\nCleared", "default": "Not Checked"},
+    {"fieldname": "evidence", "label": "Evidence", "fieldtype": "Table", "options": "Clearance Evidence"},
+    {"fieldname": "cleared_by", "label": "Cleared By", "fieldtype": "Link", "options": "User"},
+    {"fieldname": "cleared_on", "label": "Cleared On", "fieldtype": "Datetime"}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Student", "read": 1}],
+  "track_changes": 1
+}

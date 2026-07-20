@@ -42,7 +42,7 @@ sed -i 's/redis_socketio:/# redis_socketio:/g' Procfile
 
 bench get-app payments --branch ${BRANCH_TO_CLONE%"-hotfix"}
 bench get-app https://github.com/frappe/erpnext --branch "$BRANCH_TO_CLONE" --resolve-deps
-bench get-app education "${GITHUB_WORKSPACE}"
+bench get-app ugandan_university_education "${GITHUB_WORKSPACE}"
 bench setup requirements --dev
 bench build
 
@@ -51,4 +51,4 @@ CI=Yes bench build --app frappe &
 bench --site test_site reinstall --yes
 
 bench --verbose --site test_site install-app payments
-bench --verbose --site test_site install-app education
+bench --verbose --site test_site install-app ugandan_university_education

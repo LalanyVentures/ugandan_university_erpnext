@@ -25,7 +25,7 @@ sed -i '/redis/d' ./Procfile
 sed -i '/watch/d' ./Procfile
 
 bench get-app erpnext
-bench get-app education
+bench get-app ugandan_university_education
 
 bench new-site education.localhost \
 --force \
@@ -34,7 +34,7 @@ bench new-site education.localhost \
 --no-mariadb-socket
 
 bench --site education.localhost install-app erpnext
-bench --site education.localhost install-app education
+bench --site education.localhost install-app ugandan_university_education
 bench --site education.localhost set-config developer_mode 1
 bench --site education.localhost enable-scheduler
 bench --site education.localhost clear-cache

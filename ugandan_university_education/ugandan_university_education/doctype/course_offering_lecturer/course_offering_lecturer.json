@@ -1,0 +1,12 @@
+{
+  "doctype": "DocType",
+  "name": "Course Offering Lecturer",
+  "module": "University",
+  "istable": 1,
+  "fields": [
+    {"fieldname": "lecturer", "label": "Lecturer", "fieldtype": "Link", "options": "University Member", "reqd": 1},
+    {"fieldname": "is_primary", "label": "Primary Lecturer", "fieldtype": "Check"},
+    {"fieldname": "teaching_role", "label": "Teaching Role", "fieldtype": "Select", "options": "Lecturer\nCoordinator\nModerator", "default": "Lecturer"}
+  ],
+  "permissions": []
+}

@@ -1,0 +1,10 @@
+{
+  "doctype": "Workspace",
+  "name": "University",
+  "module": "University",
+  "label": "University",
+  "public": 1,
+  "content": "[{\"id\":\"university-applications\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Application\",\"col\":3}},{\"id\":\"students\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student\",\"col\":3}},{\"id\":\"programmes\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Programme\",\"col\":3}},{\"id\":\"cohorts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Cohort\",\"col\":3}},{\"id\":\"registration\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Course Registration\",\"col\":3}},{\"id\":\"results\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Course Result\",\"col\":3}},{\"id\":\"transcripts\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Academic Transcript\",\"col\":3}},{\"id\":\"fees\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"University Fee Structure\",\"col\":3}},{\"id\":\"clearance\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Student Clearance\",\"col\":3}}]",
+  "charts": [],
+  "links": []
+}

@@ -1,0 +1,8 @@
+{
+ "doctype":"DocType","name":"Course Prerequisite","module": "University","istable":1,"editable_grid":1,
+ "fields":[
+  {"fieldname":"prerequisite_course","fieldtype":"Link","label":"Prerequisite Course","options":"Course","reqd":1,"in_list_view":1},
+  {"fieldname":"minimum_grade","fieldtype":"Data","label":"Minimum Grade"},
+  {"fieldname":"is_mandatory","fieldtype":"Check","label":"Mandatory","default":1}
+ ]
+}

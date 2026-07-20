@@ -4,15 +4,15 @@ include *.json
 include *.md
 include *.py
 include *.txt
-recursive-include education *.css
-recursive-include education *.csv
-recursive-include education *.html
-recursive-include education *.ico
-recursive-include education *.js
-recursive-include education *.json
-recursive-include education *.md
-recursive-include education *.png
-recursive-include education *.py
-recursive-include education *.svg
-recursive-include education *.txt
-recursive-exclude education *.pyc
+recursive-include ugandan_university_education *.css
+recursive-include ugandan_university_education *.csv
+recursive-include ugandan_university_education *.html
+recursive-include ugandan_university_education *.ico
+recursive-include ugandan_university_education *.js
+recursive-include ugandan_university_education *.json
+recursive-include ugandan_university_education *.md
+recursive-include ugandan_university_education *.png
+recursive-include ugandan_university_education *.py
+recursive-include ugandan_university_education *.svg
+recursive-include ugandan_university_education *.txt
+recursive-exclude ugandan_university_education *.pyc

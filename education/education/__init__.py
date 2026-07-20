@@ -1,1 +1,0 @@
-"""University Education application package."""
