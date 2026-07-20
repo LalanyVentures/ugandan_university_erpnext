@@ -1,0 +1,14 @@
+{
+  "doctype": "DocType",
+  "name": "Assessment Mark",
+  "module": "Education",
+  "istable": 1,
+  "fields": [
+    {"fieldname": "course_assessment", "label": "Course Assessment", "fieldtype": "Link", "options": "Course Assessment", "reqd": 1},
+    {"fieldname": "mark", "label": "Mark", "fieldtype": "Float", "reqd": 1},
+    {"fieldname": "weight", "label": "Weight (%)", "fieldtype": "Percent", "reqd": 1},
+    {"fieldname": "is_published", "label": "Published", "fieldtype": "Check", "default": 0},
+    {"fieldname": "lecturer_comment", "label": "Lecturer Comment", "fieldtype": "Small Text"}
+  ],
+  "permissions": []
+}

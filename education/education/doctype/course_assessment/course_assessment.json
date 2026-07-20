@@ -1,0 +1,17 @@
+{
+  "doctype": "DocType",
+  "name": "Course Assessment",
+  "module": "Education",
+  "autoname": "format:ASM-{YYYY}-{#####}",
+  "fields": [
+    {"fieldname": "course_offering", "label": "Course Offering", "fieldtype": "Link", "options": "Course Offering", "reqd": 1},
+    {"fieldname": "assessment_name", "label": "Assessment Name", "fieldtype": "Data", "reqd": 1},
+    {"fieldname": "assessment_type", "label": "Assessment Type", "fieldtype": "Select", "options": "Coursework\nTest\nAssignment\nPractical\nFinal Examination\nSupplementary Examination", "reqd": 1},
+    {"fieldname": "maximum_mark", "label": "Maximum Mark", "fieldtype": "Float", "default": 100, "reqd": 1},
+    {"fieldname": "weight", "label": "Weight (%)", "fieldtype": "Percent", "reqd": 1},
+    {"fieldname": "assessment_date", "label": "Assessment Date", "fieldtype": "Date"},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Draft\nOpen\nClosed\nPublished", "default": "Draft", "reqd": 1}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}],
+  "track_changes": 1
+}

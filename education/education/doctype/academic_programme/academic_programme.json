@@ -1,0 +1,14 @@
+{
+ "doctype":"DocType","name":"Academic Programme","module":"Education","engine":"InnoDB","allow_rename":1,
+ "autoname":"field:programme_code","field_order":["programme_code","programme_name","award_type","academic_unit","duration_years","status"],
+ "fields":[
+  {"fieldname":"programme_code","fieldtype":"Data","label":"Programme Code","reqd":1,"unique":1,"in_list_view":1},
+  {"fieldname":"programme_name","fieldtype":"Data","label":"Programme Name","reqd":1,"in_list_view":1},
+  {"fieldname":"award_type","fieldtype":"Select","label":"Award Type","options":"Certificate\nDiploma\nBachelor's Degree\nPostgraduate Diploma\nMaster's Degree\nDoctorate","reqd":1},
+  {"fieldname":"academic_unit","fieldtype":"Link","label":"Academic Unit","options":"Academic Unit","reqd":1},
+  {"fieldname":"duration_years","fieldtype":"Float","label":"Duration (Years)"},
+  {"fieldname":"status","fieldtype":"Select","label":"Status","options":"Draft\nActive\nSuspended\nArchived","default":"Draft","reqd":1,"in_list_view":1}
+ ],
+ "permissions":[{"role":"System Manager","read":1,"write":1,"create":1,"delete":1},{"role":"Academics User","read":1,"write":1,"create":1}],
+ "track_changes":1
+}

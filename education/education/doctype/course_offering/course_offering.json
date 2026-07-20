@@ -1,0 +1,19 @@
+{
+  "doctype": "DocType",
+  "name": "Course Offering",
+  "module": "Education",
+  "autoname": "format:OFR-{YYYY}-{#####}",
+  "fields": [
+    {"fieldname": "course", "label": "Course", "fieldtype": "Link", "options": "Course", "reqd": 1},
+    {"fieldname": "programme_curriculum", "label": "Programme Curriculum", "fieldtype": "Link", "options": "Programme Curriculum"},
+    {"fieldname": "grading_scheme", "label": "Grading Scheme", "fieldtype": "Link", "options": "Grading Scheme"},
+    {"fieldname": "academic_semester", "label": "Academic Semester", "fieldtype": "Link", "options": "Academic Semester", "reqd": 1},
+    {"fieldname": "student_cohort", "label": "Student Cohort", "fieldtype": "Link", "options": "Student Cohort"},
+    {"fieldname": "offering_type", "label": "Offering Type", "fieldtype": "Select", "options": "Core\nElective\nRetake\nSupplementary", "default": "Core", "reqd": 1},
+    {"fieldname": "capacity", "label": "Capacity", "fieldtype": "Int"},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Planned\nOpen\nClosed\nCancelled", "default": "Planned", "reqd": 1},
+    {"fieldname": "lecturers", "label": "Lecturers", "fieldtype": "Table", "options": "Course Offering Lecturer"}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}],
+  "track_changes": 1
+}

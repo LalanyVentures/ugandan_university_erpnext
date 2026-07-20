@@ -7,7 +7,6 @@ from frappe.permissions import add_permission, update_permission_property
 def after_install():
 	setup_fixtures()
 	create_student_role()
-	create_parent_assessment_group()
 	create_invoice_permissions()
 	create_custom_fields(get_custom_fields())
 	create_permissions(get_permissions())
@@ -23,17 +22,6 @@ def setup_fixtures():
 		{"doctype": "Customer Group", "customer_group_name": "Student"},
 	]
 	make_records(records)
-
-
-def create_parent_assessment_group():
-	if not frappe.db.exists("Assessment Group", "All Assessment Groups"):
-		frappe.get_doc(
-			{
-				"doctype": "Assessment Group",
-				"assessment_group_name": "All Assessment Groups",
-				"is_group": 1,
-			}
-		).insert(ignore_mandatory=True)
 
 
 def create_student_role():
@@ -112,10 +100,10 @@ def get_custom_fields():
 				"insert_after": "student",
 			},
 			{
-				"fieldname": "fee_schedule",
+				"fieldname": "university_fee_structure",
 				"fieldtype": "Link",
-				"label": "Fee Schedule",
-				"options": "Fee Schedule",
+				"label": "University Fee Structure",
+				"options": "University Fee Structure",
 				"insert_after": "column_break_ejcc",
 			},
 		],
@@ -140,10 +128,10 @@ def get_custom_fields():
 				"insert_after": "student",
 			},
 			{
-				"fieldname": "fee_schedule",
+				"fieldname": "university_fee_structure",
 				"fieldtype": "Link",
-				"label": "Fee Schedule",
-				"options": "Fee Schedule",
+				"label": "University Fee Structure",
+				"options": "University Fee Structure",
 				"insert_after": "column_break_ejcc",
 			},
 		],

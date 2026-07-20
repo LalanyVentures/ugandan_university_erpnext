@@ -41,75 +41,37 @@ app_include_js = "education.bundle.js"
 # website
 update_website_context = []
 
-website_generators = ["Student Admission"]
+website_generators = []
 
-website_route_rules = [
-	{"from_route": "/admissions", "to_route": "Student Admission"},
-	{"from_route": "/student-portal/<path:app_path>", "to_route": "student-portal"},
-]
+website_route_rules = [{"from_route": "/student-portal/<path:app_path>", "to_route": "student-portal"}]
 
-treeviews = ["Assessment Group"]
+treeviews = ["Academic Unit"]
 
-calendars = [
-	"Course Schedule",
-]
+calendars = ["Teaching Timetable Entry"]
 
 standard_portal_menu_items = [
-	{
-		"title": "Admission",
-		"route": "/admissions",
-		"reference_doctype": "Student Admission",
-		"role": "Student",
-	},
+	{"title": "Student Portal", "route": "/student-portal", "role": "Student"},
 ]
 
 default_roles = [
 	{"role": "Student", "doctype": "Student", "email_field": "student_email_id"},
 ]
 
-accounting_dimension_doctypes = ["Fee Schedule", "Fee Structure"]
+accounting_dimension_doctypes = ["University Fee Structure"]
 
 global_search_doctypes = {
 	"Education": [
-		{"doctype": "Article", "index": 1},
-		{"doctype": "Video", "index": 2},
-		{"doctype": "Topic", "index": 3},
-		{"doctype": "Course", "index": 4},
-		{"doctype": "Program", "index": 5},
-		{"doctype": "Quiz", "index": 6},
-		{"doctype": "Question", "index": 7},
-		{"doctype": "Fee Schedule", "index": 8},
-		{"doctype": "Fee Structure", "index": 9},
-		{"doctype": "Student Group", "index": 10},
-		{"doctype": "Student", "index": 11},
-		{"doctype": "Instructor", "index": 12},
-		{"doctype": "Course Activity", "index": 13},
-		{"doctype": "Quiz Activity", "index": 14},
-		{"doctype": "Course Enrollment", "index": 15},
-		{"doctype": "Program Enrollment", "index": 16},
-		{"doctype": "Student Language", "index": 17},
-		{"doctype": "Student Applicant", "index": 18},
-		{"doctype": "Assessment Result", "index": 19},
-		{"doctype": "Assessment Plan", "index": 20},
-		{"doctype": "Grading Scale", "index": 21},
-		{"doctype": "Guardian", "index": 22},
-		{"doctype": "Student Leave Application", "index": 23},
-		{"doctype": "Student Log", "index": 24},
-		{"doctype": "Room", "index": 25},
-		{"doctype": "Course Schedule", "index": 26},
-		{"doctype": "Student Attendance", "index": 27},
-		{"doctype": "Announcement", "index": 28},
-		{"doctype": "Student Category", "index": 29},
-		{"doctype": "Assessment Group", "index": 30},
-		{"doctype": "Student Batch Name", "index": 31},
-		{"doctype": "Assessment Criteria", "index": 32},
-		{"doctype": "Academic Year", "index": 33},
-		{"doctype": "Academic Term", "index": 34},
-		{"doctype": "School House", "index": 35},
-		{"doctype": "Student Admission", "index": 36},
-		{"doctype": "Fee Category", "index": 37},
-		{"doctype": "Assessment Code", "index": 38},
-		{"doctype": "Discussion", "index": 39},
+		{"doctype": "University Application", "index": 1},
+		{"doctype": "Student", "index": 2},
+		{"doctype": "Academic Unit", "index": 3},
+		{"doctype": "Academic Programme", "index": 4},
+		{"doctype": "Course", "index": 5},
+		{"doctype": "Student Cohort", "index": 6},
+		{"doctype": "Course Registration", "index": 7},
+		{"doctype": "Student Course Result", "index": 8},
+		{"doctype": "Academic Transcript", "index": 9},
+		{"doctype": "University Fee Structure", "index": 10},
+		{"doctype": "Student Clearance", "index": 11},
 	]
 }
 

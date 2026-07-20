@@ -1,0 +1,15 @@
+{
+  "doctype": "DocType",
+  "name": "Grade Band",
+  "module": "Education",
+  "istable": 1,
+  "fields": [
+    {"fieldname": "grade", "label": "Grade", "fieldtype": "Data", "reqd": 1},
+    {"fieldname": "minimum_mark", "label": "Minimum Mark", "fieldtype": "Float", "reqd": 1},
+    {"fieldname": "maximum_mark", "label": "Maximum Mark", "fieldtype": "Float", "reqd": 1},
+    {"fieldname": "grade_point", "label": "Grade Point", "fieldtype": "Float", "reqd": 1},
+    {"fieldname": "counts_as_pass", "label": "Counts as Pass", "fieldtype": "Check", "default": 1},
+    {"fieldname": "counts_in_gpa", "label": "Counts in GPA", "fieldtype": "Check", "default": 1}
+  ],
+  "permissions": []
+}

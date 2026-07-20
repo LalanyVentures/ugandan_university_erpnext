@@ -1,0 +1,19 @@
+{
+  "doctype": "DocType",
+  "name": "Course Registration",
+  "module": "Education",
+  "autoname": "format:CR-{YYYY}-{#####}",
+  "is_submittable": 1,
+  "fields": [
+    {"fieldname": "student", "label": "Student", "fieldtype": "Link", "options": "Student", "reqd": 1},
+    {"fieldname": "student_cohort", "label": "Student Cohort", "fieldtype": "Link", "options": "Student Cohort"},
+    {"fieldname": "student_programme_enrolment", "label": "Student Programme Enrolment", "fieldtype": "Link", "options": "Student Programme Enrolment", "reqd": 1},
+    {"fieldname": "semester_registration", "label": "Semester Registration", "fieldtype": "Link", "options": "Semester Registration", "reqd": 1},
+    {"fieldname": "course_offering", "label": "Course Offering", "fieldtype": "Link", "options": "Course Offering", "reqd": 1},
+    {"fieldname": "attempt_number", "label": "Attempt Number", "fieldtype": "Int", "default": 1, "reqd": 1},
+    {"fieldname": "registration_type", "label": "Registration Type", "fieldtype": "Select", "options": "Normal\nRetake\nSupplementary\nAudit", "default": "Normal", "reqd": 1},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Draft\nRegistered\nDropped\nCompleted\nCancelled", "default": "Draft", "reqd": 1}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Student", "read": 1, "create": 1, "read": 1}],
+  "track_changes": 1
+}

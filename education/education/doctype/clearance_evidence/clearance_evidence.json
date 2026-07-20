@@ -1,0 +1,15 @@
+{
+  "doctype": "DocType",
+  "name": "Clearance Evidence",
+  "module": "Education",
+  "istable": 1,
+  "fields": [
+    {"fieldname": "rule_name", "label": "Rule Name", "fieldtype": "Data", "reqd": 1},
+    {"fieldname": "evidence_doctype", "label": "Evidence DocType", "fieldtype": "Link", "options": "DocType", "reqd": 1},
+    {"fieldname": "evidence_name", "label": "Evidence Record", "fieldtype": "Dynamic Link", "options": "evidence_doctype"},
+    {"fieldname": "result", "label": "Result", "fieldtype": "Select", "options": "Pending\nPassed\nFailed", "default": "Pending", "reqd": 1},
+    {"fieldname": "observed_amount", "label": "Observed Amount", "fieldtype": "Currency"},
+    {"fieldname": "comment", "label": "Comment", "fieldtype": "Small Text"}
+  ],
+  "permissions": []
+}

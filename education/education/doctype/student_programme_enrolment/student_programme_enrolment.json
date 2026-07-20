@@ -1,0 +1,19 @@
+{
+  "doctype": "DocType",
+  "name": "Student Programme Enrolment",
+  "module": "Education",
+  "autoname": "format:SPE-{YYYY}-{#####}",
+  "is_submittable": 1,
+  "fields": [
+    {"fieldname": "student", "label": "Student", "fieldtype": "Link", "options": "Student", "reqd": 1},
+    {"fieldname": "academic_programme", "label": "Academic Programme", "fieldtype": "Link", "options": "Academic Programme", "reqd": 1},
+    {"fieldname": "programme_curriculum", "label": "Programme Curriculum", "fieldtype": "Link", "options": "Programme Curriculum", "reqd": 1},
+    {"fieldname": "academic_year", "label": "Admission Academic Year", "fieldtype": "Link", "options": "Academic Year", "reqd": 1},
+    {"fieldname": "student_cohort", "label": "Student Cohort", "fieldtype": "Link", "options": "Student Cohort"},
+    {"fieldname": "admission_date", "label": "Admission Date", "fieldtype": "Date", "reqd": 1},
+    {"fieldname": "status", "label": "Status", "fieldtype": "Select", "options": "Draft\nActive\nOn Leave\nCompleted\nDiscontinued\nWithdrawn", "default": "Draft", "reqd": 1},
+    {"fieldname": "expected_completion_date", "label": "Expected Completion Date", "fieldtype": "Date"}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Student", "read": 1}],
+  "track_changes": 1
+}

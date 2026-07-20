@@ -1,0 +1,29 @@
+{
+  "doctype": "DocType",
+  "name": "Student Course Result",
+  "module": "Education",
+  "autoname": "format:RES-{YYYY}-{#####}",
+  "is_submittable": 1,
+  "fields": [
+    {"fieldname": "student", "label": "Student", "fieldtype": "Link", "options": "Student", "reqd": 1},
+    {"fieldname": "course_registration", "label": "Course Registration", "fieldtype": "Link", "options": "Course Registration", "reqd": 1},
+    {"fieldname": "academic_semester", "label": "Academic Semester", "fieldtype": "Link", "options": "Academic Semester", "reqd": 1},
+    {"fieldname": "course", "label": "Course", "fieldtype": "Link", "options": "Course", "reqd": 1},
+    {"fieldname": "credit_units", "label": "Credit Units", "fieldtype": "Float", "reqd": 1},
+    {"fieldname": "assessment_marks", "label": "Assessment Marks", "fieldtype": "Table", "options": "Assessment Mark"},
+    {"fieldname": "coursework_mark", "label": "Coursework Mark", "fieldtype": "Float"},
+    {"fieldname": "examination_mark", "label": "Examination Mark", "fieldtype": "Float"},
+    {"fieldname": "final_mark", "label": "Final Mark", "fieldtype": "Float"},
+    {"fieldname": "grade", "label": "Grade", "fieldtype": "Data"},
+    {"fieldname": "grade_point", "label": "Grade Point", "fieldtype": "Float"},
+    {"fieldname": "include_in_gpa", "label": "Include in GPA", "fieldtype": "Check", "default": 1},
+    {"fieldname": "result_status", "label": "Result Status", "fieldtype": "Select", "options": "Provisional\nComplete\nIncomplete\nDeferred\nExempted\nWithdrawn\nRetake Required", "default": "Provisional", "reqd": 1},
+    {"fieldname": "is_approved", "label": "Approved", "fieldtype": "Check", "default": 0},
+    {"fieldname": "is_published", "label": "Published", "fieldtype": "Check", "default": 0},
+    {"fieldname": "approved_by", "label": "Approved By", "fieldtype": "Link", "options": "User"},
+    {"fieldname": "approved_on", "label": "Approved On", "fieldtype": "Datetime"},
+    {"fieldname": "remarks", "label": "Remarks", "fieldtype": "Small Text"}
+  ],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Student", "read": 1}],
+  "track_changes": 1
+}
