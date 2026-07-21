@@ -1,2 +1,3 @@
 # Legacy patches were removed with the old Education schema.
 # New migration patches will be added only with explicit data-migration plans.
+ugandan_university_education.patches.v1_0.repair_fee_structure_line
