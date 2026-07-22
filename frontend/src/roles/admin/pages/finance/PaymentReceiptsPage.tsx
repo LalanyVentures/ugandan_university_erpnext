@@ -6,7 +6,7 @@ import { callMethod, fetchList, type FrappeRow, ugx } from '../../../../api/frap
 type Allocation = { reference_doctype?: string; reference_name?: string; allocated_amount?: number; total_amount?: number; outstanding_amount?: number; invoice_total?:number; current_outstanding?:number; student?: string; academic_semester?: string; university_fee_structure?:string }
 type ReceiptPayment = { name:string; posting_date?:string; payment_type?:string; party?:string; party_name?:string; student?:{name?:string;student_name?:string;student_number?:string}; mode_of_payment?:string; reference_no?:string; reference_date?:string; paid_amount?:number; received_amount?:number; paid_to_account_currency?:string; remarks?:string; docstatus?:number; allocations:Allocation[] }
 type PaymentRow = FrappeRow & { student?:string; student_name?:string; student_number?:string; semesters?:string[]; allocations?:Allocation[] }
-type ReceiptPayload = { university:{name:string;country?:string;currency?:string;footer?:string};generated_on:string;generated_by:string;payments:ReceiptPayment[] }
+export type ReceiptPayload = { university:{name:string;country?:string;currency?:string;footer?:string};generated_on:string;generated_by:string;payments:ReceiptPayment[] }
 
 const receiptMethod = 'ugandan_university_education.ugandan_university_education.api.get_payment_receipt_data'
 const registerMethod = 'ugandan_university_education.ugandan_university_education.api.get_payment_register_data'
@@ -95,7 +95,7 @@ export function PaymentReceiptsPage() {
   </section>
 }
 
-function ReceiptDocument({data,onClose}:{data:ReceiptPayload;onClose:()=>void}) {
+export function ReceiptDocument({data,onClose}:{data:ReceiptPayload;onClose:()=>void}) {
   const total=data.payments.reduce((sum,payment)=>sum+amountOf(payment),0)
   const parties=[...new Set(data.payments.map(payment=>payment.party_name||payment.student?.student_name||payment.party).filter(Boolean))]
   const receiptNumber=data.payments.length===1?data.payments[0].name:`AWU-CONSOLIDATED-${new Date(data.generated_on).toISOString().slice(0,10).replace(/-/g,'')}`

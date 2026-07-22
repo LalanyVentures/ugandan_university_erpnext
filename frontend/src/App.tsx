@@ -9,6 +9,8 @@ import { StudentProfilePage } from './roles/admin/pages/students/StudentProfileP
 import { PaymentReceiptsPage } from './roles/admin/pages/finance/PaymentReceiptsPage'
 import { FinancialAnalysisPage } from './roles/admin/pages/finance/FinancialRiskPage'
 import { TranscriptViewer } from './roles/admin/pages/transcripts/TranscriptViewer'
+import { StudentApp } from './roles/student/StudentApp'
+import { portalRoleFor } from './roles/admin/roleConfig'
 
 export default function App() {
   const [session, setSession] = useState<UniversitySession | null>(null)
@@ -24,6 +26,10 @@ export default function App() {
 
   if (!session) {
     return <LoginPage onLogin={setSession} />
+  }
+
+  if (portalRoleFor(session.roles) === 'student') {
+    return <StudentApp session={session} onLogout={() => setSession(null)} />
   }
 
   return (

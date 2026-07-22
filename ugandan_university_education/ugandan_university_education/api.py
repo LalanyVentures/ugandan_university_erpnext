@@ -52,9 +52,14 @@ def update_student_profile(student, values):
 def get_payment_receipt_data(payment_entries):
 	"""Return permission-checked payment and invoice allocations for AWU receipts."""
 	roles = set(frappe.get_roles())
-	allowed_roles = {"System Manager", "Accounts User", "Accounts Manager", "Academics User", "Registrar"}
+	allowed_roles = {"System Manager", "Accounts User", "Accounts Manager", "Academics User", "Registrar", "Student"}
 	if frappe.session.user != "Administrator" and not roles.intersection(allowed_roles):
 		frappe.throw("Only authorised finance and academic staff may print payment receipts.", frappe.PermissionError)
+	student_customer = None
+	if "Student" in roles and frappe.session.user != "Administrator":
+		student_customer = frappe.db.get_value("Student", {"student_email_id": frappe.session.user}, "customer")
+		if not student_customer:
+			frappe.throw("This user account is not linked to a student account.", frappe.PermissionError)
 
 	if isinstance(payment_entries, str):
 		payment_entries = json.loads(payment_entries)
@@ -72,7 +77,11 @@ def get_payment_receipt_data(payment_entries):
 	payments = []
 	for payment_name in dict.fromkeys(payment_entries):
 		doc = frappe.get_doc("Payment Entry", payment_name)
-		doc.check_permission("read")
+		if student_customer:
+			if doc.party_type != "Customer" or doc.party != student_customer:
+				frappe.throw("Students may only print receipts from their own account.", frappe.PermissionError)
+		else:
+			doc.check_permission("read")
 		student = None
 		if doc.party_type == "Customer" and doc.party:
 			student = frappe.db.get_value(
@@ -191,6 +200,96 @@ def get_student_info():
         "Student", {"student_email_id": frappe.session.user},
         ["name", "student_name", "student_email_id", "customer"], as_dict=True,
     )
+
+
+@frappe.whitelist()
+def get_student_portal_data():
+	"""Return only the academic and finance records owned by the signed-in student."""
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to access the student portal.", frappe.PermissionError)
+	student = frappe.db.get_value(
+		"Student", {"student_email_id": frappe.session.user},
+		["name", "student_name", "student_number", "first_name", "middle_name", "last_name",
+			"gender", "date_of_birth", "nationality", "student_email_id", "customer", "status"],
+		as_dict=True,
+	)
+	if not student:
+		frappe.throw("This user account is not linked to a Student record.", frappe.DoesNotExistError)
+
+	enrolments = frappe.get_all("Student Programme Enrolment", filters={"student": student.name},
+		fields=["name", "academic_programme", "programme_curriculum", "academic_year", "student_cohort",
+			"admission_date", "expected_completion_date", "status", "docstatus"], order_by="admission_date desc")
+	semester_registrations = frappe.get_all("Semester Registration", filters={"student": student.name},
+		fields=["name", "student_programme_enrolment", "academic_semester", "registration_date", "status", "docstatus"],
+		order_by="registration_date desc")
+	course_registrations = frappe.get_all("Course Registration", filters={"student": student.name},
+		fields=["name", "student_cohort", "student_programme_enrolment", "semester_registration", "course_offering",
+			"attempt_number", "registration_type", "status", "docstatus"], order_by="modified desc")
+
+	offering_names = [row.course_offering for row in course_registrations if row.course_offering]
+	offerings = frappe.get_all("Course Offering", filters={"name": ["in", offering_names]},
+		fields=["name", "course", "academic_semester", "student_cohort", "offering_type", "status"]) if offering_names else []
+	offering_map = {row.name: row for row in offerings}
+	course_names = list({row.course for row in offerings if row.course})
+	courses = frappe.get_all("Course", filters={"name": ["in", course_names]},
+		fields=["name", "course_code", "course_name", "academic_unit", "credit_units", "study_level", "status"]) if course_names else []
+	course_map = {row.name: row for row in courses}
+	for registration in course_registrations:
+		offering = offering_map.get(registration.course_offering) or {}
+		course = course_map.get(offering.get("course")) or {}
+		registration.update({
+			"course": offering.get("course"), "academic_semester": offering.get("academic_semester"),
+			"course_code": course.get("course_code"), "course_name": course.get("course_name"),
+			"credit_units": course.get("credit_units"), "academic_unit": course.get("academic_unit"),
+		})
+
+	timetable = frappe.get_all("Teaching Timetable Entry", filters={"course_offering": ["in", offering_names], "status": "Published"},
+		fields=["name", "course_offering", "academic_semester", "weekday", "start_time", "end_time", "venue", "session_type", "status"],
+		order_by="weekday asc, start_time asc") if offering_names else []
+	for entry in timetable:
+		offering = offering_map.get(entry.course_offering) or {}
+		course = course_map.get(offering.get("course")) or {}
+		entry["course_code"] = course.get("course_code")
+		entry["course_name"] = course.get("course_name")
+
+	attendance = frappe.get_all("Student Attendance", filters={"student": student.name, "docstatus": ["<", 2]},
+		fields=["name", "course_registration", "timetable_entry", "attendance_date", "status", "remarks"],
+		order_by="attendance_date desc", limit_page_length=1000)
+	results = frappe.get_all("Student Course Result", filters={"student": student.name, "is_published": 1},
+		fields=["name", "course_registration", "academic_semester", "course", "credit_units", "coursework_mark",
+			"examination_mark", "final_mark", "grade", "grade_point", "include_in_gpa", "result_status", "remarks"],
+		order_by="academic_semester desc")
+	for result in results:
+		course = course_map.get(result.course) or frappe.db.get_value("Course", result.course,
+			["course_code", "course_name"], as_dict=True) or {}
+		result["course_code"] = course.get("course_code")
+		result["course_name"] = course.get("course_name")
+
+	invoices = frappe.get_all("Sales Invoice", filters={"student": student.name, "docstatus": 1},
+		fields=["name", "posting_date", "due_date", "academic_semester", "university_fee_structure", "grand_total",
+			"outstanding_amount", "status", "currency"], order_by="posting_date desc")
+	payment_rows = frappe.get_all("Payment Entry", filters={"party_type": "Customer", "party": student.customer,
+		"payment_type": "Receive", "docstatus": 1}, fields=["name", "posting_date", "mode_of_payment", "reference_no",
+			"reference_date", "paid_amount", "received_amount", "paid_to_account_currency", "remarks"], order_by="posting_date desc") if student.customer else []
+	for payment in payment_rows:
+		doc = frappe.get_doc("Payment Entry", payment.name)
+		payment["allocations"] = [{"reference_name": ref.reference_name, "allocated_amount": ref.allocated_amount,
+			"academic_semester": frappe.db.get_value("Sales Invoice", ref.reference_name, "academic_semester")
+			if ref.reference_doctype == "Sales Invoice" and ref.reference_name else None}
+			for ref in (doc.get("references") or [])]
+
+	clearance = frappe.get_all("Student Clearance", filters={"student": student.name},
+		fields=["name", "clearance_type", "academic_semester", "status", "financial_status", "academic_status", "cleared_on"],
+		order_by="modified desc")
+	transcript_rows = frappe.get_all("Academic Transcript", filters={"student": student.name},
+		fields=["name", "academic_programme", "transcript_type", "status", "verification_number", "registrar_issued_on", "generated_pdf"],
+		order_by="modified desc")
+	transcripts = [row for row in transcript_rows if can_view_transcript(row.status, row.transcript_type)]
+
+	return {"student": student, "enrolments": enrolments, "semester_registrations": semester_registrations,
+		"course_registrations": course_registrations, "timetable": timetable, "attendance": attendance,
+		"results": results, "invoices": invoices, "payments": payment_rows, "clearance": clearance,
+		"transcripts": transcripts}
 
 
 @frappe.whitelist()
