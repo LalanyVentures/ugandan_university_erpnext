@@ -17,7 +17,10 @@ from ugandan_university_education.services.workflows import (
 
 def has_app_permission(user=None):
     user = user or frappe.session.user
-    return user == "Administrator" or "Academics User" in frappe.get_roles(user)
+    return user == "Administrator" or bool(
+        {"Academics User", "Registrar", "Faculty Head", "Instructor", "Accounts User", "Accounts Manager", "Student"}
+        .intersection(frappe.get_roles(user))
+    )
 
 
 @frappe.whitelist()
@@ -290,6 +293,268 @@ def get_student_portal_data():
 		"course_registrations": course_registrations, "timetable": timetable, "attendance": attendance,
 		"results": results, "invoices": invoices, "payments": payment_rows, "clearance": clearance,
 		"transcripts": transcripts}
+
+
+def _get_lecturer_member():
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to access the lecturer portal.", frappe.PermissionError)
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and "Instructor" not in roles:
+		frappe.throw("Only lecturers may access this teaching workspace.", frappe.PermissionError)
+	member = frappe.db.get_value(
+		"University Member", {"user": frappe.session.user, "member_type": "Lecturer"},
+		["name", "member_number", "full_name", "member_type", "user", "employee", "status"], as_dict=True,
+	)
+	if not member:
+		frappe.throw("This user account is not linked to an active University Member lecturer record.", frappe.DoesNotExistError)
+	if member.status != "Active":
+		frappe.throw("This lecturer record is not active.", frappe.PermissionError)
+	return member
+
+
+def _lecturer_offering_names(member_name):
+	assignments = frappe.get_all(
+		"Course Offering Lecturer",
+		filters={"lecturer": member_name, "parenttype": "Course Offering"},
+		fields=["parent", "is_primary", "teaching_role"],
+	)
+	return assignments, list(dict.fromkeys(row.parent for row in assignments if row.parent))
+
+
+def _assert_lecturer_offering(offering_name):
+	member = _get_lecturer_member()
+	if not frappe.db.exists("Course Offering Lecturer", {
+		"parent": offering_name, "parenttype": "Course Offering", "lecturer": member.name,
+	}):
+		frappe.throw("You may only work with course offerings assigned to you.", frappe.PermissionError)
+	return member
+
+
+@frappe.whitelist()
+def get_lecturer_portal_data():
+	"""Return teaching records constrained to the signed-in lecturer's assigned offerings."""
+	member = _get_lecturer_member()
+	assignments, offering_names = _lecturer_offering_names(member.name)
+	assignment_map = {row.parent: row for row in assignments}
+	offerings = frappe.get_all(
+		"Course Offering", filters={"name": ["in", offering_names]},
+		fields=["name", "course", "programme_curriculum", "grading_scheme", "academic_semester",
+			"student_cohort", "offering_type", "capacity", "status"], order_by="academic_semester desc",
+	) if offering_names else []
+	course_names = list({row.course for row in offerings if row.course})
+	courses = frappe.get_all(
+		"Course", filters={"name": ["in", course_names]},
+		fields=["name", "course_code", "course_name", "academic_unit", "credit_units", "study_level", "status"],
+	) if course_names else []
+	course_map = {row.name: row for row in courses}
+	for offering in offerings:
+		course = course_map.get(offering.course) or {}
+		assignment = assignment_map.get(offering.name) or {}
+		offering.update({
+			"course_code": course.get("course_code"), "course_name": course.get("course_name"),
+			"credit_units": course.get("credit_units"), "academic_unit": course.get("academic_unit"),
+			"is_primary_lecturer": assignment.get("is_primary"), "teaching_role": assignment.get("teaching_role"),
+		})
+
+	registrations = frappe.get_all(
+		"Course Registration", filters={"course_offering": ["in", offering_names], "status": ["not in", ["Cancelled", "Dropped"]]},
+		fields=["name", "student", "student_cohort", "semester_registration", "course_offering",
+			"attempt_number", "registration_type", "status", "docstatus"], order_by="course_offering asc, student asc",
+	) if offering_names else []
+	student_names = list({row.student for row in registrations if row.student})
+	students = frappe.get_all(
+		"Student", filters={"name": ["in", student_names]},
+		fields=["name", "student_name", "student_number", "first_name", "last_name", "gender",
+			"student_email_id", "status"], order_by="student_name asc",
+	) if student_names else []
+	student_map = {row.name: row for row in students}
+	for registration in registrations:
+		student = student_map.get(registration.student) or {}
+		offering = next((row for row in offerings if row.name == registration.course_offering), {})
+		registration.update({
+			"student_name": student.get("student_name"), "student_number": student.get("student_number"),
+			"student_email_id": student.get("student_email_id"), "academic_semester": offering.get("academic_semester"),
+			"course": offering.get("course"), "course_code": offering.get("course_code"),
+			"course_name": offering.get("course_name"), "credit_units": offering.get("credit_units"),
+		})
+
+	timetable = frappe.get_all(
+		"Teaching Timetable Entry", filters={"course_offering": ["in", offering_names], "status": ["!=", "Cancelled"]},
+		fields=["name", "course_offering", "academic_semester", "weekday", "start_time", "end_time", "venue",
+			"session_type", "status"], order_by="weekday asc, start_time asc",
+	) if offering_names else []
+	assessments = frappe.get_all(
+		"Course Assessment", filters={"course_offering": ["in", offering_names]},
+		fields=["name", "course_offering", "assessment_name", "assessment_type", "maximum_mark", "weight",
+			"assessment_date", "status"], order_by="assessment_date desc",
+	) if offering_names else []
+	registration_names = [row.name for row in registrations]
+	attendance = frappe.get_all(
+		"Student Attendance", filters={"course_registration": ["in", registration_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "course_registration", "timetable_entry", "attendance_date", "status", "remarks", "docstatus"],
+		order_by="attendance_date desc", limit_page_length=5000,
+	) if registration_names else []
+	results = frappe.get_all(
+		"Student Course Result", filters={"course_registration": ["in", registration_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "course_registration", "academic_semester", "course", "credit_units",
+			"coursework_mark", "examination_mark", "final_mark", "grade", "grade_point", "result_status",
+			"is_approved", "is_published", "remarks", "docstatus"], order_by="academic_semester desc",
+	) if registration_names else []
+	for result in results:
+		doc = frappe.get_doc("Student Course Result", result.name)
+		result["assessment_marks"] = [row.as_dict() for row in (doc.get("assessment_marks") or [])]
+		student = student_map.get(result.student) or {}
+		result["student_name"] = student.get("student_name")
+		result["student_number"] = student.get("student_number")
+	result_names = [row.name for row in results]
+	review_requests = frappe.get_all(
+		"Result Review Request", filters={"student_course_result": ["in", result_names]},
+		fields=["name", "student", "student_course_result", "request_type", "reason", "status", "decision", "reviewed_by"],
+		order_by="modified desc",
+	) if result_names else []
+	approval_batches = frappe.get_all(
+		"Result Approval Batch", filters={"course_offering": ["in", offering_names]},
+		fields=["name", "course_offering", "academic_semester", "approval_stage", "status", "submitted_by", "approved_by", "docstatus"],
+		order_by="modified desc",
+	) if offering_names else []
+	return {
+		"lecturer": member, "offerings": offerings, "registrations": registrations, "students": students,
+		"timetable": timetable, "assessments": assessments, "attendance": attendance, "results": results,
+		"review_requests": review_requests, "approval_batches": approval_batches,
+	}
+
+
+@frappe.whitelist()
+def save_lecturer_attendance(entries):
+	"""Create or update draft attendance for students in the lecturer's assigned offerings."""
+	if isinstance(entries, str):
+		entries = json.loads(entries)
+	entries = entries or []
+	saved = []
+	for entry in entries:
+		registration = frappe.get_doc("Course Registration", entry.get("course_registration"))
+		_assert_lecturer_offering(registration.course_offering)
+		timetable = frappe.get_doc("Teaching Timetable Entry", entry.get("timetable_entry"))
+		if timetable.course_offering != registration.course_offering:
+			frappe.throw("The timetable session and course registration must belong to the same offering.")
+		status = entry.get("status")
+		if status not in {"Present", "Absent", "Late", "Excused"}:
+			frappe.throw("Select a valid attendance status.")
+		filters = {
+			"course_registration": registration.name, "timetable_entry": timetable.name,
+			"attendance_date": entry.get("attendance_date"), "docstatus": ["<", 2],
+		}
+		existing = frappe.db.get_value("Student Attendance", filters, "name")
+		doc = frappe.get_doc("Student Attendance", existing) if existing else frappe.new_doc("Student Attendance")
+		if doc.docstatus == 1:
+			frappe.throw(f"Attendance {doc.name} is submitted and cannot be changed.")
+		doc.update({
+			"student": registration.student, "course_registration": registration.name,
+			"timetable_entry": timetable.name, "attendance_date": entry.get("attendance_date"),
+			"status": status, "remarks": entry.get("remarks"),
+		})
+		doc.save(ignore_permissions=True)
+		saved.append(doc.name)
+	return saved
+
+
+@frappe.whitelist()
+def save_lecturer_marks(course_assessment, marks):
+	"""Save assessment marks for a lecturer's class without approving or publishing results."""
+	if isinstance(marks, str):
+		marks = json.loads(marks)
+	assessment = frappe.get_doc("Course Assessment", course_assessment)
+	_assert_lecturer_offering(assessment.course_offering)
+	offering = frappe.get_doc("Course Offering", assessment.course_offering)
+	assessment_defs = frappe.get_all(
+		"Course Assessment", filters={"course_offering": offering.name},
+		fields=["name", "assessment_type", "maximum_mark", "weight"],
+	)
+	definition_map = {row.name: row for row in assessment_defs}
+	grade_bands = []
+	if offering.grading_scheme:
+		grade_bands = [row.as_dict() for row in frappe.get_doc("Grading Scheme", offering.grading_scheme).get("grade_bands")]
+	saved = []
+	for mark_entry in (marks or []):
+		registration = frappe.get_doc("Course Registration", mark_entry.get("course_registration"))
+		if registration.course_offering != offering.name:
+			frappe.throw("Every mark must belong to the selected assessment's course offering.")
+		mark = float(mark_entry.get("mark") or 0)
+		if mark < 0 or mark > float(assessment.maximum_mark or 100):
+			frappe.throw(f"Marks for {assessment.assessment_name} must be between 0 and {assessment.maximum_mark}.")
+		result_name = frappe.db.get_value("Student Course Result", {"course_registration": registration.name, "docstatus": ["<", 2]}, "name")
+		if result_name:
+			result = frappe.get_doc("Student Course Result", result_name)
+		else:
+			course = frappe.get_doc("Course", offering.course)
+			result = frappe.get_doc({
+				"doctype": "Student Course Result", "student": registration.student,
+				"course_registration": registration.name, "academic_semester": offering.academic_semester,
+				"course": offering.course, "credit_units": course.credit_units or 0, "result_status": "Provisional",
+			})
+		if result.docstatus == 1:
+			frappe.throw(f"Result {result.name} is submitted and cannot be changed.")
+		row_map = {row.course_assessment: row.as_dict() for row in (result.get("assessment_marks") or [])}
+		row_map[assessment.name] = {
+			"course_assessment": assessment.name, "mark": mark, "weight": assessment.weight,
+			"is_published": 0, "lecturer_comment": mark_entry.get("lecturer_comment"),
+		}
+		calculation_rows = []
+		coursework_mark = examination_mark = 0.0
+		for assessment_name, row in row_map.items():
+			definition = definition_map.get(assessment_name)
+			if not definition:
+				continue
+			calculation_row = dict(row)
+			calculation_row["maximum_mark"] = definition.maximum_mark
+			calculation_rows.append(calculation_row)
+			weighted = (float(row.get("mark") or 0) / float(definition.maximum_mark or 100)) * float(definition.weight or 0)
+			if "Examination" in (definition.assessment_type or ""):
+				examination_mark += weighted
+			else:
+				coursework_mark += weighted
+		calculated = calculate_result(calculation_rows, grade_bands, result.credit_units)
+		result.set("assessment_marks", list(row_map.values()))
+		result.coursework_mark = coursework_mark
+		result.examination_mark = examination_mark
+		result.final_mark = calculated.get("final_mark")
+		result.grade = calculated.get("grade")
+		result.grade_point = calculated.get("grade_point")
+		result.result_status = "Provisional"
+		result.is_approved = 0
+		result.is_published = 0
+		result.save(ignore_permissions=True)
+		saved.append(result.name)
+	return saved
+
+
+@frappe.whitelist()
+def submit_lecturer_results(course_offering):
+	"""Submit the lecturer's recorded results as a controlled approval batch."""
+	_assert_lecturer_offering(course_offering)
+	offering = frappe.get_doc("Course Offering", course_offering)
+	registration_names = frappe.get_all(
+		"Course Registration", filters={"course_offering": course_offering, "status": ["not in", ["Cancelled", "Dropped"]]},
+		pluck="name",
+	)
+	results = frappe.get_all(
+		"Student Course Result", filters={"course_registration": ["in", registration_names], "docstatus": ["<", 2]},
+		fields=["name", "final_mark"],
+	) if registration_names else []
+	if not results:
+		frappe.throw("Record student marks before submitting this course offering for approval.")
+	existing = frappe.db.get_value("Result Approval Batch", {
+		"course_offering": course_offering, "status": ["in", ["Submitted", "Approved"]], "docstatus": ["<", 2],
+	}, "name")
+	if existing:
+		return existing
+	batch = frappe.get_doc({
+		"doctype": "Result Approval Batch", "course_offering": course_offering,
+		"academic_semester": offering.academic_semester, "approval_stage": "Lecturer",
+		"status": "Submitted", "submitted_by": frappe.session.user,
+		"items": [{"student_course_result": row.name, "review_status": "Pending"} for row in results],
+	}).insert(ignore_permissions=True)
+	return batch.name
 
 
 @frappe.whitelist()

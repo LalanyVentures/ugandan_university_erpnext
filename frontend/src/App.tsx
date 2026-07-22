@@ -10,6 +10,7 @@ import { PaymentReceiptsPage } from './roles/admin/pages/finance/PaymentReceipts
 import { FinancialAnalysisPage } from './roles/admin/pages/finance/FinancialRiskPage'
 import { TranscriptViewer } from './roles/admin/pages/transcripts/TranscriptViewer'
 import { StudentApp } from './roles/student/StudentApp'
+import { LecturerApp } from './roles/lecturer/LecturerApp'
 import { portalRoleFor } from './roles/admin/roleConfig'
 
 export default function App() {
@@ -30,6 +31,10 @@ export default function App() {
 
   if (portalRoleFor(session.roles) === 'student') {
     return <StudentApp session={session} onLogout={() => setSession(null)} />
+  }
+
+  if (portalRoleFor(session.roles) === 'lecturer') {
+    return <LecturerApp session={session} onLogout={() => setSession(null)} />
   }
 
   return (
