@@ -114,8 +114,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
         { label: 'Open student records', icon: IdCard, run: route(`/students?q=${encodeURIComponent(String(student.student_name ?? student.name))}`) },
         { label: 'View student finance', icon: CreditCard, run: route(`/finance?q=${encodeURIComponent(String(student.name))}`) },
       ]
-      if (transcript) actions.push({ label: 'View transcript', icon: FileBadge2, run: route(`/transcripts/view/${encodeURIComponent(String(transcript.name))}`) })
-      else actions.push({ label: 'Search transcripts', icon: FileText, run: route(`/transcripts?q=${encodeURIComponent(String(student.name))}`) })
+      actions.push({ label: transcript ? 'View student transcript' : 'Search student transcript', icon: transcript ? FileBadge2 : FileText, run: route(`/transcripts?student=${encodeURIComponent(String(student.name))}`) })
       rows.push({ id: `student-${student.name}`, kind: 'Student', title: String(student.student_name ?? student.name), reference: String(student.student_number ?? student.name), primaryDetail: String(enrolment?.academic_programme ?? 'Programme not assigned'), secondaryDetail: String(enrolment?.student_cohort ?? student.student_email_id ?? 'Cohort not assigned'), status: String(student.status ?? enrolment?.status ?? 'Active'), score: score + 18, actions })
     }
 
@@ -153,9 +152,9 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       const score = fuzzyScore(query, [transcript.name, transcript.student, transcript.academic_programme, transcript.transcript_type, transcript.verification_number])
       if (!score) continue
       const actions: SearchAction[] = [
-        { label: 'View transcript', icon: Eye, run: route(`/transcripts/view/${encodeURIComponent(String(transcript.name))}`) },
+        { label: 'View student transcript', icon: Eye, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
         { label: 'Open transcript record in ERPNext', icon: IdCard, run: () => openDesk('Academic Transcript', transcript.name) },
-        { label: 'Open transcript register', icon: FileBadge2, run: route(`/transcripts?q=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
+        { label: 'Open student transcript', icon: FileBadge2, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
       ]
       if (transcript.generated_pdf) actions.push({ label: 'Open generated transcript PDF', icon: FileText, run: () => window.open(`${deskOrigin()}${String(transcript.generated_pdf)}`, '_blank', 'noopener,noreferrer') })
       rows.push({ id: `transcript-${transcript.name}`, kind: 'Transcript', title: `Transcript · ${String(transcript.student ?? transcript.name)}`, reference: String(transcript.verification_number ?? transcript.name), primaryDetail: String(transcript.academic_programme ?? 'Programme not assigned'), secondaryDetail: String(transcript.transcript_type ?? 'Academic transcript'), status: String(transcript.status ?? 'Draft'), score: score + 6, actions })

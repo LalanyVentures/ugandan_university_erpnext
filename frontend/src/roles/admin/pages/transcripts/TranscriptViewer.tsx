@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, Download, FileCheck2, Printer, RefreshCw, ShieldCheck } from 'lucide-react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { callMethod, fetchList, type FrappeRow } from '../../../../api/frappe'
@@ -38,7 +38,6 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
   const studentName = searchParams.get('student') ?? ''
   const [students, setStudents] = useState<FrappeRow[]>([])
   const [data, setData] = useState<TranscriptPayload | null>(null)
-  const [selectedSemester, setSelectedSemester] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -58,13 +57,12 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
     setError('')
     const args: Record<string, string> = transcriptName ? { transcript_name: transcriptName } : { student: studentName }
     callMethod<TranscriptPayload>(method, args)
-      .then(payload => { setData(payload); setSelectedSemester('') })
+      .then(payload => setData(payload))
       .catch(cause => setError(cause instanceof Error ? cause.message : 'Unable to load the student marks.'))
       .finally(() => setLoading(false))
   }, [studentName, transcriptName])
 
   const semesters = data?.semesters ?? []
-  const visibleSemesters = useMemo(() => selectedSemester ? semesters.filter(item => item.semester_name === selectedSemester) : semesters, [selectedSemester, semesters])
   const issuedDate = data?.transcript.registrar_issued_on ?? data?.transcript.faculty_head_approved_on
   const hasSelection = Boolean(transcriptName || studentName)
   const selectedStudent = data?.student.name ?? studentName
@@ -78,7 +76,6 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
 
     <div className={styles.filters}>
       <div className={styles.filterGroup}><label htmlFor="studentFilter">Student with recorded marks:</label><select id="studentFilter" value={selectedStudent} onChange={event => event.target.value && navigate(`/transcripts?student=${encodeURIComponent(event.target.value)}`)} className={styles.filterSelect}><option value="">Select a Student</option>{students.map(student => <option key={String(student.name)} value={String(student.name)}>{String(student.student_name ?? student.name)} — {String(student.student_number ?? student.name)}</option>)}</select></div>
-      <div className={styles.filterGroup}><label htmlFor="semesterFilter">Filter by Semester:</label><select id="semesterFilter" value={selectedSemester} onChange={event => setSelectedSemester(event.target.value)} className={styles.filterSelect}><option value="">All Semesters</option>{semesters.map(semester => <option key={semester.semester_name} value={semester.semester_name}>{semester.semester_name}</option>)}</select></div>
       <div className={styles.accessBadge}><ShieldCheck size={16}/><span>{roleLabel} · Live marks access</span></div>
     </div>
 
@@ -97,7 +94,7 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
         </section>
 
         <section className={styles.semesterGrid}>
-          {visibleSemesters.map(semester => <article className={styles.semesterBlock} key={semester.semester_name}><div className={styles.semesterHeading}><h3>{semester.semester_name}</h3><span>{semester.courses.length} course units</span></div><table className={styles.transcriptTable}><thead><tr><th>Code</th><th>Module Name</th><th>Mark (%)</th><th>Credit</th><th>Grade</th></tr></thead><tbody>{semester.courses.map((course,index)=><tr key={`${course.course_code}-${index}`}><td>{course.course_code ?? '—'}</td><td><strong>{course.course_name ?? 'Course Unit'}</strong>{course.attempt_type && course.attempt_type !== 'Normal' ? <small>{course.attempt_type}</small> : null}{course.result_status && course.result_status !== 'Complete' ? <small>{course.result_status}</small> : null}</td><td>{displayNumber(course.mark_percent,0)}</td><td>{displayNumber(course.credit_units,0)}</td><td><b>{course.grade ?? '—'}</b></td></tr>)}</tbody></table><div className={styles.semesterSummary}><span>GPA: <strong>{displayNumber(semester.semester_gpa)}</strong></span><span>CGPA: <strong>{displayNumber(semester.cumulative_gpa)}</strong></span></div></article>)}
+          {semesters.map(semester => <article className={styles.semesterBlock} key={semester.semester_name}><div className={styles.semesterHeading}><h3>{semester.semester_name}</h3><span>{semester.courses.length} course units</span></div><table className={styles.transcriptTable}><thead><tr><th>Code</th><th>Module Name</th><th>Mark (%)</th><th>Credit</th><th>Grade</th></tr></thead><tbody>{semester.courses.map((course,index)=><tr key={`${course.course_code}-${index}`}><td>{course.course_code ?? '—'}</td><td><strong>{course.course_name ?? 'Course Unit'}</strong>{course.attempt_type && course.attempt_type !== 'Normal' ? <small>{course.attempt_type}</small> : null}{course.result_status && course.result_status !== 'Complete' ? <small>{course.result_status}</small> : null}</td><td>{displayNumber(course.mark_percent,0)}</td><td>{displayNumber(course.credit_units,0)}</td><td><b>{course.grade ?? '—'}</b></td></tr>)}</tbody></table><div className={styles.semesterSummary}><span>GPA: <strong>{displayNumber(semester.semester_gpa)}</strong></span><span>CGPA: <strong>{displayNumber(semester.cumulative_gpa)}</strong></span></div></article>)}
         </section>
 
         <footer className={styles.transcriptFooter}>
