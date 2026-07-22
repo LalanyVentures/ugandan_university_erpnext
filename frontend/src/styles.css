@@ -130,3 +130,4 @@
 @media(max-width:640px){.finance-welcome{padding:20px}.finance-priority-list button{grid-template-columns:minmax(0,1fr) auto}.finance-priority-list button svg{display:none}.finance-billing-composer{padding:14px}}
 
 .faculty-welcome h1{color:#fff}
+.faculty-welcome p,.faculty-welcome .eyebrow,.faculty-welcome aside,.faculty-welcome aside>span,.faculty-welcome aside>strong,.faculty-welcome aside>small{color:#fff}
