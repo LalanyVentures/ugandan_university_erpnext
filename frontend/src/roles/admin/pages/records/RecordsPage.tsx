@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Award, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, GraduationCap, Library, Plus, Receipt, Search, Settings, ShieldCheck, UserRoundCheck, Users } from 'lucide-react'
+import { Award, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, ExternalLink, FileBadge, FileText, GraduationCap, Library, Plus, Receipt, Search, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchList, type FrappeRow } from '../../../../api/frappe'
 import { InvoiceTable } from '../dashboard/DashboardPage'
@@ -84,9 +84,36 @@ export function RecordsPage({ view }: { view: RecordView }) {
   useEffect(() => setQuery(searchParams.get('q') ?? ''), [searchParams])
 
   const filtered = useMemo(() => rows.filter(row => !query || JSON.stringify(row).toLowerCase().includes(query.toLowerCase())), [rows, query])
-  const studentActions = view === 'students'
-  const transcriptActions = view === 'transcript-register'
-  const columnCount = item.columns.length + (studentActions || transcriptActions ? 1 : 0)
+  const columnCount = item.columns.length + 1
+
+  function actionsFor(row:FrappeRow) {
+    const student = String(view === 'students' ? row.name ?? '' : row.student ?? '')
+    const value = (field:string) => encodeURIComponent(String(row[field] ?? row.name ?? ''))
+    const actions:Array<{label:string;icon:typeof Users;run:()=>void}> = []
+    if (student) {
+      actions.push({label:'Profile',icon:UserRoundCheck,run:()=>navigate(`/students/profile/${encodeURIComponent(student)}`)})
+      actions.push({label:'Transcript',icon:FileText,run:()=>navigate(`/transcripts?student=${encodeURIComponent(student)}`)})
+      actions.push({label:'Finance',icon:WalletCards,run:()=>navigate(`/finance/risk?student=${encodeURIComponent(student)}`)})
+    } else if (view === 'programmes') {
+      actions.push({label:'Courses',icon:BookOpen,run:()=>navigate(`/academics/courses?q=${value('programme_code')}`)})
+      actions.push({label:'Enrolments',icon:GraduationCap,run:()=>navigate(`/students/enrolments?q=${value('name')}`)})
+    } else if (view === 'courses') {
+      actions.push({label:'Offerings',icon:BookOpen,run:()=>navigate(`/registration/offerings?q=${value('name')}`)})
+      actions.push({label:'Results',icon:Award,run:()=>navigate(`/results?q=${value('name')}`)})
+    } else if (view === 'cohorts') {
+      actions.push({label:'Enrolments',icon:Users,run:()=>navigate(`/students/enrolments?q=${value('name')}`)})
+      actions.push({label:'Registrations',icon:ClipboardCheck,run:()=>navigate(`/registration/courses?q=${value('name')}`)})
+    } else if (view === 'calendar' || view === 'semesters' || view === 'academic-years') {
+      actions.push({label:'Registrations',icon:CalendarDays,run:()=>navigate(`/registration?q=${value('name')}`)})
+      actions.push({label:'Results',icon:Award,run:()=>navigate(`/results?q=${value('name')}`)})
+    } else if (view === 'fee-structures') {
+      actions.push({label:'Invoices',icon:FileBadge,run:()=>navigate(`/finance/invoices?q=${value('academic_semester')}`)})
+    } else if (view === 'transcript-register') {
+      actions.push({label:'Transcript',icon:FileText,run:()=>navigate(`/transcripts?student=${value('student')}`)})
+    }
+    actions.push({label:'Details',icon:ExternalLink,run:()=>window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}/${encodeURIComponent(String(row.name))}`,'_blank','noopener,noreferrer')})
+    return actions.slice(0,4)
+  }
 
   return <section className="records-page">
     <div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div><button className="primary-button" onClick={() => window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}`, '_blank', 'noopener,noreferrer')}><Plus size={16}/>Manage full records</button></div>
@@ -94,8 +121,8 @@ export function RecordsPage({ view }: { view: RecordView }) {
     <article className="card records-table-card">
       <div className="table-toolbar"><div><h3>{item.title}</h3><p>Search and review live university records.</p></div><label className="search-input"><Search size={16}/><input value={query} onChange={event => { const next=event.target.value; setQuery(next); setSearchParams(next ? {q:next} : {}, {replace:true}) }} placeholder={`Search ${item.title.toLowerCase()}`} /></label></div>
       {item.invoiceTable ? <InvoiceTable rows={filtered}/> : <div className="table-wrap"><table className="data-table">
-        <thead><tr>{item.columns.map(column => <th key={column[0]}>{column[1]}</th>)}{studentActions || transcriptActions ? <th>Action</th> : null}</tr></thead>
-        <tbody>{loading ? <tr><td colSpan={columnCount} className="data-table-empty">Loading records…</td></tr> : filtered.length ? filtered.map((row,index) => <tr key={String(row.name ?? index)}>{item.columns.map(([field]) => <td key={field}>{field === 'status' || field.startsWith('is_') || field.includes('_status') ? <span className="status-pill tone-green">{String(row[field] ?? '—')}</span> : <>{field === item.columns[0][0] ? <strong>{String(row[field] ?? row.name ?? '—')}</strong> : String(row[field] ?? '—')}</>}</td>)}{studentActions ? <td><button className="mini-action-button row-action-button" onClick={() => navigate(`/students/profile/${encodeURIComponent(String(row.name))}`)}>View profile</button></td> : transcriptActions ? <td><button className="mini-action-button row-action-button" onClick={() => navigate(`/transcripts?student=${encodeURIComponent(String(row.student))}`)}>View transcript</button></td> : null}</tr>) : <tr><td colSpan={columnCount} className="data-table-empty">No matching records found.</td></tr>}</tbody>
+        <thead><tr>{item.columns.map(column => <th key={column[0]}>{column[1]}</th>)}<th>Actions</th></tr></thead>
+        <tbody>{loading ? <tr><td colSpan={columnCount} className="data-table-empty">Loading records…</td></tr> : filtered.length ? filtered.map((row,index) => <tr key={String(row.name ?? index)}>{item.columns.map(([field]) => <td key={field}>{field === 'status' || field.startsWith('is_') || field.includes('_status') ? <span className="status-pill tone-green">{String(row[field] ?? '—')}</span> : <>{field === item.columns[0][0] ? <strong>{String(row[field] ?? row.name ?? '—')}</strong> : String(row[field] ?? '—')}</>}</td>)}<td><div className="table-row-actions">{actionsFor(row).map(({label,icon:ActionIcon,run})=><button key={label} onClick={run}><ActionIcon size={14}/>{label}</button>)}</div></td></tr>) : <tr><td colSpan={columnCount} className="data-table-empty">No matching records found.</td></tr>}</tbody>
       </table></div>}
     </article>
   </section>

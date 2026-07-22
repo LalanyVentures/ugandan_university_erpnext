@@ -93,6 +93,8 @@ def get_payment_receipt_data(payment_entries):
 				"allocated_amount": reference.allocated_amount,
 				"student": invoice.get("student") if invoice else None,
 				"academic_semester": invoice.get("academic_semester") if invoice else None,
+				"invoice_total": invoice.get("grand_total") if invoice else reference.total_amount,
+				"current_outstanding": invoice.get("outstanding_amount") if invoice else None,
 			})
 
 		payments.append({
@@ -120,10 +122,10 @@ def get_payment_receipt_data(payment_entries):
 	settings = frappe.get_single("University Education Settings")
 	return {
 		"university": {
-			"name": settings.university_name or "Ankole Western University",
-			"country": settings.country,
-			"currency": settings.default_currency or "UGX",
-			"footer": settings.transcript_footer,
+			"name": settings.get("university_name") or "Ankole Western University",
+			"country": settings.get("country"),
+			"currency": settings.get("default_currency") or "UGX",
+			"footer": settings.get("transcript_footer"),
 		},
 		"generated_on": frappe.utils.now_datetime(),
 		"generated_by": frappe.session.user,

@@ -9,7 +9,10 @@ export type UniversitySession = {
 export type FrappeRow = Record<string, unknown>
 
 function messageOf(payload: unknown, fallback: string) {
-  if (payload && typeof payload === 'object' && 'message' in payload) return String(payload.message)
+  if (payload && typeof payload === 'object') {
+    if ('message' in payload && payload.message) return String(payload.message)
+    if ('exception' in payload && payload.exception) return String(payload.exception).replace(/^.*?:\s*/, '')
+  }
   return fallback
 }
 

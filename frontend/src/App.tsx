@@ -7,6 +7,7 @@ import { DashboardPage } from './roles/admin/pages/dashboard/DashboardPage'
 import { RecordsPage } from './roles/admin/pages/records/RecordsPage'
 import { StudentProfilePage } from './roles/admin/pages/students/StudentProfilePage'
 import { PaymentReceiptsPage } from './roles/admin/pages/finance/PaymentReceiptsPage'
+import { FinancialRiskPage } from './roles/admin/pages/finance/FinancialRiskPage'
 import { TranscriptViewer } from './roles/admin/pages/transcripts/TranscriptViewer'
 
 export default function App() {
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/finance/structures" element={<RecordsPage view="fee-structures" />} />
         <Route path="/finance/invoices" element={<RecordsPage view="invoices" />} />
         <Route path="/finance/payments" element={<PaymentReceiptsPage />} />
+        <Route path="/finance/risk" element={<FinancialRiskPage />} />
         <Route path="/finance/sponsorships" element={<RecordsPage view="sponsorships" />} />
         <Route path="/results" element={<RecordsPage view="course-results" />} />
         <Route path="/results/assessments" element={<RecordsPage view="assessments" />} />
