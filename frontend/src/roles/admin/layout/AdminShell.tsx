@@ -3,10 +3,15 @@ import { Bell, LogOut, MoreHorizontal, Search, Settings, UserCircle2, X } from '
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { authApi, type UniversitySession } from '../../../api/frappe'
 import { GlobalSearch } from '../../../components/GlobalSearch'
-import { adminNavigation, adminSubNavigation } from '../roleConfig'
+import { adminNavigation, subNavigationFor } from '../roleConfig'
 
 function active(path: string, location: string) {
   return location === path || (path !== '/dashboard' && location.startsWith(path))
+}
+
+function subtabActive(path: string, location: string) {
+  const rootPaths = ['/students', '/academics', '/registration', '/finance', '/results', '/transcripts', '/clearance', '/settings']
+  return location === path || (!rootPaths.includes(path) && location.startsWith(`${path}/`))
 }
 
 export function AdminShell({ session, onLogout, children }: { session: UniversitySession; onLogout: () => void; children: ReactNode }) {
@@ -15,6 +20,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
   const [moreOpen, setMoreOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const current = adminNavigation.find(item => active(item.path, location.pathname)) ?? adminNavigation[0]
+  const contextualNavigation = subNavigationFor(location.pathname)
   const mobileItems = adminNavigation.slice(0, 4)
 
   async function logout() {
@@ -56,7 +62,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
       {mobileSearchOpen ? <div className="mobile-global-search"><GlobalSearch mobile onNavigate={() => setMobileSearchOpen(false)} /></div> : null}
 
       <section className="workspace">
-        <nav className="workspace-subtabs" aria-label="University quick navigation">{adminSubNavigation.map(item => <NavLink key={item.label} to={item.path} className={() => active(item.path, location.pathname) ? 'workspace-subtab workspace-subtab-active' : 'workspace-subtab'}><item.icon size={15} /><span>{item.label}</span></NavLink>)}</nav>
+        {contextualNavigation.length ? <nav className="workspace-subtabs" aria-label={`${current.label} navigation`}>{contextualNavigation.map(item => <NavLink key={item.label} to={item.path} className={() => subtabActive(item.path, location.pathname) ? 'workspace-subtab workspace-subtab-active' : 'workspace-subtab'}><item.icon size={15} /><span>{item.label}</span></NavLink>)}</nav> : null}
         <main className="page-stack">{children}</main>
       </section>
 

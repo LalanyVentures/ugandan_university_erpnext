@@ -110,8 +110,8 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       const score = fuzzyScore(query, [student.student_name, student.student_number, student.name, student.student_email_id, enrolment?.academic_programme, enrolment?.student_cohort])
       if (!score) continue
       const actions: SearchAction[] = [
-        { label: 'View student details', icon: Eye, run: () => openDesk('Student', student.name) },
-        { label: 'Open student records', icon: IdCard, run: route(`/students?q=${encodeURIComponent(String(student.student_name ?? student.name))}`) },
+        { label: 'View complete student profile', icon: Eye, run: route(`/students/profile/${encodeURIComponent(String(student.name))}`) },
+        { label: 'Open student in ERPNext', icon: IdCard, run: () => openDesk('Student', student.name) },
         { label: 'View student finance', icon: CreditCard, run: route(`/finance?q=${encodeURIComponent(String(student.name))}`) },
       ]
       actions.push({ label: transcript ? 'View student transcript' : 'Search student transcript', icon: transcript ? FileBadge2 : FileText, run: route(`/transcripts?student=${encodeURIComponent(String(student.name))}`) })

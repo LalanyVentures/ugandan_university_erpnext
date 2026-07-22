@@ -26,6 +26,29 @@ def get_user_info():
 
 
 @frappe.whitelist()
+def update_student_profile(student, values):
+	"""Update the administrator-editable identity fields on a student record."""
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and not roles.intersection({"System Manager", "Academics User", "Registrar"}):
+		frappe.throw("Only authorised academic administrators may edit student profiles.", frappe.PermissionError)
+
+	if isinstance(values, str):
+		values = json.loads(values)
+	values = values or {}
+	allowed_fields = {
+		"first_name", "middle_name", "last_name", "gender", "date_of_birth",
+		"nationality", "student_email_id", "status",
+	}
+	doc = frappe.get_doc("Student", student)
+	doc.check_permission("write")
+	for fieldname in allowed_fields:
+		if fieldname in values:
+			doc.set(fieldname, values[fieldname] or None)
+	doc.save()
+	return doc.as_dict()
+
+
+@frappe.whitelist()
 def get_student_info():
     return frappe.db.get_value(
         "Student", {"student_email_id": frappe.session.user},
