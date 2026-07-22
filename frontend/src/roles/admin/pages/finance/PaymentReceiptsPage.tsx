@@ -71,6 +71,8 @@ export function PaymentReceiptsPage() {
   }
   function generate() { void generateEntries([...selected]) }
 
+  if (receipt) return <section className="records-page payment-receipts-page receipt-view-page"><ReceiptDocument data={receipt} onClose={()=>setReceipt(null)}/></section>
+
   return <section className="records-page payment-receipts-page">
     <div className="page-intro no-print"><div><span className="eyebrow">AWU FINANCE OFFICE</span><h1><Receipt size={28}/>Payment Receipts</h1><p>Select one payment for an individual receipt, several payments for a combined receipt, or all filtered payments for a complete statement-style receipt.</p></div><button className="secondary-button" onClick={load}><RefreshCw size={16}/>Refresh payments</button></div>
     {error?<div className="profile-error no-print">{error}</div>:null}
@@ -81,7 +83,6 @@ export function PaymentReceiptsPage() {
       <div className="table-wrap"><table className="data-table receipt-picker-table"><thead><tr><th><button className="table-check" onClick={selectShown} aria-label="Select all shown">{allShownSelected?<CheckSquare2 size={17}/>:<Square size={17}/>}</button></th><th>Payment</th><th>Date</th><th>Student / Payer</th><th>Method</th><th>Reference</th><th>Amount</th><th>Action</th></tr></thead><tbody>{loading?<tr><td colSpan={8} className="data-table-empty">Loading received payments…</td></tr>:filtered.length?filtered.map(row=>{const name=String(row.name),student=String(row.student??'');return <tr key={name} className={selected.has(name)?'selected-payment-row':''} onClick={()=>toggle(name)}><td><button className="table-check" aria-label={`Select ${name}`}>{selected.has(name)?<CheckSquare2 size={17}/>:<Square size={17}/>}</button></td><td><strong>{name}</strong></td><td>{formatDate(String(row.posting_date??''))}</td><td><strong>{String(row.student_name??row.party_name??row.party??'Student account')}</strong><small>{String(row.student_number??row.party??'')}</small></td><td>{String(row.mode_of_payment??'—')}</td><td>{String(row.reference_no??'—')}</td><td><strong>{ugx(row.received_amount??row.paid_amount)}</strong></td><td><div className="table-row-actions"><button onClick={event=>{event.stopPropagation();void generateEntries([name])}}><Receipt size={14}/>Receipt</button>{student?<button onClick={event=>{event.stopPropagation();setSearchParams({q:String(row.student_number??student)},{replace:true})}}> <CreditCard size={14}/>Student payments</button>:null}</div></td></tr>}):<tr><td colSpan={8} className="data-table-empty">No submitted incoming payments match this search.</td></tr>}</tbody></table></div>
     </article>
 
-    {receipt?<ReceiptDocument data={receipt} onClose={()=>setReceipt(null)}/>:null}
   </section>
 }
 

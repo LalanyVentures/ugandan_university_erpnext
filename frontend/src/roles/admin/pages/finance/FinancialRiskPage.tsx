@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ArrowRight, FileBadge2, Search, UserRound, WalletCards } from 'lucide-react'
+import { AlertTriangle, ArrowRight, BarChart3, CalendarClock, CheckCircle2, CircleAlert, Coins, FileBadge2, FileSpreadsheet, Search, UserRound, WalletCards } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchList, type FrappeRow, ugx } from '../../../../api/frappe'
 
@@ -15,6 +15,7 @@ type StudentAccount = {
   collection: number
   risk: 'High' | 'Medium' | 'Low'
 }
+type FeeStructure = { name:string; structure_name?:string; academic_programme?:string; academic_semester?:string; status?:string }
 
 const money = (value: unknown) => Number(value ?? 0)
 
@@ -29,6 +30,7 @@ export function FinancialRiskPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [students, setStudents] = useState<FrappeRow[]>([])
   const [invoices, setInvoices] = useState<FrappeRow[]>([])
+  const [feeStructures, setFeeStructures] = useState<FeeStructure[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState(searchParams.get('q') ?? searchParams.get('student') ?? '')
   const selectedId = searchParams.get('student') ?? ''
@@ -36,10 +38,12 @@ export function FinancialRiskPage() {
   useEffect(() => {
     Promise.all([
       fetchList('Student', ['name', 'student_name', 'student_number', 'customer', 'status'], undefined, 3000),
-      fetchList('Sales Invoice', ['name', 'student', 'customer', 'academic_semester', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount', 'status', 'docstatus'], undefined, 5000),
-    ]).then(([studentRows, invoiceRows]) => {
+      fetchList('Sales Invoice', ['name', 'student', 'customer', 'university_fee_structure', 'academic_semester', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount', 'status', 'docstatus'], undefined, 5000),
+      fetchList('University Fee Structure', ['name', 'structure_name', 'academic_programme', 'academic_semester', 'status'], undefined, 2000),
+    ]).then(([studentRows, invoiceRows, structureRows]) => {
       setStudents(studentRows)
       setInvoices(invoiceRows.filter(row => Number(row.docstatus) === 1))
+      setFeeStructures(structureRows as FeeStructure[])
     }).finally(() => setLoading(false))
   }, [])
 
@@ -63,6 +67,20 @@ export function FinancialRiskPage() {
     return accounts.filter(account => !needle || `${account.label} ${account.number} ${account.id} ${account.risk}`.toLowerCase().includes(needle))
   }, [accounts, query])
   const selected = accounts.find(account => account.id === selectedId)
+  const selectedStructureRows = useMemo(() => {
+    if (!selected) return []
+    const groups = new Map<string, FrappeRow[]>()
+    selected.invoices.forEach(invoice => {
+      const key = String(invoice.university_fee_structure ?? 'No linked fee structure')
+      groups.set(key, [...(groups.get(key) ?? []), invoice])
+    })
+    return [...groups.entries()].map(([key, rows]) => {
+      const structure = feeStructures.find(item => item.name === key)
+      const assessed = rows.reduce((sum,row) => sum + money(row.grand_total), 0)
+      const outstanding = rows.reduce((sum,row) => sum + money(row.outstanding_amount), 0)
+      return { key, name:structure?.structure_name ?? key, semester:structure?.academic_semester ?? (rows.map(row=>String(row.academic_semester ?? '')).filter(Boolean).join(', ') || 'Unassigned semester'), programme:structure?.academic_programme ?? '—', assessed, paid:Math.max(0, assessed-outstanding), outstanding, status:outstanding === 0 ? 'Settled' : outstanding < assessed ? 'Partly settled' : 'Outstanding' }
+    }).sort((a,b)=>b.outstanding-a.outstanding)
+  }, [feeStructures, selected])
   const ledger = useMemo(() => {
     if (!selected) return []
     const groups = new Map<string, FrappeRow[]>()
@@ -103,10 +121,14 @@ export function FinancialRiskPage() {
       <div className="table-wrap"><table className="data-table"><thead><tr><th>Student</th><th>Total Cost</th><th>Paid</th><th>Balance</th><th>Overdue</th><th>Collection</th><th>Risk</th><th>Actions</th></tr></thead><tbody>{loading?<tr><td colSpan={8} className="data-table-empty">Loading student accounts…</td></tr>:filtered.length?filtered.map(account=><tr key={account.id} className={selectedId===account.id?'selected-payment-row':''}><td><strong>{account.label}</strong><small>{account.number}</small></td><td>{ugx(account.invoiced)}</td><td>{ugx(account.paid)}</td><td><strong>{ugx(account.balance)}</strong></td><td>{ugx(account.overdue)}</td><td>{account.collection}%</td><td><span className={`status-pill risk-${account.risk.toLowerCase()}`}>{account.risk}</span></td><td><div className="table-row-actions"><button onClick={()=>selectStudent(account.id)}><WalletCards size={14}/>Analyse</button><button onClick={()=>navigate(`/students/profile/${encodeURIComponent(account.id)}`)}><UserRound size={14}/>Profile</button><button onClick={()=>navigate(`/transcripts?student=${encodeURIComponent(account.id)}`)}><FileBadge2 size={14}/>Transcript</button></div></td></tr>):<tr><td colSpan={8} className="data-table-empty">No matching student accounts.</td></tr>}</tbody></table></div>
     </article>
 
-    {selected?<article className="card risk-detail-card"><div className="risk-detail-heading"><div><span className="eyebrow">ACCOUNT ANALYSIS</span><h2>{selected.label}</h2><p>{selected.number} · {selected.invoices.length} submitted invoices</p></div><div className="risk-detail-actions"><button onClick={()=>navigate(`/finance/payments?q=${encodeURIComponent(selected.number)}`)}>Find receipts <ArrowRight size={14}/></button><button onClick={()=>navigate(`/students/profile/${encodeURIComponent(selected.id)}`)}>Student profile <ArrowRight size={14}/></button></div></div><section className="semester-ledger"><table className="data-table"><thead><tr><th>Academic Semester</th><th>Opening Balance</th><th>Semester Charges</th><th>Payments</th><th>Closing Balance</th><th>Invoices</th><th>Actions</th></tr></thead><tbody>{ledger.map(row=><tr key={row.semester}><td><strong>{row.semester}</strong></td><td>{ugx(row.opening)}</td><td>{ugx(row.charges)}</td><td>{ugx(row.payments)}</td><td><strong>{ugx(row.closing)}</strong></td><td>{row.invoices}</td><td><div className="table-row-actions"><button onClick={()=>navigate(`/finance/invoices?q=${encodeURIComponent(row.semester)}`)}>Invoices</button><button onClick={()=>navigate(`/finance/payments?q=${encodeURIComponent(selected.number)}`)}>Receipts</button></div></td></tr>)}</tbody></table></section><p className="balance-note">Opening balance is the previous semester's closing balance. Payments represent amounts allocated against invoices in each semester; the closing balance becomes the next semester's balance carried forward.</p></article>:null}
+    {selected?<article className="card risk-detail-card"><div className="risk-detail-heading"><div><span className="eyebrow">ACCOUNT ANALYSIS</span><h2>{selected.label}</h2><p>{selected.number} · {selected.invoices.length} submitted invoices · {selected.risk} exposure</p></div><div className="risk-detail-actions"><button onClick={()=>navigate(`/finance/payments?q=${encodeURIComponent(selected.number)}`)}>Find receipts <ArrowRight size={14}/></button><button onClick={()=>navigate(`/students/profile/${encodeURIComponent(selected.id)}`)}>Student profile <ArrowRight size={14}/></button></div></div><section className="student-finance-metrics"><FinanceMetric icon={Coins} label="Assessed cost" value={ugx(selected.invoiced)} detail="all submitted charges"/><FinanceMetric icon={CheckCircle2} label="Paid to date" value={ugx(selected.paid)} detail={`${selected.collection}% collected`} tone="good"/><FinanceMetric icon={CircleAlert} label="Left to pay" value={ugx(selected.balance)} detail={selected.overdue?`${ugx(selected.overdue)} overdue`:'No overdue exposure'} tone={selected.balance?'risk':''}/><FinanceMetric icon={CalendarClock} label="Invoices" value={selected.invoices.length} detail="semester billing records"/></section><section className="fee-structure-analysis"><div className="risk-section-heading"><div><span className="eyebrow">FEE STRUCTURE COVERAGE</span><h3>What this student paid for</h3></div><FileSpreadsheet size={22}/></div><div className="table-wrap"><table className="data-table"><thead><tr><th>Fee Structure</th><th>Programme / Semester</th><th>Assessed</th><th>Paid</th><th>Left to pay</th><th>Coverage</th><th>Status</th></tr></thead><tbody>{selectedStructureRows.length?selectedStructureRows.map(row=>{const coverage=row.assessed?Math.round(row.paid/row.assessed*100):0;return <tr key={row.key}><td><strong>{row.name}</strong><small>{row.key==='No linked fee structure'?'Invoice is not linked to a fee structure':row.key}</small></td><td>{row.programme}<small>{row.semester}</small></td><td>{ugx(row.assessed)}</td><td>{ugx(row.paid)}</td><td><strong>{ugx(row.outstanding)}</strong></td><td><div className="coverage-cell"><span><i style={{width:`${coverage}%`}}/></span><b>{coverage}%</b></div></td><td><span className={`status-pill ${row.outstanding===0?'risk-low':row.paid?'risk-medium':'risk-high'}`}>{row.status}</span></td></tr>}) : <tr><td colSpan={7} className="data-table-empty">No fee-linked invoices are available for this student.</td></tr>}</tbody></table></div></section><section className="semester-ledger"><div className="risk-section-heading"><div><span className="eyebrow">TIME-BASED ACCOUNT MOVEMENT</span><h3>Balance carried forward by semester</h3></div><BarChart3 size={22}/></div><table className="data-table"><thead><tr><th>Academic Semester</th><th>Opening Balance</th><th>Semester Charges</th><th>Payments</th><th>Closing Balance</th><th>Invoices</th><th>Actions</th></tr></thead><tbody>{ledger.map(row=><tr key={row.semester}><td><strong>{row.semester}</strong></td><td>{ugx(row.opening)}</td><td>{ugx(row.charges)}</td><td>{ugx(row.payments)}</td><td><strong>{ugx(row.closing)}</strong></td><td>{row.invoices}</td><td><div className="table-row-actions"><button onClick={()=>navigate(`/finance/invoices?q=${encodeURIComponent(row.semester)}`)}>Invoices</button><button onClick={()=>navigate(`/finance/payments?q=${encodeURIComponent(selected.number)}`)}>Receipts</button></div></td></tr>)}</tbody></table></section><p className="balance-note">Opening balance is the previous semester's closing balance. Charges are amounts assessed for that semester, payments are the paid portion of those invoices, and closing balance is what carries into the next period.</p></article>:null}
   </section>
 }
 
 function RiskMetric({label,value,detail,danger=false}:{label:string;value:string|number;detail:string;danger?:boolean}) {
   return <article className={`card risk-metric ${danger?'risk-metric-danger':''}`}><span>{label}</span><strong>{value}</strong><small>{detail}</small></article>
+}
+
+function FinanceMetric({icon:Icon,label,value,detail,tone='neutral'}:{icon:typeof Coins;label:string;value:string|number;detail:string;tone?:string}) {
+  return <article className={`card finance-detail-metric finance-detail-${tone}`}><span className="finance-detail-icon"><Icon size={19}/></span><div><small>{label}</small><strong>{value}</strong><p>{detail}</p></div></article>
 }
