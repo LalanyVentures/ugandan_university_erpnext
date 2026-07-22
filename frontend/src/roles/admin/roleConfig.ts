@@ -1,4 +1,4 @@
-import { AlertTriangle, Award, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileCheck2, GraduationCap, LayoutDashboard, Library, ListChecks, Receipt, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
+import { Award, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileCheck2, GraduationCap, LayoutDashboard, Library, ListChecks, Receipt, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
 
 export const adminRoleKey = 'university_admin'
 export const adminRoleName = 'AWU Administrator'
@@ -41,7 +41,7 @@ export const adminSubNavigation = {
     { label: 'Fee Structures', path: '/finance/structures', icon: Receipt },
     { label: 'Invoices', path: '/finance/invoices', icon: FileCheck2 },
     { label: 'Payment Receipts', path: '/finance/payments', icon: CreditCard },
-    { label: 'Financial Risk', path: '/finance/risk', icon: AlertTriangle },
+    { label: 'Financial Analysis', path: '/finance/analysis', icon: BarChart3 },
     { label: 'Sponsorships', path: '/finance/sponsorships', icon: ShieldCheck },
   ],
   results: [

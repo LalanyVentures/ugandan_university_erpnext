@@ -93,7 +93,7 @@ export function RecordsPage({ view }: { view: RecordView }) {
     if (student) {
       actions.push({label:'Profile',icon:UserRoundCheck,run:()=>navigate(`/students/profile/${encodeURIComponent(student)}`)})
       actions.push({label:'Transcript',icon:FileText,run:()=>navigate(`/transcripts?student=${encodeURIComponent(student)}`)})
-      actions.push({label:'Finance',icon:WalletCards,run:()=>navigate(`/finance/risk?student=${encodeURIComponent(student)}`)})
+      actions.push({label:'Finance',icon:WalletCards,run:()=>navigate(`/finance/analysis?student=${encodeURIComponent(student)}`)})
     } else if (view === 'programmes') {
       actions.push({label:'Courses',icon:BookOpen,run:()=>navigate(`/academics/courses?q=${value('programme_code')}`)})
       actions.push({label:'Enrolments',icon:GraduationCap,run:()=>navigate(`/students/enrolments?q=${value('name')}`)})

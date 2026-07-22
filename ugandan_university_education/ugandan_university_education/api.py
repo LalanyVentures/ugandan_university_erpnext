@@ -134,6 +134,58 @@ def get_payment_receipt_data(payment_entries):
 
 
 @frappe.whitelist()
+def get_payment_register_data():
+	"""Return submitted receipts with invoice semester links for the finance register."""
+	roles = set(frappe.get_roles())
+	allowed_roles = {"System Manager", "Accounts User", "Accounts Manager", "Academics User", "Registrar"}
+	if frappe.session.user != "Administrator" and not roles.intersection(allowed_roles):
+		frappe.throw("Only authorised finance and academic staff may view payment analysis.", frappe.PermissionError)
+
+	rows = frappe.get_all(
+		"Payment Entry",
+		filters={"docstatus": 1, "payment_type": "Receive"},
+		fields=["name", "posting_date", "payment_type", "party_type", "party", "party_name",
+			"mode_of_payment", "reference_no", "reference_date", "paid_amount", "received_amount",
+			"paid_to_account_currency", "remarks", "docstatus"],
+		order_by="posting_date desc, creation desc",
+		limit_page_length=2000,
+	)
+
+	result = []
+	for row in rows:
+		doc = frappe.get_doc("Payment Entry", row.name)
+		doc.check_permission("read")
+		student = None
+		if row.party_type == "Customer" and row.party:
+			student = frappe.db.get_value("Student", {"customer": row.party},
+				["name", "student_name", "student_number"], as_dict=True)
+		allocations = []
+		for reference in doc.get("references") or []:
+			if reference.reference_doctype != "Sales Invoice" or not reference.reference_name:
+				continue
+			invoice = frappe.db.get_value(
+				"Sales Invoice", reference.reference_name,
+				["name", "student", "academic_semester", "university_fee_structure", "grand_total", "outstanding_amount"],
+				as_dict=True,
+			) or {}
+			allocations.append({
+				"reference_name": reference.reference_name,
+				"academic_semester": invoice.get("academic_semester"),
+				"university_fee_structure": invoice.get("university_fee_structure"),
+				"allocated_amount": reference.allocated_amount,
+				"invoice_total": invoice.get("grand_total"),
+				"current_outstanding": invoice.get("outstanding_amount"),
+			})
+		row["student"] = student.get("name") if student else None
+		row["student_name"] = student.get("student_name") if student else None
+		row["student_number"] = student.get("student_number") if student else None
+		row["allocations"] = allocations
+		row["semesters"] = sorted({a.get("academic_semester") for a in allocations if a.get("academic_semester")})
+		result.append(row)
+	return result
+
+
+@frappe.whitelist()
 def get_student_info():
     return frappe.db.get_value(
         "Student", {"student_email_id": frappe.session.user},
