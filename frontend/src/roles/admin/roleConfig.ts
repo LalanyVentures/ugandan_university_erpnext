@@ -1,4 +1,9 @@
 import { Award, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileCheck2, GraduationCap, LayoutDashboard, Library, ListChecks, Receipt, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
+import { facultyHeadAcademicTabs, facultyHeadPrimaryNavigation, facultyHeadResultTabs } from '../faculty-head/roleConfig'
+import { financePrimaryNavigation, financeStudentTabs, financeTabs } from '../finance/roleConfig'
+import { lecturerPrimaryNavigation, lecturerRegistrationTabs, lecturerResultTabs, lecturerStudentTabs } from '../lecturer/roleConfig'
+import { registrarFinanceTabs, registrarPrimaryNavigation } from '../registrar/roleConfig'
+import { studentFinanceTabs, studentPrimaryNavigation, studentRegistrationTabs, studentResultTabs } from '../student/roleConfig'
 
 export const adminRoleKey = 'university_admin'
 export const adminRoleName = 'AWU Administrator'
@@ -13,6 +18,33 @@ export const adminNavigation = [
   { label: 'Transcripts', path: '/transcripts', icon: FileBadge },
   { label: 'Clearance', path: '/clearance', icon: ShieldCheck },
 ] as const
+
+export type PortalRole = 'administrator' | 'registrar' | 'faculty-head' | 'lecturer' | 'finance' | 'student' | 'staff'
+
+export function portalRoleFor(roles: string[]): PortalRole {
+  if (roles.includes('System Manager') || roles.includes('Administrator')) return 'administrator'
+  if (roles.includes('Registrar') || roles.includes('Academics User')) return 'registrar'
+  if (roles.includes('Faculty Head')) return 'faculty-head'
+  if (roles.includes('Instructor')) return 'lecturer'
+  if (roles.includes('Accounts Manager') || roles.includes('Accounts User')) return 'finance'
+  if (roles.includes('Student')) return 'student'
+  return 'staff'
+}
+
+const primaryByRole: Record<PortalRole, readonly string[]> = {
+  administrator: ['Overview','Students','Academic Structure','Registration','Fees & Payments','Results','Transcripts','Clearance'],
+  registrar: registrarPrimaryNavigation,
+  'faculty-head': facultyHeadPrimaryNavigation,
+  lecturer: lecturerPrimaryNavigation,
+  finance: financePrimaryNavigation,
+  student: studentPrimaryNavigation,
+  staff: ['Overview'],
+}
+
+export function navigationFor(roles: string[]) {
+  const labels = primaryByRole[portalRoleFor(roles)]
+  return adminNavigation.filter(item => labels.includes(item.label))
+}
 
 export const adminSubNavigation = {
   students: [
@@ -67,14 +99,16 @@ export const adminSubNavigation = {
   ],
 } as const
 
-export function subNavigationFor(pathname: string) {
-  if (pathname.startsWith('/students')) return adminSubNavigation.students
-  if (pathname.startsWith('/academics')) return adminSubNavigation.academics
-  if (pathname.startsWith('/registration')) return adminSubNavigation.registration
-  if (pathname.startsWith('/finance')) return adminSubNavigation.finance
-  if (pathname.startsWith('/results')) return adminSubNavigation.results
-  if (pathname.startsWith('/transcripts')) return adminSubNavigation.transcripts
-  if (pathname.startsWith('/clearance')) return adminSubNavigation.clearance
-  if (pathname.startsWith('/settings')) return adminSubNavigation.settings
+export function subNavigationFor(pathname: string, roles: string[] = ['System Manager']) {
+  const role = portalRoleFor(roles)
+  const allowed = (items: readonly {label:string;path:string;icon:typeof Award}[], labels?:string[]) => labels ? items.filter(item => labels.includes(item.label)) : items
+  if (pathname.startsWith('/students')) return allowed(adminSubNavigation.students, role === 'lecturer' ? [...lecturerStudentTabs] : role === 'finance' ? [...financeStudentTabs] : role === 'student' ? ['Student Profile'] : undefined)
+  if (pathname.startsWith('/academics')) return allowed(adminSubNavigation.academics, role === 'faculty-head' ? [...facultyHeadAcademicTabs] : undefined)
+  if (pathname.startsWith('/registration')) return allowed(adminSubNavigation.registration, role === 'lecturer' ? [...lecturerRegistrationTabs] : role === 'student' ? [...studentRegistrationTabs] : undefined)
+  if (pathname.startsWith('/finance')) return allowed(adminSubNavigation.finance, role === 'student' ? [...studentFinanceTabs] : role === 'registrar' ? [...registrarFinanceTabs] : role === 'finance' ? [...financeTabs] : undefined)
+  if (pathname.startsWith('/results')) return allowed(adminSubNavigation.results, role === 'lecturer' ? [...lecturerResultTabs] : role === 'student' ? [...studentResultTabs] : role === 'faculty-head' ? [...facultyHeadResultTabs] : undefined)
+  if (pathname.startsWith('/transcripts')) return allowed(adminSubNavigation.transcripts, role === 'student' ? ['Transcript Viewer'] : undefined)
+  if (pathname.startsWith('/clearance')) return allowed(adminSubNavigation.clearance, role === 'student' ? ['Clearance Cases','Graduation Readiness'] : undefined)
+  if (pathname.startsWith('/settings')) return role === 'administrator' ? adminSubNavigation.settings : []
   return []
 }

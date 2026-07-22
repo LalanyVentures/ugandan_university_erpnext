@@ -1,21 +1,47 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Award, BookOpenCheck, CalendarDays, CreditCard, FileBadge, GraduationCap, ReceiptText, ShieldCheck, TrendingUp, UserPlus, UserRound, Users, WalletCards } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { fetchList, ugx, type FrappeRow } from '../../../../api/frappe'
+import { fetchList, ugx, type FrappeRow, type UniversitySession } from '../../../../api/frappe'
+import { portalRoleFor, type PortalRole } from '../../roleConfig'
 
 type Snapshot = { students: number; programmes: number; cohorts: number; registrations: number; results: number; transcripts: number; invoiced: number; outstanding: number; invoices: FrappeRow[]; live: boolean }
-const initial: Snapshot = { students: 15, programmes: 7, cohorts: 109, registrations: 419, results: 62, transcripts: 0, invoiced: 306600000, outstanding: 150510000, invoices: [], live: false }
+const initial: Snapshot = { students: 0, programmes: 0, cohorts: 0, registrations: 0, results: 0, transcripts: 0, invoiced: 0, outstanding: 0, invoices: [], live: false }
 
-export function DashboardPage() {
+const dashboardCopy: Record<PortalRole, {title:string;description:string;desk:string}> = {
+  administrator: {title:'Academic Operations And Student Services',description:'Manage the complete AWU student journey from application and cohort placement to fees, approved results, clearance and official transcripts.',desk:'Academic control desk'},
+  registrar: {title:'Registrar And Academic Affairs',description:'Coordinate admissions, programme enrolment, semester registration, academic governance and controlled transcript services.',desk:'Registrar control desk'},
+  'faculty-head': {title:'Faculty Academic Oversight',description:'Monitor programmes, teaching delivery, assessments, results approval and transcript readiness across the faculty.',desk:'Faculty oversight desk'},
+  lecturer: {title:'Teaching And Assessment Workspace',description:'Work with assigned course offerings, class schedules, attendance, assessments and student marks.',desk:'Lecturer teaching desk'},
+  finance: {title:'Student Finance And Receipts',description:'Monitor fee structures, student invoices, payments, balances, sponsorships and financial clearance.',desk:'Finance control desk'},
+  student: {title:'My Academic Journey',description:'Review registration, courses, results, fee payments, balances, clearance and available academic documents.',desk:'Student services desk'},
+  staff: {title:'University Staff Workspace',description:'Access the university services permitted for your assigned role.',desk:'University services desk'},
+}
+
+export function DashboardPage({session}:{session?:UniversitySession}) {
   const navigate = useNavigate()
   const [data, setData] = useState(initial)
+  const portalRole = portalRoleFor(session?.roles ?? ['System Manager'])
+  const copy = dashboardCopy[portalRole]
+  const heroActions = portalRole === 'finance'
+    ? [{label:'Payment receipts',path:'/finance/payments'},{label:'Financial analysis',path:'/finance/analysis'}]
+    : portalRole === 'lecturer'
+      ? [{label:'Course offerings',path:'/registration/offerings'},{label:'Assessments',path:'/results/assessments'}]
+      : portalRole === 'faculty-head'
+        ? [{label:'Faculty results',path:'/results'},{label:'Approval batches',path:'/results/approvals'}]
+        : portalRole === 'student'
+          ? [{label:'My profile',path:'/students/profile'},{label:'My registration',path:'/registration'}]
+          : [{label:'Student records',path:'/students'},{label:'Registration',path:'/registration'}]
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       fetchList('Student', ['name', 'student_name', 'status']), fetchList('Academic Programme', ['name']), fetchList('Student Cohort', ['name']),
       fetchList('Course Registration', ['name']), fetchList('Student Course Result', ['name', 'approval_status', 'result_status']), fetchList('Academic Transcript', ['name', 'status']),
       fetchList('Sales Invoice', ['name', 'student', 'academic_semester', 'grand_total', 'outstanding_amount', 'status', 'posting_date'], undefined, 200),
-    ]).then(([students, programmes, cohorts, registrations, results, transcripts, invoices]) => setData({ students: students.length, programmes: programmes.length, cohorts: cohorts.length, registrations: registrations.length, results: results.length, transcripts: transcripts.length, invoiced: invoices.reduce((sum,row)=>sum+Number(row.grand_total??0),0), outstanding: invoices.reduce((sum,row)=>sum+Number(row.outstanding_amount??0),0), invoices, live: true })).catch(() => undefined)
+    ]).then(results => {
+      const rows = results.map(result => result.status === 'fulfilled' ? result.value : [])
+      const [students, programmes, cohorts, registrations, courseResults, transcripts, invoices] = rows
+      setData({ students: students.length, programmes: programmes.length, cohorts: cohorts.length, registrations: registrations.length, results: courseResults.length, transcripts: transcripts.length, invoiced: invoices.reduce((sum,row)=>sum+Number(row.grand_total??0),0), outstanding: invoices.reduce((sum,row)=>sum+Number(row.outstanding_amount??0),0), invoices, live: results.some(result => result.status === 'fulfilled') })
+    })
   }, [])
 
   const paid = Math.max(0, data.invoiced - data.outstanding)
@@ -29,10 +55,10 @@ export function DashboardPage() {
   return <section className="dashboard-page">
     <section className="secretary-hero">
       <article className="secretary-hero-copy card">
-        <div className="secretary-hero-content"><span className="secretary-hero-eyebrow">ANKOLE WESTERN UNIVERSITY</span><h2>Academic Operations And Student Services</h2><p>Manage the complete AWU student journey from application and cohort placement to fees, approved results, clearance and official transcripts.</p><div className="secretary-hero-meta"><span>{data.students} Students</span><span>{data.programmes} Programmes</span><span>{data.cohorts} Cohorts</span></div><div className="hero-action-row"><button className="primary-button light" onClick={() => navigate('/students')}><UserPlus size={16} />Student records</button><button className="secondary-button translucent" onClick={() => navigate('/registration')}><BookOpenCheck size={16} />Registration</button></div></div>
+        <div className="secretary-hero-content"><span className="secretary-hero-eyebrow">ANKOLE WESTERN UNIVERSITY</span><h2>{copy.title}</h2><p>{copy.description}</p><div className="secretary-hero-meta"><span>{data.students} Students</span><span>{data.programmes} Programmes</span><span>{data.cohorts} Cohorts</span></div><div className="hero-action-row"><button className="primary-button light" onClick={() => navigate(heroActions[0].path)}><UserPlus size={16} />{heroActions[0].label}</button><button className="secondary-button translucent" onClick={() => navigate(heroActions[1].path)}><BookOpenCheck size={16} />{heroActions[1].label}</button></div></div>
         <div className="dashboard-watchlist"><div className="preview-header"><div className="preview-icon"><img src="/awu-logo.png" alt="" /></div><div><strong>AWU Watchlist</strong><span>{data.live ? 'Connected to university records' : 'Preview data while connecting'}</span></div></div><div className="preview-list">{watchlist.map(item => <div className="preview-row" key={item.label}><div><strong>{item.label}</strong><span>{item.detail}</span></div><Status tone={item.tone}>{item.status}</Status></div>)}</div><div className="preview-foot"><div><strong>{data.students}</strong><span>Students</span></div><div><strong>{collection}%</strong><span>Collected</span></div><div><strong>{data.results}</strong><span>Results</span></div></div></div>
       </article>
-      <article className="card activity-card"><div><span className="eyebrow">CURRENT SEMESTER</span><h3>Academic control desk</h3><p>Quick checks for registration, results and finance before operational work begins.</p></div><div className="activity-date"><CalendarDays size={28} /><div><strong>2026 Semester 1</strong><span>Registration and assessment cycle</span></div></div><div className="mini-stat-grid"><div><strong>{data.registrations}</strong><span>Registrations</span></div><div><strong>{ugx(paid)}</strong><span>Fees received</span></div></div><div className="mini-links"><button onClick={() => navigate('/finance')}>Student balances</button><button onClick={() => navigate('/results')}>Approval queue</button><button onClick={() => navigate('/transcripts')}>Transcripts</button></div></article>
+      <article className="card activity-card"><div><span className="eyebrow">CURRENT SEMESTER</span><h3>{copy.desk}</h3><p>Quick checks for registration, results and finance before operational work begins.</p></div><div className="activity-date"><CalendarDays size={28} /><div><strong>2026 Semester 1</strong><span>Registration and assessment cycle</span></div></div><div className="mini-stat-grid"><div><strong>{data.registrations}</strong><span>Registrations</span></div><div><strong>{ugx(paid)}</strong><span>Fees received</span></div></div><div className="mini-links"><button onClick={() => navigate('/finance')}>Student balances</button><button onClick={() => navigate('/results')}>Approval queue</button><button onClick={() => navigate('/transcripts')}>Transcripts</button></div></article>
     </section>
 
     <section className="dashboard-kpi-grid">

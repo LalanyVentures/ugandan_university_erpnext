@@ -29,8 +29,8 @@ function roleLabel(roles: string[]) {
   if (roles.includes('Faculty Head')) return 'Faculty Head'
   if (roles.includes('Academics User')) return 'Registrar / Academic Affairs'
   if (roles.includes('Instructor')) return 'Lecturer'
+  if (roles.includes('Accounts Manager') || roles.includes('Accounts User')) return 'Finance Officer'
   if (roles.includes('Student')) return 'Student'
-  if (roles.includes('Accounts Manager')) return 'Finance Officer'
   return 'AWU Staff'
 }
 

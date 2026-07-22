@@ -3,7 +3,7 @@ import { Bell, LogOut, MoreHorizontal, Search, Settings, UserCircle2, X } from '
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { authApi, type UniversitySession } from '../../../api/frappe'
 import { GlobalSearch } from '../../../components/GlobalSearch'
-import { adminNavigation, subNavigationFor } from '../roleConfig'
+import { navigationFor, portalRoleFor, subNavigationFor } from '../roleConfig'
 
 function active(path: string, location: string) {
   return location === path || (path !== '/dashboard' && location.startsWith(path))
@@ -19,9 +19,12 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
   const navigate = useNavigate()
   const [moreOpen, setMoreOpen] = useState(false)
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
-  const current = adminNavigation.find(item => active(item.path, location.pathname)) ?? adminNavigation[0]
-  const contextualNavigation = subNavigationFor(location.pathname)
-  const mobileItems = adminNavigation.slice(0, 4)
+  const portalRole = portalRoleFor(session.roles)
+  const navigation = navigationFor(session.roles)
+  const current = navigation.find(item => active(item.path, location.pathname)) ?? navigation[0]
+  const contextualNavigation = subNavigationFor(location.pathname, session.roles)
+  const mobileItems = navigation.slice(0, 4)
+  const profilePath = portalRole === 'student' ? '/students/profile' : portalRole === 'administrator' ? '/settings' : '/dashboard'
 
   async function logout() {
     await authApi.logout().catch(() => undefined)
@@ -30,13 +33,13 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
   }
 
   return (
-    <div className="app-shell role-shell role-shell-admin">
+    <div className={`app-shell role-shell role-shell-${portalRole}`}>
       <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div></div>
       <header className="topbar card desktop-topbar">
         <GlobalSearch />
         <div className="topbar-actions">
           <button className="topbar-icon-button" type="button" aria-label="Notifications"><Bell size={18} /><i /></button>
-          <button className="topbar-user-chip" type="button" onClick={() => navigate('/settings')}>
+          <button className="topbar-user-chip" type="button" onClick={() => navigate(profilePath)}>
             <span className="topbar-user-avatar">{session.initials}</span><span className="topbar-user-copy"><strong>{session.fullName}</strong><small>{session.roleLabel}</small></span>
           </button>
         </div>
@@ -44,11 +47,11 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
 
       <aside className="sidebar desktop-sidebar">
         <div className="sidebar-heading"><img src="/awu-logo.png" alt=""/><span><strong>AWU</strong><small>Ankole Western University</small></span></div>
-        <nav className="nav-list" aria-label="University administrator navigation">
-          {adminNavigation.map(item => <NavLink key={item.path} to={item.path} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18} /><span>{item.label}</span></NavLink>)}
+        <nav className="nav-list" aria-label={`${session.roleLabel} navigation`}>
+          {navigation.map(item => <NavLink key={item.path} to={item.path} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18} /><span>{item.label}</span></NavLink>)}
         </nav>
         <div className="sidebar-actions">
-          <NavLink to="/settings" className="sidebar-icon-button" aria-label="Settings"><Settings size={17} /></NavLink>
+          {portalRole === 'administrator' ? <NavLink to="/settings" className="sidebar-icon-button" aria-label="Settings"><Settings size={17} /></NavLink> : null}
           <button type="button" className="sidebar-icon-button" aria-label="Profile"><UserCircle2 size={17} /></button>
           <button type="button" className="sidebar-icon-button" onClick={logout} aria-label="Sign out"><LogOut size={17} /></button>
         </div>
@@ -71,7 +74,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
         <button type="button" className={moreOpen ? 'bottom-nav-item bottom-nav-item-active' : 'bottom-nav-item'} onClick={() => setMoreOpen(value => !value)}><MoreHorizontal size={18} /><span>More</span></button>
       </nav>
 
-      {moreOpen ? <div className="mobile-more-overlay mobile-more-overlay-open"><button className="mobile-more-backdrop" onClick={() => setMoreOpen(false)} aria-label="Close menu" /><section className="mobile-more-sheet card"><div className="mobile-more-sheet-header"><div><span className="eyebrow">ANKOLE WESTERN UNIVERSITY</span><h2>More services</h2></div><button className="mobile-icon-button" onClick={() => setMoreOpen(false)}><X size={18} /></button></div><div className="mobile-more-list">{adminNavigation.slice(4).map(item => <NavLink key={item.path} to={item.path} className="mobile-more-item" onClick={() => setMoreOpen(false)}><item.icon size={18} /><span>{item.label}</span></NavLink>)}<button className="mobile-more-item ghost-danger" onClick={logout}><LogOut size={18} /><span>Sign out</span></button></div></section></div> : null}
+      {moreOpen ? <div className="mobile-more-overlay mobile-more-overlay-open"><button className="mobile-more-backdrop" onClick={() => setMoreOpen(false)} aria-label="Close menu" /><section className="mobile-more-sheet card"><div className="mobile-more-sheet-header"><div><span className="eyebrow">ANKOLE WESTERN UNIVERSITY</span><h2>More services</h2></div><button className="mobile-icon-button" onClick={() => setMoreOpen(false)}><X size={18} /></button></div><div className="mobile-more-list">{navigation.slice(4).map(item => <NavLink key={item.path} to={item.path} className="mobile-more-item" onClick={() => setMoreOpen(false)}><item.icon size={18} /><span>{item.label}</span></NavLink>)}<button className="mobile-more-item ghost-danger" onClick={logout}><LogOut size={18} /><span>Sign out</span></button></div></section></div> : null}
     </div>
   )
 }

@@ -29,7 +29,7 @@ export default function App() {
   return (
     <AdminShell session={session} onLogout={() => setSession(null)}>
       <Routes>
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/dashboard" element={<DashboardPage session={session} />} />
         <Route path="/students" element={<RecordsPage view="students" />} />
         <Route path="/students/profile" element={<StudentProfilePage />} />
         <Route path="/students/profile/:studentName" element={<StudentProfilePage />} />

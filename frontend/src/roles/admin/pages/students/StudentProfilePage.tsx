@@ -26,6 +26,13 @@ export function StudentProfilePage() {
   const [query, setQuery] = useState('')
 
   useEffect(() => {
+    if (studentName) return
+    callMethod<{name?:string}>('ugandan_university_education.ugandan_university_education.api.get_student_info')
+      .then(profile => { if (profile?.name) navigate(`/students/profile/${encodeURIComponent(profile.name)}`, {replace:true}) })
+      .catch(() => undefined)
+  }, [navigate, studentName])
+
+  useEffect(() => {
     fetchList('Student', ['name','student_name','student_number','status','student_email_id'], undefined, 2000).then(setStudents).catch(() => setStudents([]))
   }, [])
 
