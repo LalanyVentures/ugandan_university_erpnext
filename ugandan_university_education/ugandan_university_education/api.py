@@ -60,8 +60,8 @@ def get_payment_receipt_data(payment_entries):
 		payment_entries = json.loads(payment_entries)
 	if not isinstance(payment_entries, list) or not payment_entries:
 		frappe.throw("Select at least one payment transaction.")
-	if len(payment_entries) > 200:
-		frappe.throw("A consolidated receipt can contain at most 200 payment transactions.")
+	if len(payment_entries) > 2000:
+		frappe.throw("A consolidated receipt can contain at most 2,000 payment transactions.")
 
 	invoice_meta = frappe.get_meta("Sales Invoice")
 	invoice_fields = ["name", "customer", "posting_date", "grand_total", "outstanding_amount"]
