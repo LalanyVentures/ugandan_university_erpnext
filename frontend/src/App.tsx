@@ -12,6 +12,7 @@ import { TranscriptViewer } from './roles/admin/pages/transcripts/TranscriptView
 import { StudentApp } from './roles/student/StudentApp'
 import { LecturerApp } from './roles/lecturer/LecturerApp'
 import { FacultyApp } from './roles/faculty-head/FacultyApp'
+import { RegistrarApp } from './roles/registrar/RegistrarApp'
 import { portalRoleFor } from './roles/admin/roleConfig'
 
 export default function App() {
@@ -40,6 +41,10 @@ export default function App() {
 
   if (portalRoleFor(session.roles) === 'faculty-head') {
     return <FacultyApp session={session} onLogout={() => setSession(null)} />
+  }
+
+  if (portalRoleFor(session.roles) === 'registrar') {
+    return <RegistrarApp session={session} onLogout={() => setSession(null)} />
   }
 
   return (

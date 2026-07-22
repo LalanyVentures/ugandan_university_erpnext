@@ -800,6 +800,204 @@ def resolve_faculty_result_review(request_name, decision, status="Resolved"):
 	return request.name
 
 
+def _assert_registrar():
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to access the registrar portal.", frappe.PermissionError)
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and not roles.intersection({"Registrar", "Academics User"}):
+		frappe.throw("Only authorised registrar staff may access this workspace.", frappe.PermissionError)
+	return frappe.db.get_value("User", frappe.session.user, ["name", "full_name", "email", "enabled"], as_dict=True) or {
+		"name": frappe.session.user, "full_name": frappe.session.user,
+	}
+
+
+@frappe.whitelist()
+def get_registrar_portal_data():
+	"""Return the institution-wide academic control records required by the registrar."""
+	registrar = _assert_registrar()
+	applications = frappe.get_all("University Application", fields=["name", "application_number", "applicant_name",
+		"applicant_email", "academic_programme", "programme_curriculum", "academic_year", "application_date",
+		"status", "student", "reviewed_by", "review_comments"], order_by="application_date desc")
+	students = frappe.get_all("Student", fields=["name", "student_name", "student_number", "first_name", "last_name",
+		"gender", "nationality", "student_email_id", "status", "customer"], order_by="student_name asc")
+	student_map = {row.name: row for row in students}
+	units = frappe.get_all("Academic Unit", fields=["name", "unit_name", "unit_code", "unit_type", "parent_academic_unit",
+		"head_member", "status"], order_by="unit_name asc")
+	programmes = frappe.get_all("Academic Programme", fields=["name", "programme_code", "programme_name", "award_type",
+		"academic_unit", "duration_years", "status"], order_by="programme_name asc")
+	courses = frappe.get_all("Course", fields=["name", "course_code", "course_name", "academic_unit", "credit_units",
+		"study_level", "status"], order_by="course_code asc")
+	curricula = frappe.get_all("Programme Curriculum", fields=["name", "curriculum_name", "academic_programme",
+		"academic_year", "effective_from", "status", "docstatus"], order_by="effective_from desc")
+	years = frappe.get_all("Academic Year", fields=["name", "year_name", "year_start_date", "year_end_date", "status"],
+		order_by="year_start_date desc")
+	semesters = frappe.get_all("Academic Semester", fields=["name", "semester_name", "academic_year", "semester_number",
+		"start_date", "end_date", "registration_open", "status"], order_by="start_date desc")
+	cohorts = frappe.get_all("Student Cohort", fields=["name", "cohort_code", "cohort_name", "academic_programme",
+		"programme_curriculum", "academic_year", "campus", "intake_month", "status"], order_by="academic_year desc")
+	enrolments = frappe.get_all("Student Programme Enrolment", filters={"docstatus": ["<", 2]}, fields=["name", "student",
+		"academic_programme", "programme_curriculum", "academic_year", "student_cohort", "admission_date",
+		"expected_completion_date", "status", "docstatus"], order_by="admission_date desc")
+	for row in enrolments:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	semester_registrations = frappe.get_all("Semester Registration", filters={"docstatus": ["<", 2]}, fields=["name",
+		"student", "student_programme_enrolment", "academic_semester", "registration_date", "status", "docstatus"],
+		order_by="registration_date desc")
+	for row in semester_registrations:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	offerings = frappe.get_all("Course Offering", fields=["name", "course", "programme_curriculum", "grading_scheme",
+		"academic_semester", "student_cohort", "offering_type", "capacity", "status"], order_by="academic_semester desc")
+	course_map = {row.name: row for row in courses}
+	for row in offerings:
+		course = course_map.get(row.course) or {}
+		row["course_code"] = course.get("course_code")
+		row["course_name"] = course.get("course_name")
+	course_registrations = frappe.get_all("Course Registration", filters={"docstatus": ["<", 2]}, fields=["name",
+		"student", "student_cohort", "student_programme_enrolment", "semester_registration", "course_offering",
+		"attempt_number", "registration_type", "status", "docstatus"], order_by="modified desc")
+	results = frappe.get_all("Student Course Result", filters={"docstatus": ["<", 2]}, fields=["name", "student",
+		"course_registration", "academic_semester", "course", "credit_units", "coursework_mark", "examination_mark",
+		"final_mark", "grade", "grade_point", "result_status", "is_approved", "is_published", "approved_by",
+		"approved_on", "docstatus"], order_by="academic_semester desc")
+	for row in results:
+		student, course = student_map.get(row.student) or {}, course_map.get(row.course) or {}
+		row.update({"student_name": student.get("student_name"), "student_number": student.get("student_number"),
+			"course_code": course.get("course_code"), "course_name": course.get("course_name")})
+	batches = frappe.get_all("Result Approval Batch", filters={"docstatus": ["<", 2]}, fields=["name", "course_offering",
+		"academic_semester", "approval_stage", "status", "submitted_by", "approved_by", "docstatus"], order_by="modified desc")
+	for batch in batches:
+		doc = frappe.get_doc("Result Approval Batch", batch.name)
+		batch["items"] = [row.as_dict() for row in (doc.get("items") or [])]
+	reviews = frappe.get_all("Result Review Request", fields=["name", "student", "student_course_result", "request_type",
+		"reason", "status", "decision", "reviewed_by"], order_by="modified desc")
+	transcripts = frappe.get_all("Academic Transcript", filters={"docstatus": ["<", 2]}, fields=["name", "student",
+		"academic_programme", "transcript_type", "status", "source_result_version", "source_result_checksum",
+		"faculty_head_user", "faculty_head_approved_on", "registrar_user", "registrar_issued_on", "verification_number",
+		"generated_pdf", "revocation_reason", "docstatus"], order_by="modified desc")
+	for row in transcripts:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	clearance = frappe.get_all("Student Clearance", filters={"docstatus": ["<", 2]}, fields=["name", "student",
+		"clearance_type", "academic_semester", "status", "financial_status", "academic_status", "cleared_by",
+		"cleared_on", "docstatus"], order_by="modified desc")
+	for row in clearance:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	return {"registrar": registrar, "applications": applications, "students": students, "units": units,
+		"programmes": programmes, "courses": courses, "curricula": curricula, "academic_years": years,
+		"semesters": semesters, "cohorts": cohorts, "enrolments": enrolments,
+		"semester_registrations": semester_registrations, "course_offerings": offerings,
+		"course_registrations": course_registrations, "results": results, "approval_batches": batches,
+		"review_requests": reviews, "transcripts": transcripts, "clearance": clearance}
+
+
+@frappe.whitelist()
+def review_registrar_application(application_name, decision, comments=None):
+	_assert_registrar()
+	application = frappe.get_doc("University Application", application_name)
+	if decision not in {"Under Review", "Accepted", "Rejected"}:
+		frappe.throw("Select Under Review, Accepted or Rejected.")
+	if application.status in {"Withdrawn", "Accepted"} and decision != application.status:
+		frappe.throw("This application can no longer move to the selected status.")
+	application.status = decision
+	application.reviewed_by = frappe.session.user
+	application.review_comments = comments
+	application.save(ignore_permissions=True)
+	if decision == "Accepted" and not application.student:
+		return admit_application(application.name)
+	return {"application": application.name, "student": application.student}
+
+
+@frappe.whitelist()
+def review_semester_registration(registration_name, decision):
+	_assert_registrar()
+	if decision not in {"Registered", "Cancelled"}:
+		frappe.throw("Decision must be Registered or Cancelled.")
+	doc = frappe.get_doc("Semester Registration", registration_name)
+	if doc.status not in {"Draft", "Pending Approval", "Registered"}:
+		frappe.throw("This semester registration can no longer be reviewed.")
+	doc.status = decision
+	doc.registration_date = doc.registration_date or frappe.utils.today()
+	doc.save(ignore_permissions=True)
+	return doc.name
+
+
+@frappe.whitelist()
+def publish_registrar_result_batch(batch_name):
+	_assert_registrar()
+	batch = frappe.get_doc("Result Approval Batch", batch_name)
+	if batch.status != "Approved" or batch.approval_stage != "Faculty Head":
+		frappe.throw("Only Faculty Head approved result batches may be published.")
+	for item in batch.items:
+		result = frappe.get_doc("Student Course Result", item.student_course_result)
+		if not result.is_approved:
+			frappe.throw(f"Result {result.name} has not been approved by the Faculty Head.")
+		frappe.db.set_value("Student Course Result", result.name, {
+			"is_published": 1, "approved_by": frappe.session.user, "approved_on": frappe.utils.now(),
+		})
+	batch.approval_stage = "Registrar"
+	batch.approved_by = frappe.session.user
+	batch.save(ignore_permissions=True)
+	return batch.name
+
+
+@frappe.whitelist()
+def issue_registrar_transcript(transcript_name):
+	_assert_registrar()
+	transcript = frappe.get_doc("Academic Transcript", transcript_name)
+	if transcript.status != "Faculty Head Approved":
+		frappe.throw("Only Faculty Head approved transcripts may be issued.")
+	if not transcript.source_result_checksum:
+		frappe.throw("The transcript has no certified result checksum.")
+	verification = "AWU-" + hashlib.sha256(
+		f"{transcript.name}:{transcript.source_result_checksum}".encode()
+	).hexdigest()[:16].upper()
+	if not transcript.generated_pdf:
+		from frappe.utils.file_manager import save_file
+		pdf = frappe.get_print("Academic Transcript", transcript.name, as_pdf=True)
+		file_doc = save_file(f"{transcript.name}.pdf", pdf, "Academic Transcript", transcript.name, is_private=1)
+		transcript.generated_pdf = file_doc.file_url
+	transcript.verification_number = verification
+	transcript.registrar_user = frappe.session.user
+	transcript.registrar_issued_on = frappe.utils.now()
+	transcript.status = "Registrar Issued"
+	transcript.save(ignore_permissions=True)
+	return {"name": transcript.name, "verification_number": verification, "generated_pdf": transcript.generated_pdf}
+
+
+@frappe.whitelist()
+def revoke_registrar_transcript(transcript_name, reason):
+	_assert_registrar()
+	if not (reason or "").strip():
+		frappe.throw("A revocation reason is required.")
+	transcript = frappe.get_doc("Academic Transcript", transcript_name)
+	if transcript.status != "Registrar Issued":
+		frappe.throw("Only an issued transcript may be revoked.")
+	transcript.status = "Revoked"
+	transcript.revocation_reason = reason
+	transcript.save(ignore_permissions=True)
+	return transcript.name
+
+
+@frappe.whitelist()
+def review_registrar_clearance(clearance_name):
+	_assert_registrar()
+	status = refresh_student_clearance(clearance_name)
+	clearance = frappe.get_doc("Student Clearance", clearance_name)
+	if clearance.financial_status == "Cleared" and clearance.academic_status == "Cleared":
+		clearance.status = "Cleared"
+		clearance.cleared_by = frappe.session.user
+		clearance.cleared_on = frappe.utils.now()
+		clearance.save(ignore_permissions=True)
+	return {"name": clearance.name, "status": clearance.status, "outstanding_amount": status.get("outstanding_amount")}
+
+
 @frappe.whitelist()
 def get_student_registrations(student=None):
     student = student or frappe.db.get_value("Student", {"student_email_id": frappe.session.user})
