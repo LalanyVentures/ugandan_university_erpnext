@@ -8,7 +8,7 @@ app_publisher = "Frappe Technologies Pvt. Ltd."
 app_description = "Ankole Western University Academic Management"
 app_icon = "octicon octicon-file-directory"
 app_color = "#00A651"
-app_email = "hello@frappe.io"
+app_email = "info@ankolewesternuniversity.ac.ug"
 app_license = "GNU GPL V3"
 
 required_apps = ["erpnext"]
