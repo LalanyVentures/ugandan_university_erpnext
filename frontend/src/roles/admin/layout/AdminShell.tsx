@@ -45,7 +45,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
       <aside className="sidebar desktop-sidebar">
         <div className="sidebar-heading"><img src="/awu-logo.png" alt=""/><span><strong>AWU</strong><small>Ankole Western University</small></span></div>
         <nav className="nav-list" aria-label="University administrator navigation">
-          {adminNavigation.map(item => <NavLink key={item.path} to={item.path} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18} /><span>{item.label}</span>{item.path === '/results' ? <b>8</b> : null}</NavLink>)}
+          {adminNavigation.map(item => <NavLink key={item.path} to={item.path} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18} /><span>{item.label}</span></NavLink>)}
         </nav>
         <div className="sidebar-actions">
           <NavLink to="/settings" className="sidebar-icon-button" aria-label="Settings"><Settings size={17} /></NavLink>
