@@ -998,6 +998,180 @@ def review_registrar_clearance(clearance_name):
 	return {"name": clearance.name, "status": clearance.status, "outstanding_amount": status.get("outstanding_amount")}
 
 
+def _assert_finance_officer():
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to access the finance portal.", frappe.PermissionError)
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and not roles.intersection({"Accounts User", "Accounts Manager"}):
+		frappe.throw("Only authorised finance staff may access this workspace.", frappe.PermissionError)
+	return frappe.db.get_value(
+		"User", frappe.session.user, ["name", "full_name", "email", "enabled"], as_dict=True,
+	) or {"name": frappe.session.user, "full_name": frappe.session.user}
+
+
+@frappe.whitelist()
+def get_finance_portal_data():
+	"""Return finance-owned billing, collection, sponsorship and clearance records."""
+	officer = _assert_finance_officer()
+	students = frappe.get_all(
+		"Student",
+		fields=["name", "student_name", "student_number", "student_email_id", "customer", "status"],
+		order_by="student_name asc",
+	)
+	student_map = {row.name: row for row in students}
+	enrolments = frappe.get_all(
+		"Student Programme Enrolment", filters={"docstatus": ["<", 2]},
+		fields=["name", "student", "academic_programme", "academic_year", "student_cohort", "status", "docstatus"],
+		order_by="modified desc",
+	)
+	programme_by_student = {}
+	for row in enrolments:
+		programme_by_student.setdefault(row.student, row.academic_programme)
+	for row in students:
+		row["academic_programme"] = programme_by_student.get(row.name)
+
+	structures = frappe.get_all(
+		"University Fee Structure", filters={"docstatus": ["<", 2]},
+		fields=["name", "structure_name", "academic_programme", "academic_year", "academic_semester",
+			"currency", "effective_from", "effective_to", "status", "docstatus"],
+		order_by="effective_from desc",
+	)
+	for row in structures:
+		doc = frappe.get_doc("University Fee Structure", row.name)
+		row["fee_lines"] = [line.as_dict() for line in (doc.get("fee_lines") or [])]
+		row["total_amount"] = sum((line.quantity or 0) * (line.rate or 0) for line in (doc.get("fee_lines") or []))
+
+	invoice_fields = ["name", "customer", "posting_date", "due_date", "grand_total", "outstanding_amount",
+		"status", "docstatus", "currency"]
+	invoice_meta = frappe.get_meta("Sales Invoice")
+	for fieldname in ("student", "academic_semester", "university_fee_structure"):
+		if invoice_meta.has_field(fieldname):
+			invoice_fields.append(fieldname)
+	invoices = frappe.get_all(
+		"Sales Invoice", filters={"docstatus": ["<", 2]}, fields=invoice_fields,
+		order_by="posting_date desc, creation desc", limit_page_length=5000,
+	)
+	for row in invoices:
+		student = student_map.get(row.get("student"))
+		if not student and row.customer:
+			student = next((item for item in students if item.customer == row.customer), None)
+		row["student"] = student.get("name") if student else row.get("student")
+		row["student_name"] = student.get("student_name") if student else row.customer
+		row["student_number"] = student.get("student_number") if student else None
+
+	payments = get_payment_register_data()
+	sponsorships = frappe.get_all(
+		"Sponsorship Award", filters={"docstatus": ["<", 2]},
+		fields=["name", "student", "sponsor", "academic_programme", "academic_year", "coverage_type",
+			"coverage_percentage", "coverage_amount", "status", "approval_reference", "docstatus"],
+		order_by="modified desc",
+	)
+	for row in sponsorships:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	clearance = frappe.get_all(
+		"Student Clearance", filters={"docstatus": ["<", 2]},
+		fields=["name", "student", "clearance_type", "academic_semester", "status", "financial_status",
+			"academic_status", "cleared_by", "cleared_on", "docstatus"], order_by="modified desc",
+	)
+	for row in clearance:
+		student = student_map.get(row.student) or {}
+		row["student_name"] = student.get("student_name")
+		row["student_number"] = student.get("student_number")
+	semesters = frappe.get_all(
+		"Academic Semester", fields=["name", "semester_name", "academic_year", "start_date", "end_date", "status"],
+		order_by="start_date desc",
+	)
+	settings = frappe.get_single("University Education Settings")
+	return {
+		"officer": officer, "students": students, "enrolments": enrolments, "fee_structures": structures,
+		"invoices": invoices, "payments": payments, "sponsorships": sponsorships, "clearance": clearance,
+		"semesters": semesters,
+		"university": {"name": settings.get("university_name") or "Ankole Western University",
+			"currency": settings.get("default_currency") or "UGX"},
+	}
+
+
+@frappe.whitelist()
+def create_finance_invoice(student, university_fee_structure):
+	"""Create one reviewable draft invoice from an active submitted fee structure."""
+	_assert_finance_officer()
+	student_doc = frappe.get_doc("Student", student)
+	if not student_doc.customer:
+		frappe.throw("The student is not linked to a billing customer account.")
+	fee_structure = frappe.get_doc("University Fee Structure", university_fee_structure)
+	if fee_structure.docstatus != 1 or fee_structure.status != "Active":
+		frappe.throw("Only an active submitted fee structure can be used for billing.")
+	if fee_structure.academic_programme:
+		programme = frappe.db.get_value(
+			"Student Programme Enrolment", {"student": student, "status": "Active"}, "academic_programme",
+		)
+		if programme and programme != fee_structure.academic_programme:
+			frappe.throw("The selected fee structure does not match the student's active programme.")
+	duplicate_filters = {"student": student, "university_fee_structure": university_fee_structure, "docstatus": ["<", 2]}
+	if frappe.db.exists("Sales Invoice", duplicate_filters):
+		frappe.throw("This student already has an invoice for the selected fee structure.")
+	values = {
+		"doctype": "Sales Invoice", "customer": student_doc.customer, "student": student,
+		"university_fee_structure": university_fee_structure, "posting_date": frappe.utils.today(),
+		"due_date": fee_structure.effective_to or frappe.utils.add_days(frappe.utils.today(), 30),
+		"items": build_invoice_items(fee_structure.as_dict()),
+	}
+	if frappe.get_meta("Sales Invoice").has_field("academic_semester"):
+		values["academic_semester"] = fee_structure.academic_semester
+	invoice = frappe.get_doc(values)
+	invoice.flags.ignore_permissions = True
+	invoice.insert()
+	return invoice.name
+
+
+@frappe.whitelist()
+def submit_finance_invoice(invoice_name):
+	_assert_finance_officer()
+	invoice = frappe.get_doc("Sales Invoice", invoice_name)
+	if invoice.docstatus != 0 or not invoice.get("student"):
+		frappe.throw("Only a draft student fee invoice may be submitted here.")
+	invoice.flags.ignore_permissions = True
+	invoice.submit()
+	return invoice.name
+
+
+@frappe.whitelist()
+def review_financial_clearance(clearance_name):
+	_assert_finance_officer()
+	clearance = frappe.get_doc("Student Clearance", clearance_name)
+	student = frappe.get_doc("Student", clearance.student)
+	outstanding = frappe.db.sql(
+		"""select coalesce(sum(outstanding_amount), 0) from `tabSales Invoice`
+		where customer=%s and docstatus=1""", student.customer,
+	)[0][0] or 0
+	clearance.financial_status = "Outstanding" if outstanding else "Cleared"
+	clearance.status = determine_clearance(clearance.financial_status, clearance.academic_status)
+	if clearance.status == "Cleared":
+		clearance.cleared_by = frappe.session.user
+		clearance.cleared_on = frappe.utils.now()
+	clearance.save(ignore_permissions=True)
+	return {"name": clearance.name, "financial_status": clearance.financial_status,
+		"status": clearance.status, "outstanding_amount": outstanding}
+
+
+@frappe.whitelist()
+def review_sponsorship_award(award_name, decision, approval_reference=None):
+	_assert_finance_officer()
+	if decision not in {"Approved", "Active", "Cancelled"}:
+		frappe.throw("Decision must be Approved, Active or Cancelled.")
+	award = frappe.get_doc("Sponsorship Award", award_name)
+	if award.status in {"Exhausted", "Cancelled"} and decision != award.status:
+		frappe.throw("This sponsorship award can no longer move to the selected status.")
+	if decision in {"Approved", "Active"} and not (approval_reference or award.approval_reference):
+		frappe.throw("An approval reference is required.")
+	award.status = decision
+	award.approval_reference = approval_reference or award.approval_reference
+	award.save(ignore_permissions=True)
+	return award.name
+
+
 @frappe.whitelist()
 def get_student_registrations(student=None):
     student = student or frappe.db.get_value("Student", {"student_email_id": frappe.session.user})

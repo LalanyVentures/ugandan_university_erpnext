@@ -15,10 +15,11 @@ type StudentAccount = {
   collection: number
 }
 type FeeStructure = { name:string; structure_name?:string; academic_programme?:string; academic_semester?:string; status?:string }
+export type FinancialAnalysisSource = { students:FrappeRow[]; invoices:FrappeRow[]; feeStructures:FrappeRow[] }
 
 const money = (value: unknown) => Number(value ?? 0)
 
-export function FinancialAnalysisPage() {
+export function FinancialAnalysisPage({source,financeMode=false}:{source?:FinancialAnalysisSource;financeMode?:boolean} = {}) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [students, setStudents] = useState<FrappeRow[]>([])
@@ -29,6 +30,13 @@ export function FinancialAnalysisPage() {
   const selectedId = searchParams.get('student') ?? ''
 
   useEffect(() => {
+    if (source) {
+      setStudents(source.students)
+      setInvoices(source.invoices.filter(row => Number(row.docstatus) === 1))
+      setFeeStructures(source.feeStructures as FeeStructure[])
+      setLoading(false)
+      return
+    }
     Promise.all([
       fetchList('Student', ['name', 'student_name', 'student_number', 'customer', 'status'], undefined, 3000),
       fetchList('Sales Invoice', ['name', 'student', 'customer', 'university_fee_structure', 'academic_semester', 'posting_date', 'due_date', 'grand_total', 'outstanding_amount', 'status', 'docstatus'], undefined, 5000),
@@ -38,7 +46,7 @@ export function FinancialAnalysisPage() {
       setInvoices(invoiceRows.filter(row => Number(row.docstatus) === 1))
       setFeeStructures(structureRows as FeeStructure[])
     }).finally(() => setLoading(false))
-  }, [])
+  }, [source])
 
   const accounts = useMemo<StudentAccount[]>(() => {
     const today = new Date().toISOString().slice(0, 10)
