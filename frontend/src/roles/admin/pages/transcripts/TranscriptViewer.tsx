@@ -83,7 +83,7 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
       <article className={styles.transcriptContent}>
         <div className={styles.securityStrip}><span><FileCheck2 size={15}/>{approvedDocument?'Approved academic record':'Live administrative results preview'}</span><span>{data.result_count ?? 0} marks · {data.transcript.status}</span></div>
         <header className={styles.transcriptHeader}>
-          <div className={styles.universityIdentity}><img src="/assets/ugandan_university_education/awu-logo.png" alt="Ankole Western University crest"/><div><strong>ANKOLE WESTERN UNIVERSITY</strong><span>LIGHT OF THE WORLD</span></div></div>
+          <div className={styles.universityIdentity}><img src="/awu-logo.png" alt="Ankole Western University crest"/><div><strong>ANKOLE WESTERN UNIVERSITY</strong><span>LIGHT OF THE WORLD</span></div></div>
           <h2>{approvedDocument && data.transcript.transcript_type === 'Official' ? 'OFFICIAL ACADEMIC TRANSCRIPT' : approvedDocument ? 'PROVISIONAL ACADEMIC TRANSCRIPT' : 'ADMINISTRATIVE ACADEMIC TRANSCRIPT PREVIEW'}</h2>
           <p>Office of the Academic Registrar</p>
         </header>

@@ -16,7 +16,7 @@ export default function App() {
   }, [])
 
   if (loading) {
-    return <main className="app-loading"><div className="brand-mark"><img src="/assets/ugandan_university_education/awu-logo.png" alt="Ankole Western University" /></div><p>Opening the AWU academic workspace…</p></main>
+    return <main className="app-loading"><div className="brand-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div><p>Opening the AWU academic workspace…</p></main>
   }
 
   if (!session) {

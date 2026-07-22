@@ -32,7 +32,7 @@ export function LoginPage({ onLogin }: { onLogin: (session: UniversitySession) =
       <div className={styles.loginShell}>
         <section className={styles.welcomePanel}>
           <div className={styles.pattern} aria-hidden="true" />
-          <div className={styles.universitySeal}><span className={styles.logoHolding}><img src="/assets/ugandan_university_education/awu-logo.png" alt="Ankole Western University crest" /></span><span><strong>Ankole Western University</strong><small>Light of the World</small></span></div>
+          <div className={styles.universitySeal}><span className={styles.logoHolding}><img src="/awu-logo.png" alt="Ankole Western University crest" /></span><span><strong>Ankole Western University</strong><small>Light of the World</small></span></div>
           <div className={styles.welcomeCopy}>
             <span>AWU ACADEMIC SERVICES</span>
             <h1>Your university.<br />Your academic journey.</h1>

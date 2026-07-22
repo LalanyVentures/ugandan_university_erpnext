@@ -25,7 +25,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
 
   return (
     <div className="app-shell role-shell role-shell-admin">
-      <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/assets/ugandan_university_education/awu-logo.png" alt="Ankole Western University" /></div></div>
+      <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div></div>
       <header className="topbar card desktop-topbar">
         <GlobalSearch />
         <div className="topbar-actions">
@@ -37,7 +37,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
       </header>
 
       <aside className="sidebar desktop-sidebar">
-        <div className="sidebar-heading"><img src="/assets/ugandan_university_education/awu-logo.png" alt=""/><span><strong>AWU</strong><small>Ankole Western University</small></span></div>
+        <div className="sidebar-heading"><img src="/awu-logo.png" alt=""/><span><strong>AWU</strong><small>Ankole Western University</small></span></div>
         <nav className="nav-list" aria-label="University administrator navigation">
           {adminNavigation.map(item => <NavLink key={item.path} to={item.path} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18} /><span>{item.label}</span>{item.path === '/results' ? <b>8</b> : null}</NavLink>)}
         </nav>
@@ -49,7 +49,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
       </aside>
 
       <header className="mobile-header card">
-        <div className="mobile-header-brand"><div className="brand-mark"><img src="/assets/ugandan_university_education/awu-logo.png" alt="Ankole Western University" /></div><div><p>Ankole Western University</p><strong>{current.label}</strong></div></div>
+        <div className="mobile-header-brand"><div className="brand-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div><div><p>Ankole Western University</p><strong>{current.label}</strong></div></div>
         <div className="mobile-header-actions"><button className="mobile-icon-button" onClick={() => setMobileSearchOpen(value => !value)} aria-label="Search University records"><Search size={18} /></button><button className="mobile-icon-button"><Bell size={18} /></button></div>
       </header>
 
