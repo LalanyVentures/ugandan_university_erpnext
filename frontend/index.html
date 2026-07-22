@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>University</title>
+    <title>Ankole Western University | Academic Operations</title>
   </head>
   <body>
     <div id="app"></div>
@@ -13,7 +13,7 @@
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
-      window.document.title = '{{ abbr }}'
+      window.document.title = '{{ abbr or "Ankole Western University" }}'
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
@@ -22,6 +22,6 @@
       }
       link.href = '{{ logo }}'
     </script>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

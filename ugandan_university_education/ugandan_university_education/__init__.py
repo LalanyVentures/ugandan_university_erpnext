@@ -1,3 +1,3 @@
-"""Ugandan University Education application package."""
+"""Ankole Western University academic management application package."""
 
 __version__ = "0.1.0"

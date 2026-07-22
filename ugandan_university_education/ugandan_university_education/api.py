@@ -2,7 +2,7 @@ import frappe
 import hashlib
 import json
 
-from ugandan_university_education.services.transcript import build_transcript_data
+from ugandan_university_education.services.transcript import build_transcript_data, can_view_transcript
 from ugandan_university_education.services.workflows import (
 	build_invoice_items,
 	calculate_gpa,
@@ -219,6 +219,121 @@ def prepare_transcript(transcript_name):
 	transcript.source_result_checksum = checksum
 	transcript.save()
 	return data
+
+
+@frappe.whitelist()
+def get_transcript_view(transcript_name=None, student=None):
+	"""Return a live administrative transcript preview from all recorded marks."""
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and not roles.intersection(
+		{"System Manager", "Academics User", "Faculty Head", "Registrar"}
+	):
+		frappe.throw("Only authorised academic administrators may use the transcript viewer.", frappe.PermissionError)
+
+	transcript = None
+	if transcript_name:
+		transcript = frappe.get_doc("Academic Transcript", transcript_name)
+		transcript.check_permission("read")
+	elif student:
+		latest = frappe.get_all(
+			"Academic Transcript",
+			filters={"student": student},
+			fields=["name"],
+			order_by="modified desc",
+			limit_page_length=1,
+		)
+		if latest:
+			transcript = frappe.get_doc("Academic Transcript", latest[0].name)
+
+	student_name = transcript.student if transcript else student
+	if not student_name:
+		frappe.throw("Select a student or transcript to preview.")
+
+	student_record = frappe.db.get_value(
+		"Student",
+		student_name,
+		["name", "student_name", "student_number", "gender", "nationality", "student_email_id"],
+		as_dict=True,
+	) or {}
+	programme_name = transcript.academic_programme if transcript else None
+	if not programme_name:
+		enrolments = frappe.get_all(
+			"Student Programme Enrolment",
+			filters={"student": student_name},
+			fields=["academic_programme"],
+			order_by="modified desc",
+			limit_page_length=1,
+		)
+		programme_name = enrolments[0].academic_programme if enrolments else None
+	programme = frappe.db.get_value(
+		"Academic Programme",
+		programme_name,
+		["name", "programme_name", "programme_code", "award_type", "academic_unit"],
+		as_dict=True,
+	) if programme_name else {}
+	programme = programme or {}
+	faculty = None
+	if programme.get("academic_unit"):
+		faculty = frappe.db.get_value("Academic Unit", programme.academic_unit, "unit_name")
+
+	document_is_approved = bool(
+		transcript and can_view_transcript(transcript.status, transcript.transcript_type)
+	)
+	metadata = {
+		"name": transcript.name if transcript else f"PREVIEW-{student_name}",
+		"transcript_type": transcript.transcript_type if transcript else "Administrative Preview",
+		"status": transcript.status if transcript else "Administrative Preview",
+		"verification_number": transcript.verification_number if transcript else None,
+		"faculty_head_user": transcript.faculty_head_user if transcript else None,
+		"faculty_head_approved_on": transcript.faculty_head_approved_on if transcript else None,
+		"registrar_user": transcript.registrar_user if transcript else None,
+		"registrar_issued_on": transcript.registrar_issued_on if transcript else None,
+		"generated_pdf": transcript.generated_pdf if transcript else None,
+		"can_view": True,
+		"is_approved_document": document_is_approved,
+	}
+	base = {"transcript": metadata, "student": student_record, "programme": programme, "faculty": faculty}
+
+	results = frappe.get_all(
+		"Student Course Result",
+		filters={"student": student_name},
+		fields=[
+			"name", "course_registration", "academic_semester", "course", "credit_units",
+			"final_mark", "grade", "grade_point", "include_in_gpa", "result_status",
+			"is_approved", "is_published",
+		],
+	)
+	semester_cache = {}
+	course_cache = {}
+	registration_type_cache = {}
+	for row in results:
+		if row.academic_semester not in semester_cache:
+			semester_cache[row.academic_semester] = frappe.db.get_value(
+				"Academic Semester", row.academic_semester,
+				["semester_name", "semester_number", "start_date"], as_dict=True,
+			) or {}
+		if row.course not in course_cache:
+			course_cache[row.course] = frappe.db.get_value(
+				"Course", row.course, ["course_code", "course_name"], as_dict=True,
+			) or {}
+		semester = semester_cache[row.academic_semester]
+		course = course_cache[row.course]
+		row["semester_name"] = semester.get("semester_name") or row.academic_semester
+		row["semester_number"] = semester.get("semester_number")
+		row["semester_start_date"] = semester.get("start_date")
+		row["course_code"] = course.get("course_code") or row.course
+		row["course_name"] = course.get("course_name") or row.course
+		row["mark_percent"] = row.final_mark
+		if row.course_registration and row.course_registration not in registration_type_cache:
+			registration_type_cache[row.course_registration] = (
+				frappe.db.get_value("Course Registration", row.course_registration, "registration_type") or "Normal"
+			)
+		row["attempt_type"] = registration_type_cache.get(row.course_registration, "Normal")
+
+	data = build_transcript_data(student_record, results, require_approved=False)
+	base.update(data)
+	base["result_count"] = len(results)
+	return base
 
 
 @frappe.whitelist()

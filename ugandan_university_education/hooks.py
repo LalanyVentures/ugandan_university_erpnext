@@ -3,11 +3,11 @@ from frappe import _
 from . import __version__ as app_version
 
 app_name = "ugandan_university_education"
-app_title = "University"
+app_title = "Ankole Western University"
 app_publisher = "Frappe Technologies Pvt. Ltd."
-app_description = "Ugandan University Education"
+app_description = "Ankole Western University Academic Management"
 app_icon = "octicon octicon-file-directory"
-app_color = "grey"
+app_color = "#00A651"
 app_email = "hello@frappe.io"
 app_license = "GNU GPL V3"
 
@@ -16,8 +16,8 @@ required_apps = ["erpnext"]
 add_to_apps_screen = [
 	{
 		"name": "ugandan_university_education",
-		"logo": "/assets/ugandan_university_education/edu-logo.svg",
-		"title": "University",
+		"logo": "/assets/ugandan_university_education/awu-logo.png",
+		"title": "Ankole Western University",
 		"route": "/app/university",
 		"has_permission": "ugandan_university_education.api.permissions.has_app_permission",
 	}

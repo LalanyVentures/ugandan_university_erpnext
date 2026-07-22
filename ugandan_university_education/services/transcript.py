@@ -54,6 +54,8 @@ def _display_decimal(value: Decimal, places: int = 2) -> int | float | str:
 def build_transcript_data(
 	student: Mapping[str, Any],
 	result_rows: Iterable[Mapping[str, Any]],
+	*,
+	require_approved: bool = True,
 ) -> dict[str, Any]:
 	"""Build the canonical semester-grouped transcript payload.
 
@@ -65,7 +67,7 @@ def build_transcript_data(
 	"""
 
 	semesters: OrderedDict[str, dict[str, Any]] = OrderedDict()
-	approved_rows = [row for row in result_rows if _is_approved_result(row)]
+	approved_rows = [row for row in result_rows if not require_approved or _is_approved_result(row)]
 	approved_rows.sort(
 		key=lambda row: (
 			str(row.get("semester_start_date") or ""),
@@ -112,7 +114,7 @@ def build_transcript_data(
 
 		if result_status not in {"Withdrawn", "Incomplete"}:
 			semester["earned_credits"] += credits
-		if include_in_gpa:
+		if include_in_gpa and result_status not in {"Withdrawn", "Incomplete"}:
 			quality_points = grade_point * credits
 			semester["quality_points"] += quality_points
 			semester["gpa_credits"] += credits

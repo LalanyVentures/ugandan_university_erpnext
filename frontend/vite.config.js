@@ -1,29 +1,32 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import path from 'path'
-import frappeui from 'frappe-ui/vite'
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [frappeui(), vue()],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-  },
-  build: {
-    outDir: `../${path.basename(path.resolve('..'))}/public/frontend`,
-    emptyOutDir: true,
-    target: 'es2015',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'frappe-ui': ['frappe-ui'],
-        },
+  plugins: [react()],
+  resolve: { alias: { '@': path.resolve(process.cwd(), 'src') } },
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/assets': {
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/files': {
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },
-  optimizeDeps: {
-    include: ['feather-icons', 'showdown', 'engine.io-client'],
+  build: {
+    outDir: '../ugandan_university_education/public/frontend',
+    emptyOutDir: true,
+    target: 'es2018',
   },
 })
