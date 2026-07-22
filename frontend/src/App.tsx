@@ -11,6 +11,7 @@ import { FinancialAnalysisPage } from './roles/admin/pages/finance/FinancialRisk
 import { TranscriptViewer } from './roles/admin/pages/transcripts/TranscriptViewer'
 import { StudentApp } from './roles/student/StudentApp'
 import { LecturerApp } from './roles/lecturer/LecturerApp'
+import { FacultyApp } from './roles/faculty-head/FacultyApp'
 import { portalRoleFor } from './roles/admin/roleConfig'
 
 export default function App() {
@@ -35,6 +36,10 @@ export default function App() {
 
   if (portalRoleFor(session.roles) === 'lecturer') {
     return <LecturerApp session={session} onLogout={() => setSession(null)} />
+  }
+
+  if (portalRoleFor(session.roles) === 'faculty-head') {
+    return <FacultyApp session={session} onLogout={() => setSession(null)} />
   }
 
   return (

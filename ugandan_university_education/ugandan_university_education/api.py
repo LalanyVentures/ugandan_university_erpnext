@@ -557,6 +557,249 @@ def submit_lecturer_results(course_offering):
 	return batch.name
 
 
+def _get_faculty_head_scope():
+	if frappe.session.user == "Guest":
+		frappe.throw("Please sign in to access the faculty workspace.", frappe.PermissionError)
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and "Faculty Head" not in roles:
+		frappe.throw("Only authorised Faculty Heads may access this workspace.", frappe.PermissionError)
+	member = frappe.db.get_value(
+		"University Member", {"user": frappe.session.user},
+		["name", "member_number", "full_name", "member_type", "user", "employee", "status"], as_dict=True,
+	)
+	if not member:
+		frappe.throw("This user account is not linked to a University Member record.", frappe.DoesNotExistError)
+	if member.status != "Active":
+		frappe.throw("This faculty leadership record is not active.", frappe.PermissionError)
+	all_units = frappe.get_all(
+		"Academic Unit", fields=["name", "unit_name", "unit_code", "unit_type", "parent_academic_unit", "head_member", "status"],
+		order_by="unit_name asc",
+	)
+	head_units = [row for row in all_units if row.head_member == member.name]
+	if not head_units:
+		frappe.throw("No Academic Unit is assigned to this Faculty Head.", frappe.DoesNotExistError)
+	scope_names = {row.name for row in head_units}
+	changed = True
+	while changed:
+		changed = False
+		for unit in all_units:
+			if unit.parent_academic_unit in scope_names and unit.name not in scope_names:
+				scope_names.add(unit.name)
+				changed = True
+	units = [row for row in all_units if row.name in scope_names]
+	return member, head_units, units, list(scope_names)
+
+
+def _faculty_scope_records():
+	member, head_units, units, unit_names = _get_faculty_head_scope()
+	programmes = frappe.get_all(
+		"Academic Programme", filters={"academic_unit": ["in", unit_names]},
+		fields=["name", "programme_code", "programme_name", "award_type", "academic_unit", "duration_years", "status"],
+		order_by="programme_name asc",
+	)
+	programme_names = [row.name for row in programmes]
+	courses = frappe.get_all(
+		"Course", filters={"academic_unit": ["in", unit_names]},
+		fields=["name", "course_code", "course_name", "academic_unit", "credit_units", "study_level", "status"],
+		order_by="course_code asc",
+	)
+	course_names = [row.name for row in courses]
+	offerings = frappe.get_all(
+		"Course Offering", filters={"course": ["in", course_names]},
+		fields=["name", "course", "programme_curriculum", "grading_scheme", "academic_semester", "student_cohort",
+			"offering_type", "capacity", "status"], order_by="academic_semester desc",
+	) if course_names else []
+	return member, head_units, units, unit_names, programmes, programme_names, courses, course_names, offerings
+
+
+def _assert_faculty_offering(offering_name):
+	*_, offerings = _faculty_scope_records()
+	if offering_name not in {row.name for row in offerings}:
+		frappe.throw("This course offering is outside your faculty scope.", frappe.PermissionError)
+	return next(row for row in offerings if row.name == offering_name)
+
+
+def _assert_faculty_programme(programme_name):
+	*_, programmes, programme_names, courses, course_names, offerings = _faculty_scope_records()
+	if programme_name not in programme_names:
+		frappe.throw("This academic programme is outside your faculty scope.", frappe.PermissionError)
+	return next(row for row in programmes if row.name == programme_name)
+
+
+@frappe.whitelist()
+def get_faculty_head_portal_data():
+	"""Return records belonging to academic units led by the signed-in Faculty Head."""
+	member, head_units, units, unit_names, programmes, programme_names, courses, course_names, offerings = _faculty_scope_records()
+	course_map = {row.name: row for row in courses}
+	for offering in offerings:
+		course = course_map.get(offering.course) or {}
+		offering.update({"course_code": course.get("course_code"), "course_name": course.get("course_name"),
+			"credit_units": course.get("credit_units"), "academic_unit": course.get("academic_unit")})
+	offering_names = [row.name for row in offerings]
+	curricula = frappe.get_all(
+		"Programme Curriculum", filters={"academic_programme": ["in", programme_names]},
+		fields=["name", "curriculum_name", "academic_programme", "academic_year", "effective_from", "status", "docstatus"],
+		order_by="effective_from desc",
+	) if programme_names else []
+	cohorts = frappe.get_all(
+		"Student Cohort", filters={"academic_programme": ["in", programme_names]},
+		fields=["name", "cohort_code", "cohort_name", "academic_programme", "programme_curriculum", "academic_year",
+			"campus", "intake_month", "status"], order_by="academic_year desc",
+	) if programme_names else []
+	enrolments = frappe.get_all(
+		"Student Programme Enrolment", filters={"academic_programme": ["in", programme_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "academic_programme", "programme_curriculum", "academic_year", "student_cohort",
+			"admission_date", "expected_completion_date", "status", "docstatus"], order_by="admission_date desc",
+	) if programme_names else []
+	student_names = list({row.student for row in enrolments if row.student})
+	students = frappe.get_all(
+		"Student", filters={"name": ["in", student_names]}, fields=["name", "student_name", "student_number",
+			"first_name", "last_name", "gender", "student_email_id", "status"], order_by="student_name asc",
+	) if student_names else []
+	student_map = {row.name: row for row in students}
+	for enrolment in enrolments:
+		student = student_map.get(enrolment.student) or {}
+		enrolment["student_name"] = student.get("student_name")
+		enrolment["student_number"] = student.get("student_number")
+	registrations = frappe.get_all(
+		"Course Registration", filters={"course_offering": ["in", offering_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "student_cohort", "semester_registration", "course_offering", "status"],
+	) if offering_names else []
+	registration_names = [row.name for row in registrations]
+	results = frappe.get_all(
+		"Student Course Result", filters={"course_registration": ["in", registration_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "course_registration", "academic_semester", "course", "credit_units",
+			"coursework_mark", "examination_mark", "final_mark", "grade", "grade_point", "result_status",
+			"is_approved", "is_published", "approved_by", "approved_on", "docstatus"], order_by="academic_semester desc",
+	) if registration_names else []
+	for result in results:
+		student = student_map.get(result.student) or {}
+		course = course_map.get(result.course) or {}
+		result.update({"student_name": student.get("student_name"), "student_number": student.get("student_number"),
+			"course_code": course.get("course_code"), "course_name": course.get("course_name")})
+	assessments = frappe.get_all(
+		"Course Assessment", filters={"course_offering": ["in", offering_names]},
+		fields=["name", "course_offering", "assessment_name", "assessment_type", "maximum_mark", "weight",
+			"assessment_date", "status"], order_by="assessment_date desc",
+	) if offering_names else []
+	batches = frappe.get_all(
+		"Result Approval Batch", filters={"course_offering": ["in", offering_names], "docstatus": ["<", 2]},
+		fields=["name", "course_offering", "academic_semester", "approval_stage", "status", "submitted_by", "approved_by", "docstatus"],
+		order_by="modified desc",
+	) if offering_names else []
+	for batch in batches:
+		doc = frappe.get_doc("Result Approval Batch", batch.name)
+		batch["items"] = [row.as_dict() for row in (doc.get("items") or [])]
+	result_names = [row.name for row in results]
+	reviews = frappe.get_all(
+		"Result Review Request", filters={"student_course_result": ["in", result_names]},
+		fields=["name", "student", "student_course_result", "request_type", "reason", "status", "decision", "reviewed_by"],
+		order_by="modified desc",
+	) if result_names else []
+	transcripts = frappe.get_all(
+		"Academic Transcript", filters={"academic_programme": ["in", programme_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "academic_programme", "transcript_type", "status", "source_result_version",
+			"faculty_head_user", "faculty_head_approved_on", "registrar_user", "registrar_issued_on",
+			"verification_number", "generated_pdf", "docstatus"], order_by="modified desc",
+	) if programme_names else []
+	for transcript in transcripts:
+		student = student_map.get(transcript.student) or frappe.db.get_value("Student", transcript.student,
+			["student_name", "student_number"], as_dict=True) or {}
+		transcript["student_name"] = student.get("student_name")
+		transcript["student_number"] = student.get("student_number")
+	clearance = frappe.get_all(
+		"Student Clearance", filters={"student": ["in", student_names], "docstatus": ["<", 2]},
+		fields=["name", "student", "clearance_type", "academic_semester", "status", "financial_status",
+			"academic_status", "cleared_by", "cleared_on", "docstatus"], order_by="modified desc",
+	) if student_names else []
+	lecturer_assignments = frappe.get_all(
+		"Course Offering Lecturer", filters={"parent": ["in", offering_names], "parenttype": "Course Offering"},
+		fields=["parent", "lecturer", "is_primary", "teaching_role"],
+	) if offering_names else []
+	lecturer_names = list({row.lecturer for row in lecturer_assignments if row.lecturer})
+	lecturers = frappe.get_all(
+		"University Member", filters={"name": ["in", lecturer_names]},
+		fields=["name", "member_number", "full_name", "member_type", "user", "employee", "status"],
+	) if lecturer_names else []
+	for lecturer in lecturers:
+		lecturer["assignments"] = [row for row in lecturer_assignments if row.lecturer == lecturer.name]
+	return {"faculty_head": member, "head_units": head_units, "units": units, "programmes": programmes,
+		"courses": courses, "curricula": curricula, "cohorts": cohorts, "students": students,
+		"enrolments": enrolments, "offerings": offerings, "lecturers": lecturers, "assessments": assessments,
+		"results": results, "approval_batches": batches, "review_requests": reviews,
+		"transcripts": transcripts, "clearance": clearance}
+
+
+@frappe.whitelist()
+def review_faculty_result_batch(batch_name, decision, comment=None):
+	"""Approve or reject a submitted result batch without publishing student results."""
+	batch = frappe.get_doc("Result Approval Batch", batch_name)
+	_assert_faculty_offering(batch.course_offering)
+	if decision not in {"Approved", "Rejected"}:
+		frappe.throw("Decision must be Approved or Rejected.")
+	if batch.status not in {"Submitted", "Rejected"}:
+		frappe.throw("Only submitted result batches may be reviewed by the Faculty Head.")
+	for item in batch.items:
+		item.review_status = decision
+		item.comment = comment
+		if decision == "Approved":
+			result = frappe.get_doc("Student Course Result", item.student_course_result)
+			result.is_approved = 1
+			result.is_published = 0
+			result.approved_by = frappe.session.user
+			result.approved_on = frappe.utils.now()
+			result.save(ignore_permissions=True)
+	batch.approval_stage = "Faculty Head"
+	batch.status = decision
+	batch.approved_by = frappe.session.user if decision == "Approved" else None
+	batch.save(ignore_permissions=True)
+	return batch.name
+
+
+@frappe.whitelist()
+def review_faculty_transcript(transcript_name, decision):
+	"""Approve a faculty transcript for registrar processing or return it to draft."""
+	transcript = frappe.get_doc("Academic Transcript", transcript_name)
+	_assert_faculty_programme(transcript.academic_programme)
+	if decision not in {"Approved", "Returned"}:
+		frappe.throw("Decision must be Approved or Returned.")
+	if decision == "Returned":
+		transcript.status = "Draft"
+		transcript.faculty_head_user = None
+		transcript.faculty_head_approved_on = None
+		transcript.save(ignore_permissions=True)
+		return transcript.name
+	results = frappe.get_all(
+		"Student Course Result", filters={"student": transcript.student, "is_approved": 1, "docstatus": ["<", 2]},
+		fields="*",
+	)
+	if not results:
+		frappe.throw("This student has no faculty-approved results to certify.")
+	data = build_transcript_data({"name": transcript.student}, results, require_approved=False)
+	transcript.source_result_version = frappe.utils.now()
+	transcript.source_result_checksum = hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
+	transcript.faculty_head_user = frappe.session.user
+	transcript.faculty_head_approved_on = frappe.utils.now()
+	transcript.status = "Faculty Head Approved"
+	transcript.save(ignore_permissions=True)
+	return transcript.name
+
+
+@frappe.whitelist()
+def resolve_faculty_result_review(request_name, decision, status="Resolved"):
+	request = frappe.get_doc("Result Review Request", request_name)
+	result = frappe.get_doc("Student Course Result", request.student_course_result)
+	registration = frappe.get_doc("Course Registration", result.course_registration)
+	_assert_faculty_offering(registration.course_offering)
+	if status not in {"Under Review", "Approved", "Rejected", "Resolved"}:
+		frappe.throw("Select a valid review status.")
+	request.status = status
+	request.decision = decision
+	request.reviewed_by = frappe.session.user
+	request.save(ignore_permissions=True)
+	return request.name
+
+
 @frappe.whitelist()
 def get_student_registrations(student=None):
     student = student or frappe.db.get_value("Student", {"student_email_id": frappe.session.user})
