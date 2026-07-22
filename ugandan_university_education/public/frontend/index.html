@@ -2,11 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/assets/ugandan_university_education/frontend/favicon.png" />
+    <link rel="icon" type="image/png" href="/assets/ugandan_university_education/frontend/assets/ugandan_university_education/awu-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ankole Western University | Academic Operations</title>
-    <script type="module" crossorigin src="/assets/ugandan_university_education/frontend/assets/index-nn1_gMdQ.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/ugandan_university_education/frontend/assets/index-1IHZ0gKS.css">
+    <title>Ankole Western University</title>
+    <script type="module" crossorigin src="/assets/ugandan_university_education/frontend/assets/index-D2upi-L-.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/ugandan_university_education/frontend/assets/index-WQS7WGzv.css">
   </head>
   <body>
     <div id="app"></div>
@@ -15,14 +15,7 @@
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
-      window.document.title = '{{ abbr or "Ankole Western University" }}'
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = '{{ logo }}'
+      window.document.title = 'Ankole Western University'
     </script>
   </body>
 </html>

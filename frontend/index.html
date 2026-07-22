@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.png" />
+    <link rel="icon" type="image/png" href="/assets/ugandan_university_education/awu-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ankole Western University | Academic Operations</title>
+    <title>Ankole Western University</title>
   </head>
   <body>
     <div id="app"></div>
@@ -13,14 +13,7 @@
 
     <script>
       window.csrf_token = '{{ frappe.session.csrf_token }}'
-      window.document.title = '{{ abbr or "Ankole Western University" }}'
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-      }
-      link.href = '{{ logo }}'
+      window.document.title = 'Ankole Western University'
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
