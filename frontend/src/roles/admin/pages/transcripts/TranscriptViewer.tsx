@@ -70,7 +70,7 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
 
   return <section className={styles.transcriptViewerContainer}>
     <div className={styles.viewerHeading}>
-      <div><span className={styles.eyebrow}>AWU ADMINISTRATOR & REGISTRAR SERVICES</span><h1>Academic Transcript Viewer</h1><p>Live administrative preview using every mark currently recorded in ERPNext.</p></div>
+      <div><span className={styles.eyebrow}>AWU ADMINISTRATOR & REGISTRAR SERVICES</span><h1>Academic Transcript Viewer</h1><p>Live administrative preview using every mark currently recorded by the university.</p></div>
       <div className={styles.viewerActions}>{hasSelection?<button onClick={() => navigate('/transcripts')}><ArrowLeft size={16}/>Choose another student</button>:null}<button onClick={() => window.location.reload()}><RefreshCw size={16}/>Refresh marks</button><button className={styles.primaryAction} disabled={!data} onClick={() => window.print()}><Printer size={16}/>{approvedDocument?'Print transcript':'Print preview'}</button>{data?.transcript.generated_pdf ? <a href={data.transcript.generated_pdf} target="_blank" rel="noreferrer"><Download size={16}/>Issued PDF</a> : null}</div>
     </div>
 
@@ -79,7 +79,7 @@ export function TranscriptViewer({ roleLabel }: { roleLabel: string }) {
       <div className={styles.accessBadge}><ShieldCheck size={16}/><span>{roleLabel} · Live marks access</span></div>
     </div>
 
-    {loading ? <div className={styles.noDataMessage}>Loading all available marks from ERPNext…</div> : error ? <div className={styles.errorMessage}>{error}</div> : !data ? <div className={styles.noDataMessage}>{students.length ? 'Select a student to build the transcript preview.' : 'No student result records are available.'}</div> :
+    {loading ? <div className={styles.noDataMessage}>Loading all available university marks…</div> : error ? <div className={styles.errorMessage}>{error}</div> : !data ? <div className={styles.noDataMessage}>{students.length ? 'Select a student to build the transcript preview.' : 'No student result records are available.'}</div> :
       <article className={styles.transcriptContent}>
         <div className={styles.securityStrip}><span><FileCheck2 size={15}/>{approvedDocument?'Approved academic record':'Live administrative results preview'}</span><span>{data.result_count ?? 0} marks · {data.transcript.status}</span></div>
         <header className={styles.transcriptHeader}>

@@ -49,6 +49,89 @@ def update_student_profile(student, values):
 
 
 @frappe.whitelist()
+def get_payment_receipt_data(payment_entries):
+	"""Return permission-checked payment and invoice allocations for AWU receipts."""
+	roles = set(frappe.get_roles())
+	allowed_roles = {"System Manager", "Accounts User", "Accounts Manager", "Academics User", "Registrar"}
+	if frappe.session.user != "Administrator" and not roles.intersection(allowed_roles):
+		frappe.throw("Only authorised finance and academic staff may print payment receipts.", frappe.PermissionError)
+
+	if isinstance(payment_entries, str):
+		payment_entries = json.loads(payment_entries)
+	if not isinstance(payment_entries, list) or not payment_entries:
+		frappe.throw("Select at least one payment transaction.")
+	if len(payment_entries) > 200:
+		frappe.throw("A consolidated receipt can contain at most 200 payment transactions.")
+
+	invoice_meta = frappe.get_meta("Sales Invoice")
+	invoice_fields = ["name", "customer", "posting_date", "grand_total", "outstanding_amount"]
+	for custom_field in ("student", "academic_semester"):
+		if invoice_meta.has_field(custom_field):
+			invoice_fields.append(custom_field)
+
+	payments = []
+	for payment_name in dict.fromkeys(payment_entries):
+		doc = frappe.get_doc("Payment Entry", payment_name)
+		doc.check_permission("read")
+		student = None
+		if doc.party_type == "Customer" and doc.party:
+			student = frappe.db.get_value(
+				"Student", {"customer": doc.party},
+				["name", "student_name", "student_number"], as_dict=True,
+			)
+
+		allocations = []
+		for reference in doc.get("references") or []:
+			invoice = None
+			if reference.reference_doctype == "Sales Invoice" and reference.reference_name:
+				invoice = frappe.db.get_value("Sales Invoice", reference.reference_name, invoice_fields, as_dict=True)
+			allocations.append({
+				"reference_doctype": reference.reference_doctype,
+				"reference_name": reference.reference_name,
+				"total_amount": reference.total_amount,
+				"outstanding_amount": reference.outstanding_amount,
+				"allocated_amount": reference.allocated_amount,
+				"student": invoice.get("student") if invoice else None,
+				"academic_semester": invoice.get("academic_semester") if invoice else None,
+			})
+
+		payments.append({
+			"name": doc.name,
+			"posting_date": doc.posting_date,
+			"payment_type": doc.payment_type,
+			"party_type": doc.party_type,
+			"party": doc.party,
+			"party_name": doc.party_name,
+			"student": student,
+			"mode_of_payment": doc.mode_of_payment,
+			"reference_no": doc.reference_no,
+			"reference_date": doc.reference_date,
+			"paid_amount": doc.paid_amount,
+			"received_amount": doc.received_amount,
+			"source_exchange_rate": doc.source_exchange_rate,
+			"target_exchange_rate": doc.target_exchange_rate,
+			"paid_from_account_currency": doc.paid_from_account_currency,
+			"paid_to_account_currency": doc.paid_to_account_currency,
+			"remarks": doc.remarks,
+			"docstatus": doc.docstatus,
+			"allocations": allocations,
+		})
+
+	settings = frappe.get_single("University Education Settings")
+	return {
+		"university": {
+			"name": settings.university_name or "Ankole Western University",
+			"country": settings.country,
+			"currency": settings.default_currency or "UGX",
+			"footer": settings.transcript_footer,
+		},
+		"generated_on": frappe.utils.now_datetime(),
+		"generated_by": frappe.session.user,
+		"payments": payments,
+	}
+
+
+@frappe.whitelist()
 def get_student_info():
     return frappe.db.get_value(
         "Student", {"student_email_id": frappe.session.user},

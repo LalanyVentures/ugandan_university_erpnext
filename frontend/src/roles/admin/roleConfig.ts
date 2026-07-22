@@ -40,7 +40,7 @@ export const adminSubNavigation = {
     { label: 'Student Balances', path: '/finance', icon: WalletCards },
     { label: 'Fee Structures', path: '/finance/structures', icon: Receipt },
     { label: 'Invoices', path: '/finance/invoices', icon: FileCheck2 },
-    { label: 'Payments', path: '/finance/payments', icon: CreditCard },
+    { label: 'Payment Receipts', path: '/finance/payments', icon: CreditCard },
     { label: 'Sponsorships', path: '/finance/sponsorships', icon: ShieldCheck },
   ],
   results: [

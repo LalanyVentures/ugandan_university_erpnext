@@ -89,8 +89,8 @@ export function RecordsPage({ view }: { view: RecordView }) {
   const columnCount = item.columns.length + (studentActions || transcriptActions ? 1 : 0)
 
   return <section className="records-page">
-    <div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div><button className="primary-button" onClick={() => window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}`, '_blank', 'noopener,noreferrer')}><Plus size={16}/>Open in ERPNext</button></div>
-    <div className="records-summary card"><span className="records-summary-icon"><Icon size={24}/></span><div><strong>{rows.length}</strong><span>{item.doctype} records available</span></div><span className="source-chip">Live ERPNext data</span></div>
+    <div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div><button className="primary-button" onClick={() => window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}`, '_blank', 'noopener,noreferrer')}><Plus size={16}/>Manage full records</button></div>
+    <div className="records-summary card"><span className="records-summary-icon"><Icon size={24}/></span><div><strong>{rows.length}</strong><span>{item.doctype} records available</span></div><span className="source-chip">Live university data</span></div>
     <article className="card records-table-card">
       <div className="table-toolbar"><div><h3>{item.title}</h3><p>Search and review live university records.</p></div><label className="search-input"><Search size={16}/><input value={query} onChange={event => { const next=event.target.value; setQuery(next); setSearchParams(next ? {q:next} : {}, {replace:true}) }} placeholder={`Search ${item.title.toLowerCase()}`} /></label></div>
       {item.invoiceTable ? <InvoiceTable rows={filtered}/> : <div className="table-wrap"><table className="data-table">

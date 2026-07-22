@@ -111,7 +111,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       if (!score) continue
       const actions: SearchAction[] = [
         { label: 'View complete student profile', icon: Eye, run: route(`/students/profile/${encodeURIComponent(String(student.name))}`) },
-        { label: 'Open student in ERPNext', icon: IdCard, run: () => openDesk('Student', student.name) },
+        { label: 'Open full student record', icon: IdCard, run: () => openDesk('Student', student.name) },
         { label: 'View student finance', icon: CreditCard, run: route(`/finance?q=${encodeURIComponent(String(student.name))}`) },
       ]
       actions.push({ label: transcript ? 'View student transcript' : 'Search student transcript', icon: transcript ? FileBadge2 : FileText, run: route(`/transcripts?student=${encodeURIComponent(String(student.name))}`) })
@@ -153,7 +153,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       if (!score) continue
       const actions: SearchAction[] = [
         { label: 'View student transcript', icon: Eye, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
-        { label: 'Open transcript record in ERPNext', icon: IdCard, run: () => openDesk('Academic Transcript', transcript.name) },
+        { label: 'Open official transcript record', icon: IdCard, run: () => openDesk('Academic Transcript', transcript.name) },
         { label: 'Open student transcript', icon: FileBadge2, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
       ]
       if (transcript.generated_pdf) actions.push({ label: 'Open generated transcript PDF', icon: FileText, run: () => window.open(`${deskOrigin()}${String(transcript.generated_pdf)}`, '_blank', 'noopener,noreferrer') })
