@@ -8,17 +8,17 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space',
         changeOrigin: true,
         secure: false,
       },
       '/assets': {
-        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space',
         changeOrigin: true,
         secure: false,
       },
       '/files': {
-        target: process.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space',
+        target: process.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space',
         changeOrigin: true,
         secure: false,
       },

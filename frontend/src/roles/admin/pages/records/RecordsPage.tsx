@@ -59,7 +59,7 @@ const config: Record<RecordView, SectionConfig> = {
 
 function deskOrigin() {
   return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? import.meta.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space'
+    ? import.meta.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space'
     : window.location.origin
 }
 

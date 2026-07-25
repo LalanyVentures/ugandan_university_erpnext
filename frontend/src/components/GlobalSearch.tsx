@@ -55,7 +55,7 @@ function fuzzyScore(query: string, values: unknown[]) {
 
 function deskOrigin() {
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return import.meta.env.VITE_FRAPPE_URL || 'https://erp-school-academy.jdd.arthlabs.space'
+    return import.meta.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space'
   }
   return window.location.origin
 }
