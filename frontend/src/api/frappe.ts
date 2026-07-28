@@ -16,7 +16,7 @@ export function isJddRuntime() {
   return Boolean(appSlug)
 }
 
-function jddAuthUrl(action: 'login' | 'session' | 'logout') {
+function jddAuthUrl(action: 'login' | 'session' | 'logout' | 'bootstrap') {
   if (!appSlug) throw new Error('JDD could not determine the application from this URL.')
   return `/app-api/apps/${encodeURIComponent(appSlug)}/auth/${action}`
 }
@@ -79,12 +79,18 @@ function toSession(user: string, roles: string[]): UniversitySession {
 export const authApi = {
   async me() {
     if (isJddRuntime()) {
-      const payload = await jsonRequest<{
+      let payload: {
         message?: { user?: string; roles?: string[] }
         session?: { user?: string; roles?: string[] }
         user?: string
         roles?: string[]
-      }>(jddAuthUrl('session'))
+      }
+      try {
+        payload = await jsonRequest<typeof payload>(jddAuthUrl('session'))
+      } catch (cause) {
+        if (!launchToken) throw cause
+        return this.bootstrap()
+      }
       const session = payload.session ?? payload.message ?? payload
       if (!session.user || session.user === 'Guest') throw new Error('Not signed in')
       return toSession(session.user, session.roles ?? [])
@@ -92,6 +98,17 @@ export const authApi = {
     const payload = await jsonRequest<{ message: { user: string; roles: string[] } }>('/api/method/ugandan_university_education.ugandan_university_education.api.get_user_info')
     if (!payload.message?.user || payload.message.user === 'Guest') throw new Error('Not signed in')
     return toSession(payload.message.user, payload.message.roles ?? [])
+  },
+  async bootstrap() {
+    if (!isJddRuntime()) throw new Error('Application bootstrap is only available in JDD runtime.')
+    const payload = await jsonRequest<{
+      session?: { user?: string; roles?: string[] }
+      message?: { user?: string; roles?: string[] }
+    }>(jddAuthUrl('bootstrap'), { method: 'POST' })
+    clearLaunchToken()
+    const session = payload.session ?? payload.message
+    if (!session?.user) throw new Error('JDD could not create the shared application session.')
+    return toSession(session.user, session.roles ?? [])
   },
   async login(identifier: string, password: string) {
     if (isJddRuntime()) {
