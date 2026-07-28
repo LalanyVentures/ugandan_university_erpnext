@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { authApi, isJddRuntime, returnToJddDashboard, signOutOfJdd, type UniversitySession } from './api/frappe'
+import { authApi, type UniversitySession } from './api/frappe'
 import { LoginPage } from './pages/auth/LoginPage'
 import { AdminShell } from './roles/admin/layout/AdminShell'
 import { DashboardPage } from './roles/admin/pages/dashboard/DashboardPage'
@@ -19,17 +19,12 @@ import { portalRoleFor } from './roles/admin/roleConfig'
 export default function App() {
   const [session, setSession] = useState<UniversitySession | null>(null)
   const [loading, setLoading] = useState(true)
-  const [sessionError, setSessionError] = useState('')
 
   function openSession() {
     setLoading(true)
-    setSessionError('')
     authApi.me()
       .then(setSession)
-      .catch(cause => {
-        setSession(null)
-        setSessionError(cause instanceof Error ? cause.message : 'JDD could not open the assigned ERPNext session.')
-      })
+      .catch(() => setSession(null))
       .finally(() => setLoading(false))
   }
 
@@ -40,21 +35,6 @@ export default function App() {
   }
 
   if (!session) {
-    if (isJddRuntime()) {
-      return (
-        <main className="app-loading" role="alert">
-          <div className="brand-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div>
-          <h2>Unable to open the University Platform</h2>
-          <p>{sessionError || 'JDD could not establish the assigned ERPNext session.'}</p>
-          <p>Reopen the application from your JDD dashboard. If this continues, verify the University business assignment and ERPNext API credentials in JDD.</p>
-          <div className="hero-action-row">
-            <button className="primary-button" type="button" onClick={openSession}>Retry connection</button>
-            <button className="secondary-button" type="button" onClick={returnToJddDashboard}>Return to dashboard</button>
-            <button className="secondary-button" type="button" onClick={signOutOfJdd}>Sign out</button>
-          </div>
-        </main>
-      )
-    }
     return <LoginPage onLogin={setSession} />
   }
 

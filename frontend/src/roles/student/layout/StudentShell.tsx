@@ -11,7 +11,7 @@ export function StudentShell({session,onLogout,children}:{session:UniversitySess
   const [moreOpen,setMoreOpen]=useState(false)
   const current=studentNavigation.find(item=>active(item.path,location.pathname)) ?? studentNavigation[0]
   const mobileItems=studentNavigation.slice(0,4)
-  async function logout(){await authApi.logout().catch(()=>undefined);onLogout();navigate('/student',{replace:true})}
+  async function logout(){await authApi.logout().catch(()=>undefined);onLogout();navigate('/login',{replace:true})}
   return <div className="app-shell role-shell role-shell-student">
     <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/awu-logo.png" alt="Ankole Western University"/></div></div>
     <header className="topbar card desktop-topbar"><div className="student-topbar-context"><span className="eyebrow">MY AWU PORTAL</span><strong>{current.label}</strong></div><div className="topbar-actions"><button className="topbar-icon-button" aria-label="Notifications"><Bell size={18}/></button><button className="topbar-user-chip" onClick={()=>navigate('/student/profile')}><span className="topbar-user-avatar">{session.initials}</span><span className="topbar-user-copy"><strong>{session.fullName}</strong><small>Student</small></span></button></div></header>

@@ -1,6 +1,6 @@
 # University Platform JDD Upload Package
 
-Upload `university-platform-0.2.2-source.zip` from this directory in:
+Upload `university-platform-0.3.0-source.zip` from this directory in:
 
 `Admin > Frontend applications > Application File Manager > Upload ZIP`
 
@@ -38,11 +38,18 @@ tenant credentials to this archive.
 - Git history
 - environment and credential files
 
-Version `0.2.2` disables ERPNext password login when the application is launched
-through JDD. It uses the JDD launch token and server-side ERPNext integration,
-and shows a retryable integration error instead of a password form when launch
-session initialization fails. JDD logout now clears the dashboard member and
-platform browser sessions and redirects to `/dashboard/login`. The error page
-also provides Return to Dashboard and Sign out actions.
+Version `0.3.0` uses an application-owned session when launched through JDD.
+The application slug is derived dynamically from the artifact URL. Login,
+session lookup, and logout use:
 
-Use `university-platform-0.2.2-source.sha256` to verify the ZIP before uploading.
+```text
+POST /app-api/apps/:appSlug/auth/login
+GET  /app-api/apps/:appSlug/auth/session
+POST /app-api/apps/:appSlug/auth/logout
+```
+
+After logout, the browser remains on the current release at `#/login`. JDD must
+implement this generic contract and issue a secure application-session cookie;
+the University frontend does not require a JDD dashboard session.
+
+Use `university-platform-0.3.0-source.sha256` to verify the ZIP before uploading.

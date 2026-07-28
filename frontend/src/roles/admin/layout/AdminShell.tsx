@@ -29,7 +29,7 @@ export function AdminShell({ session, onLogout, children }: { session: Universit
   async function logout() {
     await authApi.logout().catch(() => undefined)
     onLogout()
-    navigate('/dashboard', { replace: true })
+    navigate('/login', { replace: true })
   }
 
   return (

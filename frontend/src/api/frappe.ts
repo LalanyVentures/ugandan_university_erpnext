@@ -8,20 +8,30 @@ export type UniversitySession = {
 
 export type FrappeRow = Record<string, unknown>
 
-const launchToken = new URLSearchParams(window.location.search).get('launchToken')
+let launchToken = new URLSearchParams(window.location.search).get('launchToken')
+const appPathMatch = window.location.pathname.match(/\/app-api\/apps\/([^/]+)\//)
+const appSlug = appPathMatch ? decodeURIComponent(appPathMatch[1]) : null
 
 export function isJddRuntime() {
-  return Boolean(launchToken) || window.location.pathname.includes('/app-api/apps/')
+  return Boolean(appSlug)
 }
 
-export function returnToJddDashboard() {
-  window.location.assign('/dashboard/overview')
+function jddAuthUrl(action: 'login' | 'session' | 'logout') {
+  if (!appSlug) throw new Error('JDD could not determine the application from this URL.')
+  return `/app-api/apps/${encodeURIComponent(appSlug)}/auth/${action}`
 }
 
-export function signOutOfJdd() {
-  window.localStorage.removeItem('jdd-dashboard-member-session')
-  window.localStorage.removeItem('jdd-platform-session')
-  window.location.replace('/dashboard/login')
+function requestUrl(url: string) {
+  if (!isJddRuntime() || !url.startsWith('/api/')) return url
+  return `/app-api/apps/${encodeURIComponent(appSlug!)}/erpnext${url}`
+}
+
+function clearLaunchToken() {
+  if (!launchToken) return
+  const current = new URL(window.location.href)
+  current.searchParams.delete('launchToken')
+  window.history.replaceState(window.history.state, '', `${current.pathname}${current.search}${current.hash}`)
+  launchToken = null
 }
 
 function messageOf(payload: unknown, fallback: string) {
@@ -39,9 +49,9 @@ async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
   if (launchToken && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${launchToken}`)
   }
-  const response = await fetch(url, {
+  const response = await fetch(requestUrl(url), {
     ...init,
-    credentials: isJddRuntime() ? 'omit' : 'include',
+    credentials: 'include',
     headers,
   })
   const payload = await response.json().catch(() => null)
@@ -68,13 +78,37 @@ function toSession(user: string, roles: string[]): UniversitySession {
 
 export const authApi = {
   async me() {
+    if (isJddRuntime()) {
+      const payload = await jsonRequest<{
+        message?: { user?: string; roles?: string[] }
+        session?: { user?: string; roles?: string[] }
+        user?: string
+        roles?: string[]
+      }>(jddAuthUrl('session'))
+      const session = payload.session ?? payload.message ?? payload
+      if (!session.user || session.user === 'Guest') throw new Error('Not signed in')
+      return toSession(session.user, session.roles ?? [])
+    }
     const payload = await jsonRequest<{ message: { user: string; roles: string[] } }>('/api/method/ugandan_university_education.ugandan_university_education.api.get_user_info')
     if (!payload.message?.user || payload.message.user === 'Guest') throw new Error('Not signed in')
     return toSession(payload.message.user, payload.message.roles ?? [])
   },
   async login(identifier: string, password: string) {
     if (isJddRuntime()) {
-      throw new Error('ERPNext password login is disabled in JDD. Reopen the application from your JDD dashboard.')
+      const payload = await jsonRequest<{
+        message?: { user?: string; roles?: string[] }
+        session?: { user?: string; roles?: string[] }
+        user?: string
+        roles?: string[]
+      }>(jddAuthUrl('login'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, password }),
+      })
+      clearLaunchToken()
+      const session = payload.session ?? payload.message ?? payload
+      if (session.user && session.user !== 'Guest') return toSession(session.user, session.roles ?? [])
+      return this.me()
     }
     const body = new URLSearchParams({ usr: identifier, pwd: password })
     await jsonRequest('/api/method/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
@@ -82,7 +116,7 @@ export const authApi = {
   },
   async logout() {
     if (isJddRuntime()) {
-      signOutOfJdd()
+      await jsonRequest(jddAuthUrl('logout'), { method: 'POST' })
       return
     }
     await jsonRequest('/api/method/logout', { method: 'POST' })

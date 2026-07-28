@@ -10,7 +10,7 @@ export function FinanceShell({ session, onLogout, children }: { session: Univers
   const location = useLocation(), navigate = useNavigate(), [more, setMore] = useState(false)
   const current = financeNavigation.find(item => active(item.path, location.pathname)) ?? financeNavigation[0]
   const mobile = financeNavigation.filter(item => ['/finance', '/finance/students', '/finance/payments', '/finance/analysis'].includes(item.path))
-  async function logout() { await authApi.logout().catch(() => undefined); onLogout(); navigate('/', { replace: true }) }
+  async function logout() { await authApi.logout().catch(() => undefined); onLogout(); navigate('/login', { replace: true }) }
   return <div className="app-shell role-shell role-shell-finance">
     <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/awu-logo.png" alt="Ankole Western University"/></div></div>
     <header className="topbar card desktop-topbar"><div className="student-topbar-context"><span className="eyebrow">FINANCE OFFICE PORTAL</span><strong>{current.label}</strong></div><div className="topbar-actions"><button className="topbar-icon-button"><Bell size={18}/></button><button className="topbar-user-chip"><span className="topbar-user-avatar">{session.initials}</span><span className="topbar-user-copy"><strong>{session.fullName}</strong><small>Finance Officer</small></span></button></div></header>
