@@ -8,16 +8,32 @@ export type UniversitySession = {
 
 export type FrappeRow = Record<string, unknown>
 
+const launchToken = new URLSearchParams(window.location.search).get('launchToken')
+
+export function isJddRuntime() {
+  return Boolean(launchToken) || window.location.pathname.includes('/app-api/apps/')
+}
+
 function messageOf(payload: unknown, fallback: string) {
   if (payload && typeof payload === 'object') {
-    if ('message' in payload && payload.message) return String(payload.message)
+    if ('message' in payload && payload.message && typeof payload.message !== 'object') return String(payload.message)
+    if ('error' in payload && payload.error) return String(payload.error)
+    if ('detail' in payload && payload.detail) return String(payload.detail)
     if ('exception' in payload && payload.exception) return String(payload.exception).replace(/^.*?:\s*/, '')
   }
   return fallback
 }
 
 async function jsonRequest<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { credentials: 'include', ...init })
+  const headers = new Headers(init?.headers)
+  if (launchToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${launchToken}`)
+  }
+  const response = await fetch(url, {
+    ...init,
+    credentials: isJddRuntime() ? 'omit' : 'include',
+    headers,
+  })
   const payload = await response.json().catch(() => null)
   if (!response.ok) throw new Error(messageOf(payload, 'The request could not be completed.'))
   return payload as T
@@ -47,11 +63,15 @@ export const authApi = {
     return toSession(payload.message.user, payload.message.roles ?? [])
   },
   async login(identifier: string, password: string) {
+    if (isJddRuntime()) {
+      throw new Error('ERPNext password login is disabled in JDD. Reopen the application from your JDD dashboard.')
+    }
     const body = new URLSearchParams({ usr: identifier, pwd: password })
     await jsonRequest('/api/method/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body })
     return this.me()
   },
   async logout() {
+    if (isJddRuntime()) return
     await jsonRequest('/api/method/logout', { method: 'POST' })
   },
 }
