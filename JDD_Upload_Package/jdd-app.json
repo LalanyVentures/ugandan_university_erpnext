@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "slug": "university-platform",
+  "name": "University Platform",
+  "version": "0.2.0",
+  "framework": "react-vite",
+  "buildCommand": "npm run build:jdd",
+  "outputDirectory": "dist",
+  "entryFile": "index.html",
+  "integrationCode": "erpnext",
+  "displayModes": ["full-page", "dashboard-frame"],
+  "requestedScopes": ["schema:read", "records:read", "records:write", "commands:run"]
+}

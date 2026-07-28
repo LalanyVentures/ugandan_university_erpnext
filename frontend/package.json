@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build --base=/assets/ugandan_university_education/frontend/ && npm run copy-html-entry",
+    "build:jdd": "tsc --noEmit && vite build --config vite.config.jdd.js",
     "preview": "vite preview",
     "copy-html-entry": "node -e \"require('fs').copyFileSync('../ugandan_university_education/public/frontend/index.html','../ugandan_university_education/www/student-portal.html')\""
   },
