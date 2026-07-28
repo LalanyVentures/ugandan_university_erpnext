@@ -1,6 +1,6 @@
 # University Platform JDD Upload Package
 
-Upload `university-platform-0.3.0-source.zip` from this directory in:
+Upload `university-platform-0.3.1-source.zip` from this directory in:
 
 `Admin > Frontend applications > Application File Manager > Upload ZIP`
 
@@ -38,7 +38,8 @@ tenant credentials to this archive.
 - Git history
 - environment and credential files
 
-Version `0.3.0` uses an application-owned session when launched through JDD.
+Version `0.3.1` uses an application-owned session when launched through JDD
+and explicitly opts into it with `authenticationMode: "application-session"`.
 The application slug is derived dynamically from the artifact URL. Login,
 session lookup, and logout use:
 
@@ -52,4 +53,4 @@ After logout, the browser remains on the current release at `#/login`. JDD must
 implement this generic contract and issue a secure application-session cookie;
 the University frontend does not require a JDD dashboard session.
 
-Use `university-platform-0.3.0-source.sha256` to verify the ZIP before uploading.
+Use `university-platform-0.3.1-source.sha256` to verify the ZIP before uploading.
