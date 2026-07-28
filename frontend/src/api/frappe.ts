@@ -14,6 +14,16 @@ export function isJddRuntime() {
   return Boolean(launchToken) || window.location.pathname.includes('/app-api/apps/')
 }
 
+export function returnToJddDashboard() {
+  window.location.assign('/dashboard/overview')
+}
+
+export function signOutOfJdd() {
+  window.localStorage.removeItem('jdd-dashboard-member-session')
+  window.localStorage.removeItem('jdd-platform-session')
+  window.location.replace('/dashboard/login')
+}
+
 function messageOf(payload: unknown, fallback: string) {
   if (payload && typeof payload === 'object') {
     if ('message' in payload && payload.message && typeof payload.message !== 'object') return String(payload.message)
@@ -71,7 +81,10 @@ export const authApi = {
     return this.me()
   },
   async logout() {
-    if (isJddRuntime()) return
+    if (isJddRuntime()) {
+      signOutOfJdd()
+      return
+    }
     await jsonRequest('/api/method/logout', { method: 'POST' })
   },
 }
