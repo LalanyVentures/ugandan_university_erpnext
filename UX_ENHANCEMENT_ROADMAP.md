@@ -628,13 +628,13 @@ Exit criteria:
 
 ### Phase 10 — Primary and Secondary adoption
 
-- [ ] Extract shared shell, Data Workbench, tree, search, modal, export/import, and saved-view packages.
-- [ ] Keep University schema/entity names out of shared components.
-- [ ] Map Primary entity hierarchy: school → year/term → class/stream → pupil → attendance/assessment/fees/welfare/report card.
-- [ ] Map Secondary hierarchy: school → year/term → S1–S6 stream → learner → subject enrolment → assessment/UNEB/finance/boarding.
-- [ ] Convert Primary and Secondary ERPNext Desk links to native record drawers/forms.
-- [ ] Preserve Primary routes and Secondary local-module architecture initially; introduce Secondary durable deep links as a controlled migration.
-- [ ] Repeat role-by-role UX phases using the same acceptance checklist.
+- [x] Extract shared shell, Data Workbench, tree, search, modal, export/import, and saved-view packages.
+- [x] Keep University schema/entity names out of shared components.
+- [x] Map Primary entity hierarchy: school → year/term → class/stream → pupil → attendance/assessment/fees/welfare/report card.
+- [x] Map Secondary hierarchy: school → year/term → S1–S6 stream → learner → subject enrolment → assessment/UNEB/finance/boarding.
+- [x] Convert Primary and Secondary ERPNext Desk links to native record drawers/forms.
+- [x] Preserve Primary routes and Secondary local-module architecture initially; introduce Secondary durable deep links as a controlled migration.
+- [x] Repeat role-by-role UX phases using the same acceptance checklist.
 
 ## 11. UX map enhancement process
 

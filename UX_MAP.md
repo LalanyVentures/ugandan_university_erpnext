@@ -3606,3 +3606,51 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
             ├── fee structures imported as reviewable Draft versions
             └── no payment, allocation, invoice or clearance bulk mutation
 ```
+## Phase 10 implementation overlay — Primary and Secondary adoption
+
+```text
+[SHARED-UX-CONTRACT:PHASE-10]
+├── shell: sidebar | topbar | profile | notifications | mobile navigation
+├── navigation: primary tab | contextual subtab | URL-backed status sub-sub-tab
+├── discovery: global search | expandable school explorer | record destinations
+├── workbench: search | field filter | saved views | selection | pagination
+├── export: current page | selected | all filtered
+├── import: approved template | 10 MiB | 2,000 rows | atomic server transaction
+├── record interaction: native view | create | edit drawer/form
+├── permission: ERPNext create/read/write remains server-authoritative
+├── safety: generic financial document import explicitly rejected
+└── schema: shared components contain no University entity names
+
+[PRIMARY-ADOPTION] ugandan_primary_education / main
+├── foundation commit: afabba9
+├── native report builder: 0b4cf1f
+├── saved views + atomic imports: 2e0a7ee
+├── hierarchy
+│   └── school → year → term → class/stream → pupil
+│       ├── attendance
+│       ├── assessment
+│       ├── fees
+│       ├── welfare
+│       └── report card
+├── durable routes preserved
+├── every role continues through role-filtered shared shell/workbench
+└── normal-user ERPNext Desk links: none
+
+[SECONDARY-ADOPTION] ugandan_secondary_education / main
+├── foundation commit: 3f0f705
+├── native report builder: 378a328
+├── saved views + atomic imports: efaa6e2
+├── hierarchy
+│   └── school → year → term → S1–S6 stream → learner
+│       ├── subject enrolment
+│       ├── assessment and CA
+│       ├── report cards
+│       ├── UNEB readiness
+│       ├── finance
+│       └── boarding
+├── controlled durable query state
+│   └── module | view | stage | q | page | pageSize
+├── local role-profile architecture preserved
+├── every role resolves through the shared Secondary dashboard/workbench
+└── normal-user ERPNext Desk links: none
+```
