@@ -49,6 +49,7 @@ export function DataWorkbench({ schema, loadPage, actions }: Props) {
       .finally(() => { if (requestId === requestRef.current) setLoading(false) })
     return () => controller.abort()
   }, [schema.entity, params.get('q'), params.get('filters'), params.get('refresh'), page, pageSize, sortField, sortOrder])
+  useEffect(()=>{const requested=params.get('record');if(requested){const match=rows.find(row=>String(row.name)===requested);if(match)setDrawerRow(match)}},[rows,params.get('record')])
 
   const rowKey = (row: FrappeRow, index = 0) => String(row.name ?? `${schema.entity}-${index}`)
   const allSelected = rows.length > 0 && rows.every((row, index) => selected.has(rowKey(row, index)))

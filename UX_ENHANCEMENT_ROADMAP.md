@@ -498,22 +498,22 @@ Exit criteria:
 
 ### Phase 3 — Tree Explorer and Global Search
 
-- [ ] Implement explorer API and lazy node loading.
-- [ ] Implement explorer panel/drawer, row layout, node icons, action icons, metadata, pins, and recent nodes.
-- [ ] Implement University roots and hierarchy.
-- [ ] Implement node permission/scoping rules.
-- [ ] Implement node-to-drawer, node-to-table, and node-to-create-context actions.
-- [ ] Implement global search API.
-- [ ] Implement grouped navigation, records, tree, actions, and help search results.
-- [ ] Add keyboard shortcut, keyboard navigation, and focus restoration.
-- [ ] Add search result telemetry/audit with sensitive-result redaction.
-- [ ] Add deep-link support for selected tree path and search result.
+- [x] Implement explorer API and lazy node loading.
+- [x] Implement explorer panel/drawer, row layout, node icons, action icons, metadata, pins, and recent nodes.
+- [x] Implement University roots and hierarchy.
+- [x] Implement node permission/scoping rules.
+- [x] Implement node-to-drawer, node-to-table, and node-to-create-context actions.
+- [x] Implement global search API.
+- [x] Implement grouped navigation, records, tree, actions, and help search results.
+- [x] Add keyboard shortcut, keyboard navigation, and focus restoration.
+- [x] Add search result telemetry/audit with sensitive-result redaction.
+- [x] Add deep-link support for selected tree path and search result.
 
 Exit criteria:
 
-- [ ] A user can find a student, cohort, offering, invoice, result, or transcript by explorer or global search.
-- [ ] Selecting a tree node/action never requires ERPNext Desk.
-- [ ] Explorer and search expose only permitted records and actions.
+- [x] A user can find a student, cohort, offering, invoice, result, or transcript by explorer or global search.
+- [x] Selecting a tree node/action never requires ERPNext Desk.
+- [x] Explorer and search expose only permitted records and actions.
 
 ### Phase 4 — Administrator experience enhancement
 

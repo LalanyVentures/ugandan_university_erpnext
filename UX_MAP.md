@@ -3063,3 +3063,87 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 ├── Global Search student/course/programme/transcript actions → native routes
 └── normal-user ERPNext Desk navigation remaining in React source: none
 ```
+
+## Phase 3 implementation overlay — Tree Explorer and Global Search
+
+```text
+[COMPONENT:C-UNIVERSITY-EXPLORER] UniversityExplorer
+├── [BUTTON:B-OPEN-EXPLORER] topbar/mobile FolderTree icon
+├── [DIALOG:D-EXPLORER] left-side modal explorer panel
+│   ├── focus on open
+│   ├── Escape/backdrop close
+│   └── restore focus to opener
+├── [ROOT:R-AWU] Ankole Western University
+│   ├── [GROUP:G-STUDENTS] Students and cohorts
+│   │   ├── Cohorts → lazy 25-row page
+│   │   │   └── Cohort → lazy programme enrolments
+│   │   └── Students → lazy 25-row page → native profile
+│   ├── [GROUP:G-ACADEMICS] Academic structure
+│   │   ├── Programmes → lazy page → DataWorkbench drawer
+│   │   └── Courses → lazy page → DataWorkbench drawer
+│   ├── [GROUP:G-REGISTRATION] Teaching and registration
+│   │   ├── Course Offerings
+│   │   └── Programme Enrolments
+│   ├── [GROUP:G-FINANCE] Finance → Student Invoices
+│   ├── [GROUP:G-RESULTS] Results → Course Results
+│   └── [GROUP:G-TRANSCRIPTS] Transcripts → Academic Transcripts
+├── [NODE:N-EXPLORER]
+│   ├── chevron + coloured type icon
+│   ├── label + metadata/status
+│   ├── pin/unpin
+│   ├── open native destination
+│   ├── create-context action when permitted
+│   └── ArrowRight | ArrowLeft | Enter keyboard behavior
+├── [STORE:S-EXPLORER]
+│   ├── localStorage pins [maximum 12]
+│   └── localStorage recent nodes [maximum 8]
+└── [PERMISSION:P-DISCOVERY]
+    ├── administrator: full University entity discovery
+    ├── registrar: academic record discovery
+    ├── finance: Student + Invoice discovery
+    ├── faculty-head: navigation only until faculty server scope exists
+    ├── lecturer: navigation only until assignment server scope exists
+    ├── student: navigation only; no unscoped record discovery
+    └── staff: no explorer roots
+
+[API:A-UNIVERSITY-DISCOVERY] universityDiscovery.ts
+├── explorerRoots(role)
+├── loadExplorerChildren(node, role, AbortSignal)
+│   ├── lazy entity requests
+│   ├── pageSize 25
+│   ├── server filters for child relationships
+│   └── roleEntities deny-by-default gate
+├── searchUniversity(query, role, AbortSignal)
+│   ├── parallel allowlisted entity queries
+│   ├── maximum five records per entity
+│   ├── request cancellation
+│   └── role/entity intersection before network calls
+└── auditDiscovery(event, metadata)
+    ├── events: search | tree_open | tree_select | search_select
+    ├── stores query length, never raw query
+    ├── removes URL query from audited route
+    ├── bounded local audit fallback [100]
+    └── best-effort JDD audit beacon
+
+[COMPONENT:C-GLOBAL-SEARCH-V2] Grouped global search
+├── [INPUT:I-GLOBAL-SEARCH] Ctrl/Cmd+K focus shortcut
+├── 280 ms debounce + AbortController + stale request ID
+├── [GROUP:SG-NAVIGATION] permitted portal destinations
+├── [GROUP:SG-RECORDS] Student | Cohort | Offering | Invoice | Result | Transcript
+├── [GROUP:SG-TREE] matching hierarchy nodes
+├── [GROUP:SG-ACTIONS] permitted quick-create/action destinations
+├── [GROUP:SG-HELP] workbench help
+├── ArrowDown | ArrowUp | Enter | Escape
+├── focus restoration after close/selection
+└── [DEEPLINK:DL-SEARCH]
+    ├── searchResult=:resultId
+    ├── tree=university/:entity/:recordId
+    ├── record=:recordId opens DataWorkbench drawer
+    └── route/query survives refresh and browser history
+
+[SECURITY:S-DISCOVERY]
+├── Browser role cannot add entities outside roleEntities
+├── Student/lecturer/faculty record discovery remains closed without server scope
+├── normal-user ERPNext Desk links: none
+└── audit metadata excludes names, raw searches, credentials and record payloads
+```
