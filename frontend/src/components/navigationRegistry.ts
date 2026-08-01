@@ -60,6 +60,10 @@ export function viewNavigationFor(role: PortalRole, pathname: string): readonly 
     const labels = pathname.includes('/transcript') || pathname.includes('/clearance') ? ['Current','History','Available','Pending'] : ['Current semester','History','Selected semester']
     return labels.map(label => ({ label, path: current.path, icon: current.icon }))
   }
+  if (role === 'faculty-head') {
+    const labels = pathname.includes('/approvals') ? ['Active semester','Approval queue','Approved','Returned'] : pathname.includes('/reviews') ? ['Active semester','Review queue','Under review','Resolved'] : pathname.includes('/transcripts') || pathname.includes('/readiness') ? ['Active semester','Transcript readiness','Pending','Ready'] : ['Active semester','All assigned','Needs attention']
+    return labels.map(label => ({ label, path: current.path, icon: current.icon }))
+  }
   return [
     { label: 'All', path: current.path, icon: current.icon },
     { label: 'Active', path: current.path, icon: current.icon },

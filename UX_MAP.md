@@ -3298,3 +3298,26 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
     ├── no ERPNext Desk links
     └── no browser-supplied student identity
 ```
+
+## Phase 7 implementation overlay — Faculty leadership scope foundation
+
+```text
+[PORTAL:P-FACULTY-PHASE-7] AWU Faculty Leadership
+├── [FILTER:C-FACULTY-SCOPE-BAR]
+│   ├── [INPUT:I-FACULTY-SCOPE-SEARCH] scoped programme/offering/staff/approval search
+│   ├── [SELECT:I-FACULTY-UNIT] assigned academic unit
+│   ├── [SELECT:I-FACULTY-PROGRAMME] programme dependent on unit
+│   ├── [SELECT:I-FACULTY-SEMESTER] active or historical semester
+│   ├── [SELECT:I-FACULTY-STATUS] workflow status
+│   └── [BUTTON:B-FACULTY-SCOPE-CLEAR] restore complete assigned scope
+├── [SUB-SUB-TABS:N-FACULTY-VIEWS]
+│   ├── Result approvals: Active semester | Approval queue | Approved | Returned
+│   ├── Review requests: Active semester | Review queue | Under review | Resolved
+│   ├── Transcript/readiness: Active semester | Transcript readiness | Pending | Ready
+│   └── Other faculty pages: Active semester | All assigned | Needs attention
+└── [PERMISSION:P-FACULTY-SCOPE]
+    ├── server source: get_faculty_head_portal_data
+    ├── browser filters only reduce the server-authorized payload
+    ├── unit → programme dependent filtering
+    └── no browser-supplied faculty identity or academic-unit override
+```
