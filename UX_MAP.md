@@ -3355,3 +3355,33 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
         ├── action | actor | time | reason
         └── persisted University Audit Event records
 ```
+
+```text
+[PAGE:P-FACULTY-REVIEW-TRIAGE] Result Review Triage
+├── [FILTER:C-FACULTY-REVIEW-FILTERS]
+│   ├── [INPUT:I-REVIEW-SEARCH] request | student | result | reason
+│   ├── [SELECT:I-REVIEW-STATUS] Open | Under Review | Approved | Rejected | Resolved
+│   └── [SELECT:I-REVIEW-TYPE] values derived from scoped requests
+├── [TABLE:T-FACULTY-REVIEW-REQUESTS]
+│   ├── columns: request | student | type | reason | status | faculty action
+│   ├── [STATUS:ST-REVIEW] coloured workflow chip
+│   ├── [BUTTON:B-START-REVIEW] decision guidance → Under Review
+│   └── [BUTTON:B-RESOLVE-REVIEW] decision guidance → Resolved
+└── [PAGINATION:PG-FACULTY-REVIEWS]
+    ├── page sizes: 25 | 50 | 100 | 2000
+    └── previous | next | row count | page count
+
+[PAGE:P-FACULTY-WORKLOAD] Programme and Lecturer Workload
+├── [METRIC:MT-FACULTY-PROGRAMMES] filtered programme count
+├── [METRIC:MT-FACULTY-LECTURERS] assigned lecturer count
+├── [METRIC:MT-FACULTY-OFFERINGS] filtered teaching delivery
+├── [METRIC:MT-FACULTY-STUDENTS] faculty programme students
+├── [TABLE:T-PROGRAMME-WORKLOAD]
+│   └── programme | students | offerings | results | approved | status
+├── [TABLE:T-LECTURER-WORKLOAD]
+│   └── lecturer | assignments | offerings | primary roles | capacity | status
+└── [BUTTON:B-EXPORT-APPROVED-SUMMARY]
+    ├── CSV: batch | offering | semester | stage | status | approved by
+    ├── includes status=Approved only
+    └── excludes submitted/rejected batches and all student-level marks
+```

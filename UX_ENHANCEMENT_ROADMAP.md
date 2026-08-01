@@ -587,14 +587,14 @@ Exit criteria:
 - [x] Explorer scope: assigned faculties/units → programmes → offerings → lecturers/students/results.
 - [x] Add sub-sub-tabs for active semester, approval queue, review queue, transcript readiness.
 - [x] Implement result batch drawer with compare, approve, return, reason, and audit history.
-- [ ] Implement review request triage table with status chips and filters.
-- [ ] Implement programme and lecturer workload dashboards.
-- [ ] Add export of approved operational summaries only.
+- [x] Implement review request triage table with status chips and filters.
+- [x] Implement programme and lecturer workload dashboards.
+- [x] Add export of approved operational summaries only.
 - [x] Add search across scoped programmes, offerings, staff, and approval batches.
 
 Exit criteria:
 
-- [ ] Faculty approval, review, and academic oversight occur inside the application with scope enforcement.
+- [x] Faculty approval, review, and academic oversight occur inside the application with scope enforcement.
 
 ### Phase 8 — Registrar experience enhancement
 
