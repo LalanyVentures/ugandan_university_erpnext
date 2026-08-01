@@ -1,0 +1,23 @@
+{
+  "doctype": "DocType",
+  "name": "University Audit Event",
+  "module": "University",
+  "autoname": "hash",
+  "fields": [
+    {"fieldname": "entity_type", "label": "Entity Type", "fieldtype": "Data", "reqd": 1, "in_list_view": 1},
+    {"fieldname": "entity_name", "label": "Entity Name", "fieldtype": "Data", "reqd": 1, "in_list_view": 1},
+    {"fieldname": "action", "label": "Action", "fieldtype": "Data", "reqd": 1, "in_list_view": 1},
+    {"fieldname": "reason", "label": "Reason", "fieldtype": "Small Text"},
+    {"fieldname": "actor", "label": "Actor", "fieldtype": "Link", "options": "User", "reqd": 1, "in_list_view": 1},
+    {"fieldname": "event_time", "label": "Event Time", "fieldtype": "Datetime", "reqd": 1, "in_list_view": 1},
+    {"fieldname": "metadata_json", "label": "Redacted Metadata", "fieldtype": "Long Text"}
+  ],
+  "permissions": [
+    {"role": "System Manager", "read": 1},
+    {"role": "Academics User", "read": 1},
+    {"role": "Registrar", "read": 1},
+    {"role": "Accounts Manager", "read": 1}
+  ],
+  "sort_field": "event_time",
+  "sort_order": "DESC"
+}

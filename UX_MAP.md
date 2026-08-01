@@ -3092,10 +3092,26 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 │   ├── Transcript → issue | revoke with reason
 │   ├── Clearance → recalculate/review
 │   └── Invoice/sponsorship → guarded finance transitions
+├── [API:A-ADMIN-ACADEMIC-QUERY] query_admin_academic_records
+│   ├── entity and field allowlists + ERPNext read permission check
+│   ├── faculty/unit → programme/course/curriculum/cohort/offering resolution
+│   ├── programme/year/semester/cohort → offering relationship resolution
+│   └── lecturer → Course Offering Lecturer parent resolution
+├── [DATA:DT-UNIVERSITY-AUDIT-EVENT] Persistent lifecycle audit
+│   ├── entity | record | action | reason | actor | event time
+│   ├── server-side entity/action allowlists and record permission check
+│   ├── redacted metadata only
+│   └── drawer Activity tab loads server timeline; bounded browser fallback remains
 └── [SECURITY:S-ADMIN-PHASE-4]
     ├── no ERPNext Desk navigation or browser credentials
     ├── create/update enforced by ERPNext document permissions
     └── transitions enforced by whitelisted role-aware University methods
+
+[DEPLOYMENT:D-PHASE-4]
+├── deploy updated University ERPNext app
+├── run bench migrate to create University Audit Event
+├── build/upload the matching immutable JDD frontend release
+└── verify relational filters and audit timeline against the assigned business site
 ```
 
 ## Phase 3 implementation overlay — Tree Explorer and Global Search

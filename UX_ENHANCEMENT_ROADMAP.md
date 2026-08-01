@@ -535,7 +535,7 @@ Subphase B — Academic structure workspace
 - [x] Build modal forms for programme, course, unit, cohort, curriculum, offering.
 - [x] Build nested related-record views: Programme → cohorts → offerings → students.
 - [x] Add timetable and lecturer assignment actions within Offering Drawer.
-- [ ] Add filters for faculty/unit, programme, academic year, semester, cohort, lecturer, status.
+- [x] Add filters for faculty/unit, programme, academic year, semester, cohort, lecturer, status.
 
 Subphase C — Governance and operations workspace
 
@@ -546,8 +546,8 @@ Subphase C — Governance and operations workspace
 
 Exit criteria:
 
-- [ ] Administrator manages the priority University lifecycle natively.
-- [ ] Every migrated action has form validation, server authorization, audit trail, and user feedback.
+- [x] Administrator manages the priority University lifecycle natively.
+- [x] Every migrated action has form validation, server authorization, audit trail, and user feedback.
 
 ### Phase 5 — Lecturer experience enhancement
 

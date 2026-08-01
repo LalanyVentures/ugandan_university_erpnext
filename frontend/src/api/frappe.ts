@@ -190,6 +190,24 @@ export async function fetchListPage(doctype: string, fields: string[], query: Li
   return { rows, page, pageSize, hasNext: rows.length === pageSize }
 }
 
+export async function fetchAdminAcademicPage(doctype: string, fields: string[], query: ListPageQuery = {}): Promise<{ rows: FrappeRow[]; page: number; pageSize: number; hasNext: boolean }> {
+  const result = await callMethod<{ rows: FrappeRow[]; page: number; page_size: number; has_next: boolean }>(
+    'ugandan_university_education.ugandan_university_education.api.query_admin_academic_records',
+    {
+      entity: doctype,
+      fields: JSON.stringify(fields),
+      filters: JSON.stringify(query.filters ?? []),
+      search: query.search ?? '',
+      search_fields: JSON.stringify(query.searchFields ?? []),
+      page: String(query.page ?? 1),
+      page_size: String(query.pageSize ?? 50),
+      sort_field: query.sortField ?? 'modified',
+      sort_order: query.sortOrder ?? 'desc',
+    },
+  )
+  return { rows: result.rows ?? [], page: result.page, pageSize: result.page_size, hasNext: result.has_next }
+}
+
 export async function fetchDocument(doctype: string, name: string): Promise<FrappeRow> {
   const payload = await jsonRequest<{ data: FrappeRow }>(`/api/resource/${encodeURIComponent(doctype)}/${encodeURIComponent(name)}`)
   return payload.data

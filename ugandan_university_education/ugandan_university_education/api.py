@@ -28,6 +28,138 @@ def get_user_info():
     return {"user": frappe.session.user, "roles": frappe.get_roles(frappe.session.user)}
 
 
+ADMIN_QUERY_ENTITIES = {
+	"Academic Programme", "Course", "Academic Unit", "Programme Curriculum",
+	"Student Cohort", "Course Offering",
+}
+AUDITED_ENTITIES = {
+	"Student", "University Application", "Academic Programme", "Course", "Academic Unit",
+	"Programme Curriculum", "Student Cohort", "Course Offering", "Result Approval Batch",
+	"Academic Transcript", "Student Clearance", "Sales Invoice", "Payment Entry", "Sponsorship Award",
+	"Student Programme Enrolment", "Semester Registration", "Course Registration", "Teaching Timetable Entry",
+	"Student Attendance", "University Fee Structure", "Student Course Result", "Course Assessment",
+	"Result Review Request", "Grading Scheme", "Academic Year", "Academic Semester",
+	"University Education Settings",
+}
+
+
+def _assert_academic_administrator():
+	roles = set(frappe.get_roles())
+	if frappe.session.user != "Administrator" and not roles.intersection({"System Manager", "Academics User", "Registrar"}):
+		frappe.throw("Only authorised academic administrators may use this operation.", frappe.PermissionError)
+
+
+def _json_value(value, fallback):
+	if not value:
+		return fallback
+	return json.loads(value) if isinstance(value, str) else value
+
+
+def _merge_in_filter(filters, fieldname, values):
+	values = list(dict.fromkeys(value for value in values if value))
+	filters.append([fieldname, "in", values or ["__no_matching_record__"]])
+
+
+@frappe.whitelist()
+def query_admin_academic_records(entity, fields=None, filters=None, search=None, search_fields=None,
+	page=1, page_size=50, sort_field="modified", sort_order="desc"):
+	"""Permission-safe academic list query with allowlisted relationship filters."""
+	_assert_academic_administrator()
+	if entity not in ADMIN_QUERY_ENTITIES:
+		frappe.throw("This entity is not available to the academic query service.", frappe.PermissionError)
+	if not frappe.has_permission(entity, "read"):
+		frappe.throw("You do not have permission to read this entity.", frappe.PermissionError)
+
+	meta = frappe.get_meta(entity)
+	valid_fields = {"name", "owner", "creation", "modified", "modified_by", "docstatus"}
+	valid_fields.update(field.fieldname for field in meta.fields if field.fieldname)
+	requested_fields = [field for field in _json_value(fields, ["name"]) if field in valid_fields]
+	requested_fields = requested_fields or ["name"]
+	requested_search_fields = [field for field in _json_value(search_fields, []) if field in valid_fields]
+	direct_filters = []
+
+	for item in _json_value(filters, []):
+		fieldname = item.get("field") if isinstance(item, dict) else item[0]
+		operator = item.get("operator", "=") if isinstance(item, dict) else item[1]
+		value = item.get("value", "") if isinstance(item, dict) else item[2]
+		if operator not in {"=", "!=", "like", "in", ">", ">=", "<", "<="}:
+			frappe.throw("Unsupported filter operator.")
+		if fieldname in valid_fields:
+			direct_filters.append([fieldname, operator, value.split(",") if operator == "in" and isinstance(value, str) else value])
+		elif fieldname in {"faculty_unit", "academic_unit"}:
+			if entity in {"Academic Programme", "Course"}:
+				direct_filters.append(["academic_unit", operator, value])
+			elif entity in {"Programme Curriculum", "Student Cohort"}:
+				programmes = frappe.get_list("Academic Programme", filters={"academic_unit": value}, pluck="name")
+				_merge_in_filter(direct_filters, "academic_programme", programmes)
+			elif entity == "Course Offering":
+				courses = frappe.get_list("Course", filters={"academic_unit": value}, pluck="name")
+				_merge_in_filter(direct_filters, "course", courses)
+		elif fieldname == "academic_programme" and entity == "Course Offering":
+			curricula = frappe.get_list("Programme Curriculum", filters={"academic_programme": value}, pluck="name")
+			_merge_in_filter(direct_filters, "programme_curriculum", curricula)
+		elif fieldname == "academic_year" and entity == "Course Offering":
+			semesters = frappe.get_list("Academic Semester", filters={"academic_year": value}, pluck="name")
+			_merge_in_filter(direct_filters, "academic_semester", semesters)
+		elif fieldname == "semester" and entity == "Course Offering":
+			direct_filters.append(["academic_semester", operator, value])
+		elif fieldname == "cohort" and entity == "Course Offering":
+			direct_filters.append(["student_cohort", operator, value])
+		elif fieldname == "lecturer" and entity == "Course Offering":
+			parents = frappe.get_all("Course Offering Lecturer", filters={"lecturer": value}, pluck="parent")
+			_merge_in_filter(direct_filters, "name", parents)
+		else:
+			frappe.throw(f"Filter {fieldname} is not supported for {entity}.")
+
+	page = max(1, int(page or 1))
+	page_size = int(page_size or 50)
+	if page_size not in {25, 50, 100, 2000}:
+		page_size = 50
+	sort_field = sort_field if sort_field in valid_fields else "modified"
+	sort_order = "asc" if str(sort_order).lower() == "asc" else "desc"
+	or_filters = [[field, "like", f"%{search}%"] for field in requested_search_fields] if search else None
+	rows = frappe.get_list(entity, fields=requested_fields, filters=direct_filters, or_filters=or_filters,
+		start=(page - 1) * page_size, page_length=page_size + 1, order_by=f"{sort_field} {sort_order}")
+	return {"rows": rows[:page_size], "page": page, "page_size": page_size, "has_next": len(rows) > page_size}
+
+
+@frappe.whitelist()
+def log_university_audit_event(entity_type, entity_name, action, reason=None, metadata=None):
+	"""Persist a redacted lifecycle event after validating entity and record access."""
+	if entity_type not in AUDITED_ENTITIES:
+		frappe.throw("The audited record is not available.")
+	if entity_name == "__aggregate__":
+		_assert_academic_administrator()
+	else:
+		if not frappe.db.exists(entity_type, entity_name):
+			frappe.throw("The audited record is not available.")
+		if not frappe.has_permission(entity_type, "read", doc=entity_name):
+			frappe.throw("You do not have permission to access this record.", frappe.PermissionError)
+	allowed_actions = {"created", "updated", "viewed", "imported", "exported", "Guardian/contact added",
+		"Move to review", "Admit & create student", "Reject", "Publish approved batch",
+		"Issue transcript", "Revoke transcript", "Review clearance", "Submit invoice", "Approve award"}
+	if action not in allowed_actions:
+		frappe.throw("Unsupported audit action.")
+	payload = _json_value(metadata, {})
+	redacted = {key: payload[key] for key in ("source", "selection_count", "channel") if key in payload}
+	doc = frappe.get_doc({"doctype": "University Audit Event", "entity_type": entity_type,
+		"entity_name": entity_name, "action": action, "reason": reason, "actor": frappe.session.user,
+		"event_time": frappe.utils.now(), "metadata_json": json.dumps(redacted, sort_keys=True)})
+	doc.insert(ignore_permissions=True)
+	return doc.name
+
+
+@frappe.whitelist()
+def get_university_audit_timeline(entity_type, entity_name, limit=50):
+	if entity_type not in AUDITED_ENTITIES or not frappe.db.exists(entity_type, entity_name):
+		frappe.throw("The audited record is not available.")
+	if not frappe.has_permission(entity_type, "read", doc=entity_name):
+		frappe.throw("You do not have permission to access this record.", frappe.PermissionError)
+	return frappe.get_all("University Audit Event", filters={"entity_type": entity_type, "entity_name": entity_name},
+		fields=["name", "action", "reason", "actor", "event_time"], order_by="event_time desc",
+		limit_page_length=min(max(int(limit or 50), 1), 100))
+
+
 @frappe.whitelist()
 def update_student_profile(student, values):
 	"""Update the administrator-editable identity fields on a student record."""
