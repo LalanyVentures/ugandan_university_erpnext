@@ -3079,7 +3079,17 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 │   ├── page | selected | all-filtered export
 │   ├── approved CSV template + 10 MiB validation + native import
 │   └── custom lifecycle drawer and create-action slots
-├── [DIALOG:D-ADMIN-RECORD-FORM] Student, Application and academic structure forms
+├── [DIALOG:D-ADMIN-RECORD-FORM] Guided Student, Application and academic structure form workspace
+│   ├── [STEPPER] dynamic counted circles → Identity & context → Academic relationships → Status & review
+│   ├── [STATE:S-STEP-COMPLETE] green circle + check + connector after all required fields in that step
+│   ├── [TYPE-AHEAD] 180 ms permission-filtered ERPNext name/title suggestions
+│   ├── [ACTION:A-CREATE-MISSING-LINK] opens linked form as a retained modal tab
+│   │   ├── supports nested linked forms
+│   │   ├── parent and child drafts remain in memory
+│   │   └── created record ID is selected automatically in its parent field
+│   ├── [TABLE:T-STAGED-RECORDS] preview/remove temporary rows → validate and create all atomically
+│   ├── [STEP:FINAL-REVIEW] ready only when all base and linked-form steps are complete
+│   └── [TOASTS] linked create | staging | atomic batch | validation/error feedback
 ├── [DIALOG:D-GUARDIAN-CONTACT] Contact modal linked to current Student
 ├── [DRAWER:D-ADMIN-RECORD] Rich lifecycle drawer
 │   ├── Student → Profile | Enrolment | Finance | Results | Documents | Activity

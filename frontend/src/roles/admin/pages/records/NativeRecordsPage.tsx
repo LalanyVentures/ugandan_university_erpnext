@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchAdminAcademicPage, fetchListPage, type FrappeRow, type ListFilter, type ListPageQuery } from '../../../../api/frappe'
 import { DataWorkbench, type DataWorkbenchSchema, type WorkbenchAction, type WorkbenchColumn } from '../../../../components/DataWorkbench'
-import { AdminRecordDrawer, CreateRecordButton, RecordFormModal, supportsNativeForm } from './AdminLifecycle'
+import { AdminRecordDrawer, CreateRecordButton, supportsNativeForm } from './AdminLifecycle'
+import { GuidedRecordFormModal as RecordFormModal } from './GuidedRecordFormModal'
 import { recordViewConfig, type RecordView } from './RecordsPage'
 
 const importableViews: RecordView[] = ['students','applications','programmes','cohorts','courses','enrolments']

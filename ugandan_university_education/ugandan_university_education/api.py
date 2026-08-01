@@ -32,6 +32,11 @@ ADMIN_QUERY_ENTITIES = {
 	"Academic Programme", "Course", "Academic Unit", "Programme Curriculum",
 	"Student Cohort", "Course Offering",
 }
+UNIVERSITY_NATIVE_FORM_ENTITIES = {
+	"Student", "University Application", "Academic Programme", "Course", "Academic Unit",
+	"Programme Curriculum", "Student Cohort", "Course Offering", "Academic Year",
+	"Academic Semester", "University Member", "Grading Scheme",
+}
 AUDITED_ENTITIES = {
 	"Student", "University Application", "Academic Programme", "Course", "Academic Unit",
 	"Programme Curriculum", "Student Cohort", "Course Offering", "Result Approval Batch",
@@ -130,6 +135,44 @@ def query_admin_academic_records(entity, fields=None, filters=None, search=None,
 	rows = frappe.get_list(entity, fields=requested_fields, filters=direct_filters, or_filters=or_filters,
 		start=(page - 1) * page_size, page_length=page_size + 1, order_by=f"{sort_field} {sort_order}")
 	return {"rows": rows[:page_size], "page": page, "page_size": page_size, "has_next": len(rows) > page_size}
+
+
+@frappe.whitelist()
+def search_university_link_options(doctype, txt="", limit=30):
+	"""Return permission-filtered type-ahead options for native university forms."""
+	_assert_academic_administrator()
+	if doctype not in UNIVERSITY_NATIVE_FORM_ENTITIES or not frappe.has_permission(doctype, "read"):
+		frappe.throw("This linked record type is not available here.", frappe.PermissionError)
+	meta = frappe.get_meta(doctype)
+	fields = ["name"]
+	if meta.title_field and meta.title_field != "name":
+		fields.append(meta.title_field)
+	needle = f"%{txt}%"
+	or_filters = [[doctype, "name", "like", needle]]
+	if meta.title_field and meta.title_field != "name":
+		or_filters.append([doctype, meta.title_field, "like", needle])
+	rows = frappe.get_list(doctype, fields=fields, or_filters=or_filters if txt else None,
+		order_by="modified desc", limit_page_length=min(max(int(limit or 30), 1), 50))
+	return [{"value": row.name, "label": str(row.get(meta.title_field) or row.name)} for row in rows]
+
+
+@frappe.whitelist()
+def create_university_native_records(doctype, rows):
+	"""Validate and create one staged university form stream in a single transaction."""
+	_assert_academic_administrator()
+	if doctype not in UNIVERSITY_NATIVE_FORM_ENTITIES or not frappe.has_permission(doctype, "create"):
+		frappe.throw("This record type cannot be created through staged forms.", frappe.PermissionError)
+	rows = _json_value(rows, [])
+	if not isinstance(rows, list) or not 1 <= len(rows) <= 100:
+		frappe.throw("Stage between 1 and 100 records per request.")
+	meta = frappe.get_meta(doctype)
+	allowed = {field.fieldname for field in meta.fields if field.fieldname and not field.read_only and field.fieldtype != "Table MultiSelect"}
+	created = []
+	for values in rows:
+		if not isinstance(values, dict) or set(values) - allowed:
+			frappe.throw("A staged row contains unsupported or read-only fields.")
+		created.append(frappe.get_doc({"doctype": doctype, **values}).insert().name)
+	return {"count": len(created), "created": created}
 
 
 @frappe.whitelist()
