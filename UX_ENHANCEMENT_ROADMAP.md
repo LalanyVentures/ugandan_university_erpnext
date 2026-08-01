@@ -600,15 +600,15 @@ Exit criteria:
 
 - [x] Explorer scope: institution → admissions → students → enrolment/registration → results → transcripts/clearance.
 - [x] Add sub-sub-tabs for admissions stage, registration stage, result publication stage, transcript issuance stage.
-- [ ] Implement applicant decision, registration decision, publish results, issue/revoke transcript, and clearance decision dialogs.
+- [x] Implement applicant decision, registration decision, publish results, issue/revoke transcript, and clearance decision dialogs.
 - [x] Build institution-wide conflict and completeness filters.
-- [ ] Add import templates for approved admissions/registration bulk operations.
-- [ ] Add controlled exports and issuance register reports.
-- [ ] Add audit timeline and reason capture to every decision.
+- [x] Add import templates for approved admissions/registration bulk operations.
+- [x] Add controlled exports and issuance register reports.
+- [x] Add audit timeline and reason capture to every decision.
 
 Exit criteria:
 
-- [ ] Registrar can complete institutional academic workflow without ERPNext Desk.
+- [x] Registrar can complete institutional academic workflow without ERPNext Desk.
 
 ### Phase 9 — Finance experience enhancement
 

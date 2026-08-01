@@ -43,6 +43,15 @@ AUDITED_ENTITIES = {
 }
 
 
+def _record_governed_event(entity_type, entity_name, action, reason=None, source="university-workflow"):
+	"""Persist one redacted server-authoritative workflow decision."""
+	reason = (reason or "").strip() or "Confirmed through native registrar workflow"
+	return frappe.get_doc({"doctype": "University Audit Event", "entity_type": entity_type,
+		"entity_name": entity_name, "action": action, "reason": reason, "actor": frappe.session.user,
+		"event_time": frappe.utils.now(), "metadata_json": json.dumps({"source": source}, sort_keys=True),
+	}).insert(ignore_permissions=True)
+
+
 def _assert_academic_administrator():
 	roles = set(frappe.get_roles())
 	if frappe.session.user != "Administrator" and not roles.intersection({"System Manager", "Academics User", "Registrar"}):
@@ -1045,13 +1054,15 @@ def review_registrar_application(application_name, decision, comments=None):
 	application.reviewed_by = frappe.session.user
 	application.review_comments = comments
 	application.save(ignore_permissions=True)
+	_record_governed_event("University Application", application.name, f"Registrar: {decision}", comments,
+		"registrar-decision-dialog")
 	if decision == "Accepted" and not application.student:
 		return admit_application(application.name)
 	return {"application": application.name, "student": application.student}
 
 
 @frappe.whitelist()
-def review_semester_registration(registration_name, decision):
+def review_semester_registration(registration_name, decision, reason=None):
 	_assert_registrar()
 	if decision not in {"Registered", "Cancelled"}:
 		frappe.throw("Decision must be Registered or Cancelled.")
@@ -1061,11 +1072,13 @@ def review_semester_registration(registration_name, decision):
 	doc.status = decision
 	doc.registration_date = doc.registration_date or frappe.utils.today()
 	doc.save(ignore_permissions=True)
+	_record_governed_event("Semester Registration", doc.name, f"Registrar: {decision}", reason,
+		"registrar-decision-dialog")
 	return doc.name
 
 
 @frappe.whitelist()
-def publish_registrar_result_batch(batch_name):
+def publish_registrar_result_batch(batch_name, reason=None):
 	_assert_registrar()
 	batch = frappe.get_doc("Result Approval Batch", batch_name)
 	if batch.status != "Approved" or batch.approval_stage != "Faculty Head":
@@ -1080,11 +1093,13 @@ def publish_registrar_result_batch(batch_name):
 	batch.approval_stage = "Registrar"
 	batch.approved_by = frappe.session.user
 	batch.save(ignore_permissions=True)
+	_record_governed_event("Result Approval Batch", batch.name, "Registrar: Publish results", reason,
+		"registrar-decision-dialog")
 	return batch.name
 
 
 @frappe.whitelist()
-def issue_registrar_transcript(transcript_name):
+def issue_registrar_transcript(transcript_name, reason=None):
 	_assert_registrar()
 	transcript = frappe.get_doc("Academic Transcript", transcript_name)
 	if transcript.status != "Faculty Head Approved":
@@ -1104,6 +1119,8 @@ def issue_registrar_transcript(transcript_name):
 	transcript.registrar_issued_on = frappe.utils.now()
 	transcript.status = "Registrar Issued"
 	transcript.save(ignore_permissions=True)
+	_record_governed_event("Academic Transcript", transcript.name, "Registrar: Issue transcript", reason,
+		"registrar-decision-dialog")
 	return {"name": transcript.name, "verification_number": verification, "generated_pdf": transcript.generated_pdf}
 
 
@@ -1118,11 +1135,13 @@ def revoke_registrar_transcript(transcript_name, reason):
 	transcript.status = "Revoked"
 	transcript.revocation_reason = reason
 	transcript.save(ignore_permissions=True)
+	_record_governed_event("Academic Transcript", transcript.name, "Registrar: Revoke transcript", reason,
+		"registrar-decision-dialog")
 	return transcript.name
 
 
 @frappe.whitelist()
-def review_registrar_clearance(clearance_name):
+def review_registrar_clearance(clearance_name, reason=None):
 	_assert_registrar()
 	status = refresh_student_clearance(clearance_name)
 	clearance = frappe.get_doc("Student Clearance", clearance_name)
@@ -1131,6 +1150,8 @@ def review_registrar_clearance(clearance_name):
 		clearance.cleared_by = frappe.session.user
 		clearance.cleared_on = frappe.utils.now()
 		clearance.save(ignore_permissions=True)
+	_record_governed_event("Student Clearance", clearance.name, "Registrar: Review clearance", reason,
+		"registrar-decision-dialog")
 	return {"name": clearance.name, "status": clearance.status, "outstanding_amount": status.get("outstanding_amount")}
 
 

@@ -3426,3 +3426,35 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
     ├── browser filters only reduce returned records
     └── no ERPNext Desk destinations
 ```
+
+```text
+[DIALOG:D-REGISTRAR-DECISION-CENTER] Governed Registrar Action
+├── [SELECT:I-REGISTRAR-WORKFLOW]
+│   ├── Start application review | Accept & admit | Reject
+│   ├── Approve registration | Cancel registration
+│   ├── Publish approved result batch
+│   ├── Issue transcript | Revoke transcript
+│   └── Review graduation clearance
+├── [SELECT:I-REGISTRAR-RECORD] eligible records only for selected workflow
+├── [TEXTAREA:I-REGISTRAR-REASON] required formal reason/evidence/guidance
+├── [BUTTON:B-CONFIRM-REGISTRAR-DECISION] permission-checked server workflow
+└── [TIMELINE:T-REGISTRAR-AUDIT]
+    ├── action | actor | time | reason
+    └── persisted for application, registration, publication, transcript and clearance decisions
+
+[PAGE:P-REGISTRAR-OPERATIONS] Templates and Registers
+├── [CARD:C-REGISTRAR-IMPORT-TEMPLATES]
+│   ├── [SELECT:I-BULK-OPERATION] Admissions decisions | Semester registration decisions
+│   ├── [BUTTON:B-DOWNLOAD-ADMISSION-TEMPLATE]
+│   │   └── application_name | decision | programme | academic_year | comments
+│   ├── [BUTTON:B-DOWNLOAD-REGISTRATION-TEMPLATE]
+│   │   └── registration_name | decision | academic_semester | reason
+│   ├── [INPUT:I-REGISTRAR-CSV] CSV only; maximum 10 MiB
+│   └── [BUTTON:B-VALIDATE-REGISTRAR-TEMPLATE] missing/unsupported column validation
+└── [CARD:C-REGISTRAR-CONTROLLED-EXPORTS]
+    ├── [BUTTON:B-EXPORT-APPROVAL-REGISTER]
+    │   └── batch | offering | semester | stage | status | submitter | approver
+    ├── [BUTTON:B-EXPORT-ISSUANCE-REGISTER]
+    │   └── document | student | programme | type | status | verification | issue date | registrar
+    └── exports respect current institution scope/completeness filters
+```
