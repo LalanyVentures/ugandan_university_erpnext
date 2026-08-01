@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { callMethod, type FrappeRow } from '../../api/frappe'
+import { useUrlScope } from '../../hooks/useUrlScope'
 
 export type LecturerPortalData={lecturer:FrappeRow;offerings:FrappeRow[];registrations:FrappeRow[];students:FrappeRow[];timetable:FrappeRow[];assessments:FrappeRow[];attendance:FrappeRow[];results:FrappeRow[];review_requests:FrappeRow[];approval_batches:FrappeRow[]}
 export type LecturerScope={offering:string;semester:string;query:string;page:number;pageSize:25|50|100|2000}
@@ -19,9 +20,9 @@ function scoped(data:LecturerPortalData,scope:LecturerScope):LecturerPortalData{
 }
 
 export function LecturerPortalProvider({children}:{children:ReactNode}){
-  const[allData,setAllData]=useState<LecturerPortalData|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[scopeState,setScopeState]=useState<LecturerScope>(()=>{try{return {...initialScope,...JSON.parse(localStorage.getItem('awu-lecturer-scope')??'{}')}}catch{return initialScope}})
+  const[allData,setAllData]=useState<LecturerPortalData|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[scopeState,setUrlScope]=useUrlScope(initialScope)
   function refresh(){setLoading(true);setError('');callMethod<LecturerPortalData>(method).then(setAllData).catch(cause=>setError(cause instanceof Error?cause.message:'Unable to load the lecturer workspace.')).finally(()=>setLoading(false))}
-  function setScope(patch:Partial<LecturerScope>){setScopeState(current=>{const next={...current,...patch,page:patch.page??1};localStorage.setItem('awu-lecturer-scope',JSON.stringify(next));return next})}
+  function setScope(patch:Partial<LecturerScope>){setUrlScope({...patch,page:patch.page??1})}
   useEffect(refresh,[])
   const data=useMemo(()=>allData?scoped(allData,scopeState):null,[allData,scopeState])
   return <LecturerPortalContext.Provider value={{data,allData,scope:scopeState,setScope,loading,error,refresh}}>{children}</LecturerPortalContext.Provider>

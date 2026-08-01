@@ -6,6 +6,8 @@ appears as `#/students` inside the active JDD artifact URL.
 
 Sidebar implementation update (2026-08-02): desktop width is persisted per browser, drag-resizable from 220–420 px, resettable by double-click, and collapses to a 72 px icon rail. Its six fixed utility actions are Dashboard, Explorer, Collapse/Expand, Narrower, Wider, and Sign out. The dock uses three columns when wide, two when narrow, and one when collapsed. Role-specific navigation remains the source of truth and scrolls independently above the dock.
 
+URL-state implementation update (2026-08-02): `scope.*` parameters preserve role filters across related pages; page-specific workbench parameters are cleared at entity boundaries. Search, advanced filters, sorting, pagination, columns, density, panels, and record drawers are URL-addressable. See `URL_STATE.md`.
+
 ```text
 UNIVERSITY PLATFORM UX MAP 2.0 [ROOT:UX-AWU]
 ├── [SPEC:UX-DOCUMENT] Document contract

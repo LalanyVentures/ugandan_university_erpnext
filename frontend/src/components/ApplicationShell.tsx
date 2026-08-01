@@ -30,6 +30,10 @@ function slug(label: string) { return label.toLowerCase().replace(/[^a-z0-9]+/g,
 
 function tabTarget(item: ShellTab, level: 'primary' | 'tab' | 'subtab', currentSearch = '') {
   const params = new URLSearchParams(currentSearch)
+  const viewKeys = ['q','page','pageSize','filters','filter','value','sort','order','direction','columns','density','panel','record','refresh','searchResult','tree']
+  if (level !== 'subtab') viewKeys.forEach(key => params.delete(key))
+  if (level === 'primary') { params.delete('tab'); params.delete('subtab') }
+  if (level === 'tab') params.delete('subtab')
   params.set(level, item.label.toLowerCase().replace(/\s+/g, '-'))
   return { pathname: item.path, search: `?${params.toString()}` }
 }
