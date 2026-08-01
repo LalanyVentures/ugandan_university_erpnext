@@ -64,6 +64,10 @@ export function viewNavigationFor(role: PortalRole, pathname: string): readonly 
     const labels = pathname.includes('/approvals') ? ['Active semester','Approval queue','Approved','Returned'] : pathname.includes('/reviews') ? ['Active semester','Review queue','Under review','Resolved'] : pathname.includes('/transcripts') || pathname.includes('/readiness') ? ['Active semester','Transcript readiness','Pending','Ready'] : ['Active semester','All assigned','Needs attention']
     return labels.map(label => ({ label, path: current.path, icon: current.icon }))
   }
+  if (role === 'registrar') {
+    const labels = pathname.includes('/admissions') ? ['Submitted','Under review','Accepted','Rejected'] : pathname.includes('/registration') || pathname.includes('/courses') ? ['Pending approval','Registered','Conflicts','History'] : pathname.includes('/results') || pathname.includes('/batches') ? ['Faculty approved','Ready to publish','Published','Returned'] : pathname.includes('/transcripts') ? ['Faculty certified','Ready to issue','Issued','Revoked'] : pathname.includes('/clearance') ? ['Blocked','Ready','Cleared','History'] : ['All records','Needs attention','Complete']
+    return labels.map(label=>({label,path:current.path,icon:current.icon}))
+  }
   return [
     { label: 'All', path: current.path, icon: current.icon },
     { label: 'Active', path: current.path, icon: current.icon },

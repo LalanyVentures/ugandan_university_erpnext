@@ -3,8 +3,9 @@ import { ApplicationShell } from '../../../components/ApplicationShell'
 import { contextualNavigationFor, navigationForPortal, viewNavigationFor } from '../../../components/navigationRegistry'
 import { type UniversitySession } from '../../../api/frappe'
 import { useLocation } from 'react-router-dom'
+import { RegistrarScopeBar } from '../components/RegistrarScopeBar'
 
 export function RegistrarShell({ session, onLogout, children }: { session: UniversitySession; onLogout: () => void; children: ReactNode }) {
   const location = useLocation(), role = 'registrar' as const
-  return <ApplicationShell session={session} onLogout={onLogout} navigation={navigationForPortal(role)} subtabs={contextualNavigationFor(role, location.pathname)} subSubtabs={viewNavigationFor(role, location.pathname)} portalLabel="AWU Academic Registrar" profilePath="/registrar" roleKey={role}>{children}</ApplicationShell>
+  return <ApplicationShell session={session} onLogout={onLogout} navigation={navigationForPortal(role)} subtabs={contextualNavigationFor(role, location.pathname)} subSubtabs={viewNavigationFor(role, location.pathname)} portalLabel="AWU Academic Registrar" profilePath="/registrar" roleKey={role}><RegistrarScopeBar/>{children}</ApplicationShell>
 }

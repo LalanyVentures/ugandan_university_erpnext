@@ -598,10 +598,10 @@ Exit criteria:
 
 ### Phase 8 — Registrar experience enhancement
 
-- [ ] Explorer scope: institution → admissions → students → enrolment/registration → results → transcripts/clearance.
-- [ ] Add sub-sub-tabs for admissions stage, registration stage, result publication stage, transcript issuance stage.
+- [x] Explorer scope: institution → admissions → students → enrolment/registration → results → transcripts/clearance.
+- [x] Add sub-sub-tabs for admissions stage, registration stage, result publication stage, transcript issuance stage.
 - [ ] Implement applicant decision, registration decision, publish results, issue/revoke transcript, and clearance decision dialogs.
-- [ ] Build institution-wide conflict and completeness filters.
+- [x] Build institution-wide conflict and completeness filters.
 - [ ] Add import templates for approved admissions/registration bulk operations.
 - [ ] Add controlled exports and issuance register reports.
 - [ ] Add audit timeline and reason capture to every decision.

@@ -3385,3 +3385,44 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
     ├── includes status=Approved only
     └── excludes submitted/rejected batches and all student-level marks
 ```
+
+## Phase 8 implementation overlay — Registrar institution foundation
+
+```text
+[PORTAL:P-REGISTRAR-PHASE-8] AWU Academic Registrar
+├── [FILTER:C-REGISTRAR-INSTITUTION-SCOPE]
+│   ├── [INPUT:I-REGISTRAR-SEARCH] institution records and workflow queues
+│   ├── [SELECT:I-REGISTRAR-PROGRAMME] all or selected programme
+│   ├── [SELECT:I-REGISTRAR-PERIOD] academic year/semester
+│   ├── [SELECT:I-REGISTRAR-STATUS] admission through issuance statuses
+│   ├── [SELECT:I-REGISTRAR-COMPLETENESS]
+│   │   ├── Admission incomplete
+│   │   ├── Registration conflicts
+│   │   ├── Approved, not published
+│   │   ├── Transcript ready
+│   │   └── Clearance blocked
+│   └── [BUTTON:B-REGISTRAR-CLEAR-SCOPE] restore institution scope
+├── [SUB-SUB-TABS:N-REGISTRAR-STAGES]
+│   ├── Admissions: Submitted | Under review | Accepted | Rejected
+│   ├── Registration: Pending approval | Registered | Conflicts | History
+│   ├── Results: Faculty approved | Ready to publish | Published | Returned
+│   ├── Transcripts: Faculty certified | Ready to issue | Issued | Revoked
+│   └── Clearance: Blocked | Ready | Cleared | History
+├── [TREE:T-REGISTRAR-INSTITUTION]
+│   └── Institution
+│       ├── Admissions
+│       │   └── Application records → /registrar/admissions
+│       └── Students
+│           └── Student
+│               ├── Enrolment & Registration → /registrar/registration
+│               ├── Results → /registrar/results
+│               └── Transcripts & Clearance → issuance/clearance routes
+├── [SEARCH:S-REGISTRAR-GLOBAL]
+│   ├── applications | students | registrations | results
+│   ├── approval batches | transcripts | clearance
+│   └── source: get_registrar_portal_data; no browser tenant override
+└── [PERMISSION:P-REGISTRAR-INSTITUTION]
+    ├── server-authorized institution payload
+    ├── browser filters only reduce returned records
+    └── no ERPNext Desk destinations
+```
