@@ -519,30 +519,30 @@ Exit criteria:
 
 Subphase A — Student and admissions workspace
 
-- [ ] Student Directory sub-sub-tabs: All, Active, On Leave, Completed, Withdrawn, Saved views.
-- [ ] Application sub-sub-tabs: Draft, Under Review, Admitted, Rejected.
-- [ ] Build native Student Drawer: profile, enrolment, finance, results, documents, activity.
-- [ ] Build Student create/edit forms and admission conversion workflow.
-- [ ] Add Guardian/contact related-record modals.
-- [ ] Add cohort-aware `Add student` action from Explorer and Cohort page.
-- [ ] Add filters for programme, cohort, status, year, admission date, and missing-data alerts.
-- [ ] Add import/export for approved student/application templates.
+- [x] Student Directory sub-sub-tabs: All, Active, On Leave, Completed, Withdrawn, Saved views.
+- [x] Application sub-sub-tabs: Draft, Under Review, Admitted, Rejected.
+- [x] Build native Student Drawer: profile, enrolment, finance, results, documents, activity.
+- [x] Build Student create/edit forms and admission conversion workflow.
+- [x] Add Guardian/contact related-record modals.
+- [x] Add cohort-aware `Add student` action from Explorer and Cohort page.
+- [x] Add filters for programme, cohort, status, year, admission date, and missing-data alerts.
+- [x] Add import/export for approved student/application templates.
 
 Subphase B — Academic structure workspace
 
-- [ ] Programme, Course, Unit, Curriculum, Cohort, Offering tables use Data Workbench.
-- [ ] Add sub-sub-tabs for active/archive/effective academic year/status.
-- [ ] Build modal forms for programme, course, unit, cohort, curriculum, offering.
-- [ ] Build nested related-record views: Programme → cohorts → offerings → students.
-- [ ] Add timetable and lecturer assignment actions within Offering Drawer.
+- [x] Programme, Course, Unit, Curriculum, Cohort, Offering tables use Data Workbench.
+- [x] Add sub-sub-tabs for active/archive/effective academic year/status.
+- [x] Build modal forms for programme, course, unit, cohort, curriculum, offering.
+- [x] Build nested related-record views: Programme → cohorts → offerings → students.
+- [x] Add timetable and lecturer assignment actions within Offering Drawer.
 - [ ] Add filters for faculty/unit, programme, academic year, semester, cohort, lecturer, status.
 
 Subphase C — Governance and operations workspace
 
-- [ ] Replace result/transcript/clearance external links with workflow drawers.
-- [ ] Add approval/review/publish/issue/revoke dialogs with reason/audit fields.
-- [ ] Add finance filters, payment allocation drawers, export, and permission-safe bulk actions.
-- [ ] Add audit timeline to records with sensitive action history.
+- [x] Replace result/transcript/clearance external links with workflow drawers.
+- [x] Add approval/review/publish/issue/revoke dialogs with reason/audit fields.
+- [x] Add finance filters, payment allocation drawers, export, and permission-safe bulk actions.
+- [x] Add audit timeline to records with sensitive action history.
 
 Exit criteria:
 

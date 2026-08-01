@@ -42,6 +42,16 @@ export function viewNavigationFor(role: PortalRole, pathname: string): readonly 
   const navigation = registry[role]
   const current = currentItem(navigation, pathname)
   if (!current) return []
+  if (role === 'administrator') {
+    const labels = pathname === '/students' ? ['All','Active','On Leave','Completed','Withdrawn','Saved views']
+      : pathname === '/students/applications' ? ['All','Draft','Under Review','Admitted','Rejected']
+      : ['/academics/programmes','/academics/courses','/academics/units','/academics/curricula','/students/cohorts','/registration/offerings'].includes(pathname) ? ['All','Active','Archived','Effective year']
+      : pathname.includes('transcript') ? ['All','Approved','Issued','Revoked']
+      : pathname.includes('clearance') || pathname.includes('readiness') ? ['All','Cleared','Outstanding']
+      : pathname.includes('approval') || pathname.includes('results') ? ['All','Draft','Approved','Published']
+      : ['All','Active','Needs attention']
+    return labels.map(label => ({ label, path: current.path, icon: current.icon }))
+  }
   return [
     { label: 'All', path: current.path, icon: current.icon },
     { label: 'Active', path: current.path, icon: current.icon },

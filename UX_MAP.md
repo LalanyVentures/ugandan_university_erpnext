@@ -3064,6 +3064,40 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 └── normal-user ERPNext Desk navigation remaining in React source: none
 ```
 
+## Phase 4 implementation overlay — Administrator lifecycle experience
+
+```text
+[PORTAL:P-ADMIN-PHASE-4] Native administrator lifecycle
+├── [NAV:N-ADMIN-SUBSUBTABS] URL-backed third-level navigation
+│   ├── Student Directory → All | Active | On Leave | Completed | Withdrawn | Saved views
+│   ├── Applications → All | Draft | Under Review | Admitted | Rejected
+│   ├── Academic structure → All | Active | Archived | Effective year
+│   └── Governance → approval, issuance, revocation and clearance states
+├── [COMPONENT:C-DATA-WORKBENCH-P4] DataWorkbench
+│   ├── search + advanced field filters + quick filters
+│   ├── sortable/reorderable columns + 25 | 50 | 100 | 2000 pagination
+│   ├── page | selected | all-filtered export
+│   ├── approved CSV template + 10 MiB validation + native import
+│   └── custom lifecycle drawer and create-action slots
+├── [DIALOG:D-ADMIN-RECORD-FORM] Student, Application and academic structure forms
+├── [DIALOG:D-GUARDIAN-CONTACT] Contact modal linked to current Student
+├── [DRAWER:D-ADMIN-RECORD] Rich lifecycle drawer
+│   ├── Student → Profile | Enrolment | Finance | Results | Documents | Activity
+│   ├── Programme → Profile | Cohorts | Offerings | Students | Activity
+│   ├── Offering → timetable | lecturer assignment context
+│   └── Cohort → Add student with cohort context
+├── [WORKFLOW:W-ADMIN-GOVERNANCE]
+│   ├── Application → review | admit/create student | reject
+│   ├── Result batch → publish
+│   ├── Transcript → issue | revoke with reason
+│   ├── Clearance → recalculate/review
+│   └── Invoice/sponsorship → guarded finance transitions
+└── [SECURITY:S-ADMIN-PHASE-4]
+    ├── no ERPNext Desk navigation or browser credentials
+    ├── create/update enforced by ERPNext document permissions
+    └── transitions enforced by whitelisted role-aware University methods
+```
+
 ## Phase 3 implementation overlay — Tree Explorer and Global Search
 
 ```text

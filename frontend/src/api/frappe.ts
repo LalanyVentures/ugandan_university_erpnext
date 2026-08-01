@@ -204,6 +204,15 @@ export async function updateDocument(doctype: string, name: string, values: Frap
   return payload.data
 }
 
+export async function createDocument(doctype: string, values: FrappeRow): Promise<FrappeRow> {
+  const payload = await jsonRequest<{ data: FrappeRow }>(`/api/resource/${encodeURIComponent(doctype)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(values),
+  })
+  return payload.data
+}
+
 export async function callMethod<T>(method: string, args?: Record<string, string>): Promise<T> {
   const query = new URLSearchParams(args ?? {})
   const payload = await jsonRequest<{ message: T }>(`/api/method/${method}${query.size ? `?${query}` : ''}`)

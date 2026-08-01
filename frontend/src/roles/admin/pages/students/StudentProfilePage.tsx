@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArrowRight, Award, BookOpen, CreditCard, Edit3, FileBadge2, GraduationCap, Mail, ReceiptText, Save, Search, UserRound, WalletCards, X } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { callMethod, fetchDocument, fetchList, type FrappeRow, ugx } from '../../../../api/frappe'
+import { GuardianContactModal } from '../records/AdminLifecycle'
 
 const editableFields = ['first_name','middle_name','last_name','gender','date_of_birth','nationality','student_email_id','status'] as const
 
@@ -20,6 +21,7 @@ export function StudentProfilePage() {
   const [results, setResults] = useState<FrappeRow[]>([])
   const [invoices, setInvoices] = useState<FrappeRow[]>([])
   const [editing, setEditing] = useState(false)
+  const [guardianOpen, setGuardianOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -82,7 +84,7 @@ export function StudentProfilePage() {
   if (!student) return <div className="card profile-loading">{error || 'Student record not found.'}</div>
 
   return <section className="records-page student-profile-page">
-    <div className="student-profile-hero card"><div className="profile-avatar profile-avatar-large">{String(student.student_name ?? student.name).split(/\s+/).slice(0,2).map(word => word[0]).join('')}</div><div className="student-profile-title"><span className="eyebrow">COMPLETE STUDENT RECORD</span><h1>{String(student.student_name ?? student.name)}</h1><p>{String(student.student_number ?? student.name)} · {String(student.status ?? 'Active')}</p></div><div className="student-profile-actions"><button className="secondary-button" onClick={() => navigate(`/finance/analysis?student=${encodeURIComponent(studentName)}`)}><WalletCards size={16}/>Financial analysis</button><button className="secondary-button" onClick={() => navigate(`/transcripts?student=${encodeURIComponent(studentName)}`)}><FileBadge2 size={16}/>Transcript</button><button className="primary-button" onClick={() => setEditing(value => !value)}>{editing ? <X size={16}/> : <Edit3 size={16}/>} {editing ? 'Cancel edit' : 'Edit student'}</button></div></div>
+    <div className="student-profile-hero card"><div className="profile-avatar profile-avatar-large">{String(student.student_name ?? student.name).split(/\s+/).slice(0,2).map(word => word[0]).join('')}</div><div className="student-profile-title"><span className="eyebrow">COMPLETE STUDENT RECORD</span><h1>{String(student.student_name ?? student.name)}</h1><p>{String(student.student_number ?? student.name)} · {String(student.status ?? 'Active')}</p></div><div className="student-profile-actions"><button className="secondary-button" onClick={() => setGuardianOpen(true)}><UserRound size={16}/>Guardian/contact</button><button className="secondary-button" onClick={() => navigate(`/finance/analysis?student=${encodeURIComponent(studentName)}`)}><WalletCards size={16}/>Financial analysis</button><button className="secondary-button" onClick={() => navigate(`/transcripts?student=${encodeURIComponent(studentName)}`)}><FileBadge2 size={16}/>Transcript</button><button className="primary-button" onClick={() => setEditing(value => !value)}>{editing ? <X size={16}/> : <Edit3 size={16}/>} {editing ? 'Cancel edit' : 'Edit student'}</button></div></div>
     {error ? <div className="profile-error">{error}</div> : null}
 
     <div className="student-kpi-grid">
@@ -101,6 +103,7 @@ export function StudentProfilePage() {
     <article className="card profile-panel"><div className="profile-panel-heading"><div><span className="eyebrow">STUDENT FINANCE</span><h2>Invoices, Payments & Balances</h2></div><div className="finance-summary"><span>Billed <b>{ugx(totalBilled)}</b></span><span>Paid <b>{ugx(paid)}</b></span><span>Balance <b>{ugx(outstanding)}</b></span></div></div><div className="table-wrap"><table className="data-table"><thead><tr><th>Invoice</th><th>Semester</th><th>Date</th><th>Billed</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead><tbody>{invoices.length ? invoices.map(row => { const total=Number(row.grand_total??0), balance=Number(row.outstanding_amount??0); return <tr key={String(row.name)}><td><strong>{String(row.name)}</strong></td><td>{String(row.academic_semester??'—')}</td><td>{String(row.posting_date??'—')}</td><td>{ugx(total)}</td><td>{ugx(total-balance)}</td><td><strong>{ugx(balance)}</strong></td><td><span className="status-pill tone-green">{balance===0?'Paid':balance<total?'Partly Paid':'Outstanding'}</span></td><td><div className="table-row-actions"><button onClick={()=>navigate(`/finance/analysis?student=${encodeURIComponent(studentName)}`)}><WalletCards size={14}/>Balance</button><button onClick={()=>navigate(`/finance/payments?q=${encodeURIComponent(String(student.student_number??studentName))}`)}><ReceiptText size={14}/>Receipts</button></div></td></tr> }) : <tr><td colSpan={8} className="data-table-empty">No student invoices found.</td></tr>}</tbody></table></div></article>
 
     <article className="card profile-panel"><div className="profile-panel-heading"><div><span className="eyebrow">ACADEMIC PERFORMANCE</span><h2>Latest Results</h2></div><button className="secondary-button" onClick={() => navigate(`/transcripts?student=${encodeURIComponent(studentName)}`)}>Open full transcript<ArrowRight size={16}/></button></div><div className="table-wrap"><table className="data-table"><thead><tr><th>Semester</th><th>Course</th><th>Mark</th><th>Grade</th><th>Result</th><th>Approved</th><th>Published</th><th>Action</th></tr></thead><tbody>{results.length ? results.slice(0,20).map(row => <tr key={String(row.name)}><td>{String(row.academic_semester??'—')}</td><td><strong>{String(row.course??'—')}</strong></td><td>{String(row.final_mark??'—')}</td><td>{String(row.grade??'—')}</td><td>{String(row.result_status??'—')}</td><td>{Number(row.is_approved)===1?'Yes':'No'}</td><td>{Number(row.is_published)===1?'Yes':'No'}</td><td><div className="table-row-actions"><button onClick={()=>navigate(`/transcripts?student=${encodeURIComponent(studentName)}`)}><FileBadge2 size={14}/>Transcript</button></div></td></tr>) : <tr><td colSpan={8} className="data-table-empty">No course results recorded.</td></tr>}</tbody></table></div></article>
+    {guardianOpen ? <GuardianContactModal student={studentName} onClose={() => setGuardianOpen(false)} onSaved={() => setError('')}/> : null}
   </section>
 }
 
