@@ -3145,6 +3145,21 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 ├── key: awu-lecturer-marks-drafts
 ├── payload: registration → mark + lecturer comment
 └── survives route changes and browser refresh until server save
+
+[DIALOG:D-LECTURER-ATTENDANCE]
+├── offering selector → assigned offerings only
+├── timetable-session selector + attendance date
+├── bulk roster grid → Present | Absent | Late | Excused + remarks
+├── validation → date + session + non-empty assigned class
+└── save → save_lecturer_attendance + success/error feedback
+
+[PAGE:P-LECTURER-MARKS-V2]
+├── assessment component selector
+├── registration-scoped marks grid
+├── assessment-specific local drafts [mark + comment]
+├── validation → at least one mark + finite range 0..maximum
+├── Save provisional → save_lecturer_marks
+└── Submit offering → explicit confirmation → submit_lecturer_results
 ```
 
 ## Phase 3 implementation overlay — Tree Explorer and Global Search

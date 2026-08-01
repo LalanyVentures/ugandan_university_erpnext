@@ -555,8 +555,8 @@ Exit criteria:
 - [x] Sub-sub-tabs: current semester, selected offering, draft/submitted/reviewed status.
 - [x] Explorer scope defaults to My Offerings → registrations → students.
 - [x] Build offering drawer with timetable, roster, attendance, assessments, marks, result batch.
-- [ ] Build attendance bulk-entry modal with date/session context and save validation.
-- [ ] Build marks grid with component filters, draft preservation, validation, and submission confirmation.
+- [x] Build attendance bulk-entry modal with date/session context and save validation.
+- [x] Build marks grid with component filters, draft preservation, validation, and submission confirmation.
 - [x] Add search for assigned student, offering, course, timetable session.
 - [x] Add exports for permitted class lists and marks templates.
 - [x] Prevent imports/exports that bypass result workflow controls.
@@ -564,7 +564,7 @@ Exit criteria:
 
 Exit criteria:
 
-- [ ] Lecturer completes attendance and marks workflows without ERPNext Desk.
+- [x] Lecturer completes attendance and marks workflows without ERPNext Desk.
 - [x] All lists paginate and filter by assigned offering/semester.
 
 ### Phase 6 — Student experience enhancement
