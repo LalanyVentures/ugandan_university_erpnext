@@ -3134,6 +3134,17 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 └── [PERMISSION:P-LECTURER-SCOPE] source remains get_lecturer_portal_data
     ├── backend resolves current University Member from authenticated user
     └── unassigned offerings and students never enter the browser dataset
+
+[TREE:T-LECTURER-EXPLORER]
+└── My Offerings
+    └── Assigned Offering [course | semester | status]
+        └── Course Registration [student | number | registration status]
+            └── Student [read-only assigned-class destination]
+
+[STORE:S-LECTURER-MARKS-DRAFT]
+├── key: awu-lecturer-marks-drafts
+├── payload: registration → mark + lecturer comment
+└── survives route changes and browser refresh until server save
 ```
 
 ## Phase 3 implementation overlay — Tree Explorer and Global Search

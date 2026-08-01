@@ -553,7 +553,7 @@ Exit criteria:
 
 - [x] Lecturer sidebar: Overview, My Offerings, Students, Timetable, Attendance, Assessments, Marks, Results, Reviews.
 - [x] Sub-sub-tabs: current semester, selected offering, draft/submitted/reviewed status.
-- [ ] Explorer scope defaults to My Offerings → registrations → students.
+- [x] Explorer scope defaults to My Offerings → registrations → students.
 - [x] Build offering drawer with timetable, roster, attendance, assessments, marks, result batch.
 - [ ] Build attendance bulk-entry modal with date/session context and save validation.
 - [ ] Build marks grid with component filters, draft preservation, validation, and submission confirmation.

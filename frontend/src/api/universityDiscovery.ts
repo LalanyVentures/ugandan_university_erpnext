@@ -1,4 +1,4 @@
-import { fetchListPage, type FrappeRow, type ListFilter } from './frappe'
+import { callMethod, fetchListPage, type FrappeRow, type ListFilter } from './frappe'
 import type { PortalRole } from '../roles/admin/roleConfig'
 
 export type ExplorerNodeKind = 'root' | 'group' | 'entity' | 'record'
@@ -48,8 +48,16 @@ const roleEntities: Record<PortalRole,string[]> = {
 }
 export function explorerRoots(_role: PortalRole): ExplorerNode[] { return [{id:'university',kind:'root',label:'Ankole Western University',metadata:'University workspace',expandable:true}] }
 
+type LecturerTreeData={offerings:FrappeRow[];registrations:FrappeRow[];students:FrappeRow[]}
+let lecturerTreeRequest:Promise<LecturerTreeData>|null=null
+function lecturerTreeData(){lecturerTreeRequest??=callMethod<LecturerTreeData>('ugandan_university_education.ugandan_university_education.api.get_lecturer_portal_data').catch(cause=>{lecturerTreeRequest=null;throw cause});return lecturerTreeRequest}
+
 export async function loadExplorerChildren(node: ExplorerNode, role: PortalRole, signal?: AbortSignal): Promise<ExplorerNode[]> {
+  if (node.kind === 'root' && role === 'lecturer') return [{id:'lecturer:offerings',kind:'group',label:'My Offerings',metadata:'Assigned teaching load',route:'/lecturer/offerings',expandable:true}]
   if (node.kind === 'root') return (roleGroups[role]??[]).map(id=>groups[id])
+  if (role === 'lecturer' && node.id === 'lecturer:offerings') { const data=await lecturerTreeData(); return data.offerings.map(row=>({id:`lecturer:offering:${String(row.name)}`,kind:'record',entity:'Offering',recordId:String(row.name),label:String(row.course_name??row.course_code??row.course??row.name),metadata:`${String(row.academic_semester??'Semester')} · ${String(row.status??'Assigned')}`,route:`/lecturer/offerings?offering=${encodeURIComponent(String(row.name))}`,expandable:true})) }
+  if (role === 'lecturer' && node.kind === 'record' && node.entity === 'Offering') { const data=await lecturerTreeData(); return data.registrations.filter(row=>String(row.course_offering)===String(node.recordId)).map(row=>({id:`lecturer:registration:${String(row.name)}`,kind:'record',entity:'Registration',recordId:String(row.name),label:String(row.student_name??row.student),metadata:`${String(row.student_number??row.student)} · ${String(row.status??'Registered')}`,route:`/lecturer/students?offering=${encodeURIComponent(String(node.recordId))}`,expandable:true})) }
+  if (role === 'lecturer' && node.kind === 'record' && node.entity === 'Registration') { const data=await lecturerTreeData(),registration=data.registrations.find(row=>String(row.name)===String(node.recordId)),student=data.students.find(row=>String(row.name)===String(registration?.student)); return student?[{id:`lecturer:student:${String(student.name)}`,kind:'record',entity:'Student',recordId:String(student.name),label:String(student.student_name??student.name),metadata:String(student.student_number??student.status??''),route:'/lecturer/students',expandable:false}]:[] }
   if (node.kind === 'group') return (groupEntities[node.id.replace('group:','')]??[]).filter(entity=>roleEntities[role].includes(entity)).map(entity => { const definition=entityDefinitions[entity]; return {id:`entity:${entity}`,kind:'entity',entity,label:definition.label,metadata:definition.doctype,route:definition.route,createRoute:definition.createRoute,expandable:true} })
   if (node.kind === 'record' && node.entity === 'Cohort') { const definition=entityDefinitions.Enrolment; const result=await fetchListPage(definition.doctype,definition.fields,{pageSize:25,filters:[{field:'student_cohort',operator:'=',value:String(node.recordId)}],sortField:'modified'},signal); return result.rows.map(row=>recordNode('Enrolment',row)) }
   if (node.kind !== 'entity' || !node.entity || !entityDefinitions[node.entity] || !roleEntities[role].includes(node.entity)) return []
