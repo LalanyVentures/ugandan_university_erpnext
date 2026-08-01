@@ -3321,3 +3321,37 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
     ├── unit → programme dependent filtering
     └── no browser-supplied faculty identity or academic-unit override
 ```
+
+```text
+[TREE:T-FACULTY-EXPLORER] server-scoped leadership hierarchy
+└── My Assigned Faculties & Units
+    └── Faculty / Department / Academic Unit
+        └── Programme
+            ├── Course Offerings → /faculty/offerings
+            ├── Lecturers → /faculty/lecturers
+            ├── Students → /faculty/students
+            └── Results & Approvals → /faculty/approvals
+
+[SEARCH:S-FACULTY-GLOBAL] Ctrl/Cmd+K scoped discovery
+├── Navigation: programmes | offerings | lecturers | students | approvals | reviews | transcripts
+├── Records: Programme | Offering | Lecturer | Approval Batch
+├── Tree: matching nodes in assigned faculty hierarchy
+└── source: get_faculty_head_portal_data; no unscoped list API
+
+[PAGE:P-FACULTY-APPROVALS-V2] Result Approval Batches
+├── [METRIC:MT-SUBMITTED] submitted decision queue
+├── [METRIC:MT-APPROVED] faculty-approved batches
+├── [METRIC:MT-RETURNED] batches returned for correction
+├── [TABLE:T-FACULTY-BATCHES]
+│   ├── columns: batch | offering | semester | results | stage | status | action
+│   └── [BUTTON:B-COMPARE-REVIEW] opens governed drawer
+└── [DRAWER:D-FACULTY-RESULT-BATCH]
+    ├── [TABLE:T-BATCH-COMPARE]
+    │   └── student | coursework | examination | final | grade | item review
+    ├── [TEXTAREA:I-FACULTY-DECISION-REASON] required reason/correction guidance
+    ├── [BUTTON:B-RETURN-RESULTS] Rejected; results remain unpublished
+    ├── [BUTTON:B-APPROVE-RESULTS] Approved; registrar publication remains separate
+    └── [TIMELINE:T-FACULTY-BATCH-AUDIT]
+        ├── action | actor | time | reason
+        └── persisted University Audit Event records
+```

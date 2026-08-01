@@ -584,13 +584,13 @@ Exit criteria:
 
 ### Phase 7 — Faculty Head experience enhancement
 
-- [ ] Explorer scope: assigned faculties/units → programmes → offerings → lecturers/students/results.
+- [x] Explorer scope: assigned faculties/units → programmes → offerings → lecturers/students/results.
 - [x] Add sub-sub-tabs for active semester, approval queue, review queue, transcript readiness.
-- [ ] Implement result batch drawer with compare, approve, return, reason, and audit history.
+- [x] Implement result batch drawer with compare, approve, return, reason, and audit history.
 - [ ] Implement review request triage table with status chips and filters.
 - [ ] Implement programme and lecturer workload dashboards.
 - [ ] Add export of approved operational summaries only.
-- [ ] Add search across scoped programmes, offerings, staff, and approval batches.
+- [x] Add search across scoped programmes, offerings, staff, and approval batches.
 
 Exit criteria:
 

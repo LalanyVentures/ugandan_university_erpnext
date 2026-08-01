@@ -885,6 +885,10 @@ def review_faculty_result_batch(batch_name, decision, comment=None):
 	batch.status = decision
 	batch.approved_by = frappe.session.user if decision == "Approved" else None
 	batch.save(ignore_permissions=True)
+	frappe.get_doc({"doctype": "University Audit Event", "entity_type": "Result Approval Batch",
+		"entity_name": batch.name, "action": "Approve results" if decision == "Approved" else "Return results",
+		"reason": comment, "actor": frappe.session.user, "event_time": frappe.utils.now(),
+		"metadata_json": json.dumps({"source": "faculty-result-drawer"}, sort_keys=True)}).insert(ignore_permissions=True)
 	return batch.name
 
 
