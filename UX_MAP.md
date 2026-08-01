@@ -3114,6 +3114,28 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 └── verify relational filters and audit timeline against the assigned business site
 ```
 
+## Phase 5 implementation overlay — Lecturer scope foundation
+
+```text
+[PORTAL:P-LECTURER-PHASE-5] Assigned teaching workspace
+├── [COMPONENT:C-LECTURER-SCOPE-BAR]
+│   ├── search → assigned student | offering | course | timetable session
+│   ├── semester selector → assigned semesters only
+│   ├── offering selector → assigned offerings only
+│   ├── page size → 25 | 50 | 100 | 2000
+│   ├── previous/next page
+│   ├── export class list
+│   └── export marks template [no result-workflow import]
+├── [DRAWER:D-LECTURER-OFFERING]
+│   ├── course | semester | cohort | teaching role
+│   ├── roster and timetable metrics
+│   └── attendance | assessments | marks/results | result batches
+├── [STORE:S-LECTURER-SCOPE] persistent local scope
+└── [PERMISSION:P-LECTURER-SCOPE] source remains get_lecturer_portal_data
+    ├── backend resolves current University Member from authenticated user
+    └── unassigned offerings and students never enter the browser dataset
+```
+
 ## Phase 3 implementation overlay — Tree Explorer and Global Search
 
 ```text

@@ -551,21 +551,21 @@ Exit criteria:
 
 ### Phase 5 — Lecturer experience enhancement
 
-- [ ] Lecturer sidebar: Overview, My Offerings, Students, Timetable, Attendance, Assessments, Marks, Results, Reviews.
-- [ ] Sub-sub-tabs: current semester, selected offering, draft/submitted/reviewed status.
+- [x] Lecturer sidebar: Overview, My Offerings, Students, Timetable, Attendance, Assessments, Marks, Results, Reviews.
+- [x] Sub-sub-tabs: current semester, selected offering, draft/submitted/reviewed status.
 - [ ] Explorer scope defaults to My Offerings → registrations → students.
-- [ ] Build offering drawer with timetable, roster, attendance, assessments, marks, result batch.
+- [x] Build offering drawer with timetable, roster, attendance, assessments, marks, result batch.
 - [ ] Build attendance bulk-entry modal with date/session context and save validation.
 - [ ] Build marks grid with component filters, draft preservation, validation, and submission confirmation.
-- [ ] Add search for assigned student, offering, course, timetable session.
-- [ ] Add exports for permitted class lists and marks templates.
-- [ ] Prevent imports/exports that bypass result workflow controls.
-- [ ] Add visible read-only reason for data outside lecturer assignment scope.
+- [x] Add search for assigned student, offering, course, timetable session.
+- [x] Add exports for permitted class lists and marks templates.
+- [x] Prevent imports/exports that bypass result workflow controls.
+- [x] Add visible read-only reason for data outside lecturer assignment scope.
 
 Exit criteria:
 
 - [ ] Lecturer completes attendance and marks workflows without ERPNext Desk.
-- [ ] All lists paginate and filter by assigned offering/semester.
+- [x] All lists paginate and filter by assigned offering/semester.
 
 ### Phase 6 — Student experience enhancement
 

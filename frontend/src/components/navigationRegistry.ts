@@ -52,6 +52,10 @@ export function viewNavigationFor(role: PortalRole, pathname: string): readonly 
       : ['All','Active','Needs attention']
     return labels.map(label => ({ label, path: current.path, icon: current.icon }))
   }
+  if (role === 'lecturer') {
+    const labels = pathname.includes('/marks') || pathname.includes('/results') || pathname.includes('/submissions') ? ['Current semester','Selected offering','Draft','Submitted','Reviewed'] : ['Current semester','Selected offering','All assigned']
+    return labels.map(label => ({ label, path: current.path, icon: current.icon }))
+  }
   return [
     { label: 'All', path: current.path, icon: current.icon },
     { label: 'Active', path: current.path, icon: current.icon },
