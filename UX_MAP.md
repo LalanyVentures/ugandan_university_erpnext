@@ -3654,3 +3654,32 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 ├── every role resolves through the shared Secondary dashboard/workbench
 └── normal-user ERPNext Desk links: none
 ```
+
+## Phase 0 governance overlay — JDD contract and Desk-link disposition
+
+```text
+[API:API-UNIVERSITY-CONTRACT] GET /app-api/apps/university-platform/university/contract
+├── authentication: launch token | application session | revocable shared-link session
+├── context: business + organization + member + role resolved by JDD only
+├── rejects browser overrides: businessId | organizationId | tenant/site | memberId | role(s)
+├── schemaVersion: 1
+├── entities: 15 field/action/relation allowlists
+├── permissions: administrator | registrar | faculty-head | lecturer | finance | student
+├── query: filters | search | sort | opaque cursor | page size | columns | relations
+├── limits: default 50 | allowed 25/50/100/2000 | export/import/rate/timeout ceilings
+├── errors: authentication | authorization | context override | validation | conflict
+│   └── missing integration | missing DocType | backend timeout | job pending
+└── audit events: search | view | create | update | export | import
+    └── approve | publish | issue | revoke | shared-link use
+
+[CLASSIFICATION:CL-DESK-LINKS]
+├── replace with drawer
+│   └── record Details → native Record Drawer with related tabs and activity
+├── replace with modal
+│   └── create/edit/import/workflow prompts → validated native modal or sheet
+├── replace with native page
+│   └── lists, reports, billing, results, transcripts and global-search destinations
+├── deliberately remove
+│   └── Manage full records, Open ERPNext and duplicate Desk-only shortcuts
+└── remaining normal-user ERPNext Desk links: 0
+```

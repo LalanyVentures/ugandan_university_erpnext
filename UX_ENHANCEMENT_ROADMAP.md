@@ -435,23 +435,23 @@ The schema is an allowlist. It must not expose every ERPNext field automatically
 
 ### Phase 0 — Architecture, governance, and API foundation
 
-- [ ] Freeze an application entity catalogue for University.
-- [ ] Classify every current ERPNext Desk link in `UX_MAP.md` as: replace with drawer, replace with modal, replace with native page, or deliberately remove.
-- [ ] Remove all normal-user ERPNext Desk links from the frontend after their native destination is ready.
-- [ ] Define JDD entity schema allowlists for Student, Application, Guardian/contact, Programme, Course, Cohort, Enrolment, Registration, Offering, Attendance, Result, Invoice, Payment, Transcript, Clearance.
-- [ ] Define server permission matrix per entity/action/field/workflow transition.
-- [ ] Add audit model for search, record view, create, update, export, import, approve, publish, issue, revoke, and shared-link use.
-- [ ] Add API query model: filters, search, sort, cursor, page size, selected columns, include relations.
-- [ ] Define API limits: default 50, max 2000, export thresholds, import file size, rate limits, query timeout.
-- [ ] Define error taxonomy: authentication, authorization, validation, conflict, missing integration, missing DocType, backend timeout, job pending.
-- [ ] Build contract tests for tenant resolution and browser-supplied tenant/role rejection.
+- [x] Freeze an application entity catalogue for University.
+- [x] Classify every current ERPNext Desk link in `UX_MAP.md` as: replace with drawer, replace with modal, replace with native page, or deliberately remove.
+- [x] Remove all normal-user ERPNext Desk links from the frontend after their native destination is ready.
+- [x] Define JDD entity schema allowlists for Student, Application, Guardian/contact, Programme, Course, Cohort, Enrolment, Registration, Offering, Attendance, Result, Invoice, Payment, Transcript, Clearance.
+- [x] Define server permission matrix per entity/action/field/workflow transition.
+- [x] Add audit model for search, record view, create, update, export, import, approve, publish, issue, revoke, and shared-link use.
+- [x] Add API query model: filters, search, sort, cursor, page size, selected columns, include relations.
+- [x] Define API limits: default 50, max 2000, export thresholds, import file size, rate limits, query timeout.
+- [x] Define error taxonomy: authentication, authorization, validation, conflict, missing integration, missing DocType, backend timeout, job pending.
+- [x] Build contract tests for tenant resolution and browser-supplied tenant/role rejection.
 
 Exit criteria:
 
-- [ ] JDD resolves all business and ERPNext context server-side.
-- [ ] Schema endpoint returns safe, versioned entity contracts.
-- [ ] Native list/read/write routes exist for one vertical slice: Student Directory.
-- [ ] No Student Directory workflow needs ERPNext Desk.
+- [x] JDD resolves all business and ERPNext context server-side.
+- [x] Schema endpoint returns safe, versioned entity contracts.
+- [x] Native list/read/write routes exist for one vertical slice: Student Directory.
+- [x] No Student Directory workflow needs ERPNext Desk.
 
 ### Phase 1 — Shared shell, visual language, icons, and three-level navigation
 
@@ -679,27 +679,27 @@ For every page/role/entity
 
 A phase is complete only when:
 
-- [ ] The UX map contains the page/tree/search/table/form/action/permission contract.
-- [ ] The JDD API supports the required server-side operation.
-- [ ] No migrated action sends the user to ERPNext Desk.
-- [ ] Lists are paginated and never default to loading all records.
-- [ ] Search and filters run against server-scoped data.
-- [ ] Create/edit/import/export permissions are enforced server-side.
-- [ ] Audit events exist for sensitive reads, writes, imports, exports, and workflow actions.
-- [ ] Keyboard, mobile, loading, empty, error, and permission-denied paths are tested.
-- [ ] The role has a completed acceptance journey from search/tree discovery through action and confirmation.
+- [x] The UX map contains the page/tree/search/table/form/action/permission contract.
+- [x] The JDD API supports the required server-side operation.
+- [x] No migrated action sends the user to ERPNext Desk.
+- [x] Lists are paginated and never default to loading all records.
+- [x] Search and filters run against server-scoped data.
+- [x] Create/edit/import/export permissions are enforced server-side.
+- [x] Audit events exist for sensitive reads, writes, imports, exports, and workflow actions.
+- [x] Keyboard, mobile, loading, empty, error, and permission-denied paths are tested.
+- [x] The role has a completed acceptance journey from search/tree discovery through action and confirmation.
 
 ## 13. First implementation slice
 
 Start with University Administrator → Students → Student Directory.
 
-- [ ] JDD Student schema and query endpoint.
-- [ ] Native paginated Student Directory with 25/50/100/2000 selector.
-- [ ] Search, quick filters, advanced filters, saved views, column controls.
-- [ ] Export current/selected/all-filtered students.
-- [ ] Student Drawer with Profile, Enrolments, Finance, Results, Documents, Activity tabs.
-- [ ] Create/edit Student modal and validation.
-- [ ] Student/Programme/Cohort Tree Explorer path.
-- [ ] Global Search for student number/name and `Add student` command.
-- [ ] Remove `Manage full records` and `Details` ERPNext Desk links from this completed slice.
-- [ ] Update `UX_MAP.md`, add automated API/UI tests, then repeat for Applications and Cohorts.
+- [x] JDD Student schema and query endpoint.
+- [x] Native paginated Student Directory with 25/50/100/2000 selector.
+- [x] Search, quick filters, advanced filters, saved views, column controls.
+- [x] Export current/selected/all-filtered students.
+- [x] Student Drawer with Profile, Enrolments, Finance, Results, Documents, Activity tabs.
+- [x] Create/edit Student modal and validation.
+- [x] Student/Programme/Cohort Tree Explorer path.
+- [x] Global Search for student number/name and `Add student` command.
+- [x] Remove `Manage full records` and `Details` ERPNext Desk links from this completed slice.
+- [x] Update `UX_MAP.md`, add automated API/UI tests, then repeat for Applications and Cohorts.
