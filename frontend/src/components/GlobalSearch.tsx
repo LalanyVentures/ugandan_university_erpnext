@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CircleOff, Command, CornerDownLeft, Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { auditDiscovery, searchUniversity, type DiscoveryResult } from '../api/universityDiscovery'
+import { auditDiscovery, searchStudentJourney, searchUniversity, type DiscoveryResult } from '../api/universityDiscovery'
 import type { PortalRole } from '../roles/admin/roleConfig'
 
 const groupOrder: DiscoveryResult['group'][] = ['Navigation','Records','Tree','Actions','Help']
@@ -10,7 +10,7 @@ export function GlobalSearch({ role = 'staff', mobile = false, onNavigate }: { r
   const navigate=useNavigate(),inputRef=useRef<HTMLInputElement>(null),returnFocusRef=useRef<HTMLElement|null>(null),requestRef=useRef(0)
   const [query,setQuery]=useState(''),[results,setResults]=useState<DiscoveryResult[]>([]),[loading,setLoading]=useState(false),[open,setOpen]=useState(false),[highlighted,setHighlighted]=useState(0)
   useEffect(()=>{function shortcut(event:KeyboardEvent){if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();returnFocusRef.current=document.activeElement as HTMLElement;setOpen(true);window.setTimeout(()=>inputRef.current?.focus(),0)}}window.addEventListener('keydown',shortcut);return()=>window.removeEventListener('keydown',shortcut)},[])
-  useEffect(()=>{if(query.trim().length<2){setResults([]);return}const controller=new AbortController(),id=++requestRef.current,timer=window.setTimeout(()=>{setLoading(true);searchUniversity(query.trim(),role,controller.signal).then(rows=>{if(id===requestRef.current){setResults(rows);setHighlighted(0);auditDiscovery('search',{queryLength:query.trim().length})}}).catch(cause=>{if(cause?.name!=='AbortError'&&id===requestRef.current)setResults([])}).finally(()=>{if(id===requestRef.current)setLoading(false)})},280);return()=>{window.clearTimeout(timer);controller.abort()}},[query,role])
+  useEffect(()=>{if(query.trim().length<2){setResults([]);return}const controller=new AbortController(),id=++requestRef.current,timer=window.setTimeout(()=>{setLoading(true);const request=role==='student'?searchStudentJourney(query.trim()):searchUniversity(query.trim(),role,controller.signal);request.then(rows=>{if(id===requestRef.current){setResults(rows);setHighlighted(0);auditDiscovery('search',{queryLength:query.trim().length})}}).catch(cause=>{if(cause?.name!=='AbortError'&&id===requestRef.current)setResults([])}).finally(()=>{if(id===requestRef.current)setLoading(false)})},280);return()=>{window.clearTimeout(timer);controller.abort()}},[query,role])
   const grouped=useMemo(()=>groupOrder.map(group=>[group,results.filter(result=>result.group===group)] as const).filter(([,rows])=>rows.length),[results])
   function close(restore=false){setOpen(false);if(restore)window.setTimeout(()=>returnFocusRef.current?.focus(),0)}
   function select(result:DiscoveryResult){auditDiscovery('search_select',{queryLength:query.trim().length,kind:result.kind,route:result.route});const [pathname,rawSearch]=result.route.split('?'),params=new URLSearchParams(rawSearch??'');params.set('searchResult',result.id);if(result.treePath)params.set('tree',result.treePath);navigate({pathname,search:`?${params}`});setQuery('');close(true);onNavigate?.()}

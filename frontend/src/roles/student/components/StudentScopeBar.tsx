@@ -1,0 +1,29 @@
+import { useMemo, useState } from 'react'
+import { FileText, Filter, Printer, ReceiptText, RotateCcw, ShieldCheck, X } from 'lucide-react'
+import type { FrappeRow } from '../../../api/frappe'
+import { useStudentPortal } from '../studentPortal'
+
+type DocumentKind='Invoices'|'Receipts'|'Transcripts'|'Clearance'
+const documentKinds:DocumentKind[]=['Invoices','Receipts','Transcripts','Clearance']
+const fields:Record<DocumentKind,Array<[string,string]>>={
+  Invoices:[['name','Invoice number'],['academic_semester','Semester'],['posting_date','Date'],['grand_total','Total'],['outstanding_amount','Outstanding'],['status','Status']],
+  Receipts:[['name','Receipt number'],['academic_semester','Semester'],['posting_date','Date'],['paid_amount','Amount paid'],['mode_of_payment','Payment method'],['status','Status']],
+  Transcripts:[['name','Document number'],['transcript_type','Transcript type'],['academic_programme','Programme'],['verification_number','Verification number'],['registrar_issued_on','Issued'],['status','Status']],
+  Clearance:[['name','Reference'],['clearance_type','Clearance type'],['academic_semester','Semester'],['financial_status','Financial status'],['academic_status','Academic status'],['status','Status']],
+}
+
+function title(kind:DocumentKind,row:FrappeRow){if(kind==='Invoices')return `Invoice ${String(row.name)}`;if(kind==='Receipts')return `Receipt ${String(row.name)}`;if(kind==='Transcripts')return `${String(row.transcript_type??'Academic')} transcript`;return `${String(row.clearance_type??'Student')} clearance`}
+
+function StudentDocumentsDrawer({close}:{close:()=>void}){
+  const{data}=useStudentPortal(),[kind,setKind]=useState<DocumentKind>('Invoices'),[chosen,setChosen]=useState<Record<DocumentKind,string>>({Invoices:'',Receipts:'',Transcripts:'',Clearance:''})
+  const rows=useMemo(()=>kind==='Invoices'?data?.invoices??[]:kind==='Receipts'?data?.payments??[]:kind==='Transcripts'?data?.transcripts??[]:data?.clearance??[],[data,kind])
+  const selected=rows.find(row=>String(row.name)===chosen[kind])??rows[0]
+  return <div className="record-drawer-layer"><button className="record-drawer-backdrop" onClick={close} aria-label="Close my documents"/><aside className="record-drawer student-document-drawer" role="dialog" aria-modal="true" aria-label="My invoices, receipts, transcripts and clearance"><header><div><span className="eyebrow">MY DOCUMENTS</span><h2><FileText size={20}/>Academic and financial records</h2></div><button onClick={close} aria-label="Close drawer"><X size={18}/></button></header><nav className="drawer-tabs" aria-label="Document type">{documentKinds.map(item=><button key={item} className={kind===item?'is-active':''} onClick={()=>setKind(item)}>{item}</button>)}</nav><div className="student-document-browser"><nav aria-label={`${kind} list`}>{rows.length?rows.map(row=><button key={String(row.name)} className={selected===row?'is-active':''} onClick={()=>setChosen(current=>({...current,[kind]:String(row.name)}))}><strong>{title(kind,row)}</strong><small>{String(row.status??row.academic_semester??'Available')}</small></button>):<p>No {kind.toLowerCase()} match the current journey filters.</p>}</nav>{selected?<section className="student-document-detail"><div className="drawer-context-actions"><button onClick={()=>window.print()}><Printer size={15}/>Print {kind==='Receipts'?'receipt':'document'}</button></div><dl>{fields[kind].map(([field,label])=><div key={field}><dt>{label}</dt><dd>{String(selected[field]??'—')}</dd></div>)}</dl></section>:<section className="student-document-empty"><ShieldCheck size={28}/><p>This document will appear when it is available for your student account.</p></section>}</div></aside></div>
+}
+
+export function StudentScopeBar(){
+  const{allData,scope,setScope}=useStudentPortal(),[documents,setDocuments]=useState(false)
+  if(!allData)return null
+  const semesters=[...new Set([...allData.semester_registrations,...allData.course_registrations,...allData.results,...allData.invoices].map(row=>String(row.academic_semester??row.academic_year??'')).filter(Boolean))],courses=[...new Set([...allData.course_registrations,...allData.results].map(row=>String(row.course??row.course_code??'')).filter(Boolean))]
+  return <><section className="student-scope-bar card"><span><Filter size={15}/>My journey filters</span><select aria-label="Filter by semester" value={scope.semester} onChange={event=>setScope({semester:event.target.value})}><option value="">All semesters</option>{semesters.map(value=><option key={value}>{value}</option>)}</select><select aria-label="Filter by course" value={scope.course} onChange={event=>setScope({course:event.target.value})}><option value="">All courses</option>{courses.map(value=><option key={value}>{value}</option>)}</select><select aria-label="Filter by status" value={scope.status} onChange={event=>setScope({status:event.target.value})}><option value="">All statuses</option><option>Active</option><option>Registered</option><option>Complete</option><option>Cleared</option><option>Pending</option></select><select aria-label="Filter by payment state" value={scope.payment} onChange={event=>setScope({payment:event.target.value})}><option value="">All payment states</option><option>Paid</option><option>Outstanding</option></select><select aria-label="Filter by document state" value={scope.document} onChange={event=>setScope({document:event.target.value})}><option value="">All document states</option><option>Registrar Issued</option><option>Cleared</option><option>Pending</option></select><button onClick={()=>setDocuments(true)}><ReceiptText size={14}/>My documents</button><button onClick={()=>setScope({semester:'',course:'',status:'',payment:'',document:''})}><RotateCcw size={14}/>Clear</button></section>{documents?<StudentDocumentsDrawer close={()=>setDocuments(false)}/>:null}</>
+}

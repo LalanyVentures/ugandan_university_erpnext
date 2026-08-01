@@ -1,38 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { callMethod, type FrappeRow } from '../../api/frappe'
 
-export type StudentPortalData = {
-  student:FrappeRow
-  enrolments:FrappeRow[]
-  semester_registrations:FrappeRow[]
-  course_registrations:FrappeRow[]
-  timetable:FrappeRow[]
-  attendance:FrappeRow[]
-  results:FrappeRow[]
-  invoices:FrappeRow[]
-  payments:FrappeRow[]
-  clearance:FrappeRow[]
-  transcripts:FrappeRow[]
-}
-
-type StudentPortalState = {data:StudentPortalData|null;loading:boolean;error:string;refresh:()=>void}
-const StudentPortalContext = createContext<StudentPortalState|null>(null)
-const method = 'ugandan_university_education.ugandan_university_education.api.get_student_portal_data'
-
-export function StudentPortalProvider({children}:{children:ReactNode}) {
-  const [data,setData] = useState<StudentPortalData|null>(null)
-  const [loading,setLoading] = useState(true)
-  const [error,setError] = useState('')
-  function refresh() {
-    setLoading(true);setError('')
-    callMethod<StudentPortalData>(method).then(setData).catch(cause=>setError(cause instanceof Error?cause.message:'Unable to load your student portal.')).finally(()=>setLoading(false))
-  }
-  useEffect(refresh,[])
-  return <StudentPortalContext.Provider value={{data,loading,error,refresh}}>{children}</StudentPortalContext.Provider>
-}
-
-export function useStudentPortal() {
-  const value=useContext(StudentPortalContext)
-  if(!value) throw new Error('useStudentPortal must be used inside StudentPortalProvider')
-  return value
-}
+export type StudentPortalData={student:FrappeRow;enrolments:FrappeRow[];semester_registrations:FrappeRow[];course_registrations:FrappeRow[];timetable:FrappeRow[];attendance:FrappeRow[];results:FrappeRow[];invoices:FrappeRow[];payments:FrappeRow[];clearance:FrappeRow[];transcripts:FrappeRow[]}
+export type StudentScope={semester:string;course:string;status:string;payment:string;document:string}
+type State={data:StudentPortalData|null;allData:StudentPortalData|null;scope:StudentScope;setScope:(patch:Partial<StudentScope>)=>void;loading:boolean;error:string;refresh:()=>void}
+const Context=createContext<State|null>(null),method='ugandan_university_education.ugandan_university_education.api.get_student_portal_data',initial:StudentScope={semester:'',course:'',status:'',payment:'',document:''}
+function filter(data:StudentPortalData,scope:StudentScope):StudentPortalData{const semester=(row:FrappeRow)=>!scope.semester||String(row.academic_semester??row.academic_year)===scope.semester,status=(row:FrappeRow)=>!scope.status||String(row.status??row.result_status)===scope.status,course=(row:FrappeRow)=>!scope.course||String(row.course??row.course_code)===scope.course,payment=(row:FrappeRow)=>!scope.payment||(scope.payment==='Paid'?Number(row.outstanding_amount??0)===0:Number(row.outstanding_amount??0)>0),document=(row:FrappeRow)=>!scope.document||String(row.status)===scope.document;return{...data,enrolments:data.enrolments.filter(status),semester_registrations:data.semester_registrations.filter(row=>semester(row)&&status(row)),course_registrations:data.course_registrations.filter(row=>semester(row)&&course(row)&&status(row)),timetable:data.timetable.filter(row=>semester(row)&&course(row)&&status(row)),attendance:data.attendance.filter(row=>semester(row)&&course(row)&&status(row)),results:data.results.filter(row=>semester(row)&&course(row)&&status(row)),invoices:data.invoices.filter(row=>semester(row)&&payment(row)&&status(row)),payments:data.payments.filter(row=>semester(row)&&status(row)),clearance:data.clearance.filter(row=>semester(row)&&document(row)),transcripts:data.transcripts.filter(document)}}
+export function StudentPortalProvider({children}:{children:ReactNode}){const[allData,setAllData]=useState<StudentPortalData|null>(null),[scopeState,setScopeState]=useState<StudentScope>(()=>{try{return{...initial,...JSON.parse(localStorage.getItem('awu-student-scope')??'{}')}}catch{return initial}}),[loading,setLoading]=useState(true),[error,setError]=useState('');function refresh(){setLoading(true);setError('');callMethod<StudentPortalData>(method).then(setAllData).catch(cause=>setError(cause instanceof Error?cause.message:'Unable to load your student portal.')).finally(()=>setLoading(false))}function setScope(patch:Partial<StudentScope>){setScopeState(current=>{const next={...current,...patch};localStorage.setItem('awu-student-scope',JSON.stringify(next));return next})}useEffect(refresh,[]);const data=useMemo(()=>allData?filter(allData,scopeState):null,[allData,scopeState]);return <Context.Provider value={{data,allData,scope:scopeState,setScope,loading,error,refresh}}>{children}</Context.Provider>}
+export function useStudentPortal(){const value=useContext(Context);if(!value)throw new Error('useStudentPortal must be used inside StudentPortalProvider');return value}

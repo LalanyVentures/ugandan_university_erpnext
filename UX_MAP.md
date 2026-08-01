@@ -3245,3 +3245,56 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 ├── normal-user ERPNext Desk links: none
 └── audit metadata excludes names, raw searches, credentials and record payloads
 ```
+
+## Phase 6 implementation overlay — Student academic journey
+
+```text
+[PORTAL:P-STUDENT-PHASE-6] My AWU Student Portal
+├── [SHELL:C-STUDENT-SHELL] ApplicationShell
+│   ├── [NAV:N-STUDENT] Overview | Profile | Registration | Courses | Timetable | Attendance | Finance | Results | Transcript | Clearance
+│   ├── [SUBTAB:N-STUDENT-CONTEXT] route-specific contextual navigation
+│   └── [SUB-SUB-TAB:N-STUDENT-VIEW] Current | History | Selected semester
+├── [FILTER:C-STUDENT-SCOPE-BAR] persistent personal journey filters
+│   ├── [SELECT:I-STUDENT-SEMESTER] academic semester/year
+│   ├── [SELECT:I-STUDENT-COURSE] registered course
+│   ├── [SELECT:I-STUDENT-STATUS] record status
+│   ├── [SELECT:I-STUDENT-PAYMENT] Paid | Outstanding
+│   ├── [SELECT:I-STUDENT-DOCUMENT] Registrar Issued | Cleared | Pending
+│   ├── [BUTTON:B-STUDENT-DOCUMENTS] open native My Documents drawer
+│   └── [BUTTON:B-STUDENT-CLEAR-FILTERS] restore complete journey
+├── [TREE:T-STUDENT-EXPLORER] authenticated student records only
+│   └── My Programme
+│       └── My Semester
+│           ├── My Courses
+│           │   └── registered course records → /student/courses
+│           ├── My Results
+│           │   └── published personal results → /student/results
+│           ├── My Finance
+│           │   ├── personal invoices → /student/finance
+│           │   └── personal receipts → /student/finance
+│           └── My Documents
+│               ├── issued transcript records → /student/transcript
+│               └── personal clearance records → /student/clearance
+├── [DRAWER:D-STUDENT-DOCUMENTS] native personal document browser
+│   ├── [TAB:TAB-STUDENT-INVOICES]
+│   │   ├── invoice number | semester | date | total | outstanding | status
+│   │   └── [BUTTON:B-PRINT-INVOICE] browser print
+│   ├── [TAB:TAB-STUDENT-RECEIPTS]
+│   │   ├── receipt number | semester | date | amount | method | status
+│   │   └── [BUTTON:B-PRINT-RECEIPT] browser print
+│   ├── [TAB:TAB-STUDENT-TRANSCRIPTS]
+│   │   ├── type | programme | verification | issue date | status
+│   │   └── [BUTTON:B-PRINT-TRANSCRIPT] browser print
+│   └── [TAB:TAB-STUDENT-CLEARANCE]
+│       ├── type | semester | finance | academic | status
+│       └── [BUTTON:B-PRINT-CLEARANCE] browser print
+├── [CARD:C-STUDENT-FIRST] overview, registration, results, transcript and clearance summaries
+├── [TABLE:T-STUDENT-HISTORY] detailed academic and financial history
+├── [STATE:S-STUDENT-UNAVAILABLE] explanatory results/transcript/clearance panels
+├── [STORE:S-STUDENT-SCOPE] localStorage awu-student-scope
+└── [PERMISSION:P-STUDENT-PERSONAL]
+    ├── source: server-scoped get_student_portal_data
+    ├── no create, import or administrative controls
+    ├── no ERPNext Desk links
+    └── no browser-supplied student identity
+```

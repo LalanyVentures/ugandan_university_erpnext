@@ -569,18 +569,18 @@ Exit criteria:
 
 ### Phase 6 — Student experience enhancement
 
-- [ ] Student shell: Overview, Profile, Registration, Courses, Timetable, Attendance, Finance, Results, Transcript, Clearance.
-- [ ] Use friendly cards first; tables remain available for detail/history.
-- [ ] Explorer scope is personal: My Programme → My Semester → My Courses → My Results/Finance/Documents.
-- [ ] Add sub-sub-tabs for current/history and selected semester.
-- [ ] Add filters for semester, status, course, payment status, transcript/clearance status.
-- [ ] Add native receipt, invoice, transcript, and clearance drawers/print actions.
-- [ ] Do not expose create/import/admin actions.
-- [ ] Add clear explanation panels for unavailable or unpublished results.
+- [x] Student shell: Overview, Profile, Registration, Courses, Timetable, Attendance, Finance, Results, Transcript, Clearance.
+- [x] Use friendly cards first; tables remain available for detail/history.
+- [x] Explorer scope is personal: My Programme → My Semester → My Courses → My Results/Finance/Documents.
+- [x] Add sub-sub-tabs for current/history and selected semester.
+- [x] Add filters for semester, status, course, payment status, transcript/clearance status.
+- [x] Add native receipt, invoice, transcript, and clearance drawers/print actions.
+- [x] Do not expose create/import/admin actions.
+- [x] Add clear explanation panels for unavailable or unpublished results.
 
 Exit criteria:
 
-- [ ] Student can understand their complete academic journey through cards, tree, search, and filtered history.
+- [x] Student can understand their complete academic journey through cards, tree, search, and filtered history.
 
 ### Phase 7 — Faculty Head experience enhancement
 
