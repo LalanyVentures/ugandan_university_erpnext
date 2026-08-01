@@ -1,0 +1,22 @@
+import { Award, BookOpen, CalendarDays, ClipboardCheck, FileBadge, FileText, GraduationCap, UserRoundCheck, Users, WalletCards } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { fetchListPage, type FrappeRow, type ListPageQuery } from '../../../../api/frappe'
+import { DataWorkbench, type DataWorkbenchSchema, type WorkbenchAction, type WorkbenchColumn } from '../../../../components/DataWorkbench'
+import { recordViewConfig, type RecordView } from './RecordsPage'
+
+const importableViews: RecordView[] = ['students','applications','programmes','cohorts','courses','enrolments']
+
+export function NativeRecordsPage({ view }: { view: RecordView }) {
+  const item = recordViewConfig[view], Icon = item.icon, navigate = useNavigate()
+  const sourceColumns = item.invoiceTable ? [['student','Student'],['academic_semester','Semester'],['grand_total','Total'],['outstanding_amount','Outstanding'],['status','Status']] as Array<[string,string]> : item.columns
+  const columns: WorkbenchColumn[] = sourceColumns.map(([field,label]) => ({ field, label, render: field === 'status' || field.startsWith('is_') || field.includes('_status') ? value => <span className="status-pill tone-green">{String(value ?? '—')}</span> : undefined }))
+  const schema: DataWorkbenchSchema = {
+    entity: item.doctype, title: item.title, description: item.description, columns,
+    searchFields: item.fields.filter(field => ['name','student','student_name','student_number','applicant_name','application_number','programme_code','programme_name','cohort_code','cohort_name','course','status'].includes(field)).slice(0,6),
+    defaultSort: 'modified', allowImport: importableViews.includes(view),
+    quickFilters: item.fields.includes('status') ? [{label:'Active',field:'status',value:'Active'},{label:'Draft',field:'status',value:'Draft'},{label:'Completed',field:'status',value:'Completed'}] : undefined,
+  }
+  async function loadPage(query: ListPageQuery, signal?: AbortSignal) { const fixed = view === 'readiness' ? [{field:'clearance_type',operator:'=' as const,value:'Graduation'}] : []; return fetchListPage(item.doctype,item.fields,{...query,filters:[...fixed,...(query.filters??[])]},signal) }
+  function actionsFor(row:FrappeRow):WorkbenchAction[]{const student=String(view==='students'?row.name??'':row.student??''),value=(field:string)=>encodeURIComponent(String(row[field]??row.name??'')),actions:WorkbenchAction[]=[];if(student){actions.push({label:'Profile',icon:UserRoundCheck,onSelect:()=>navigate(`/students/profile/${encodeURIComponent(student)}`)},{label:'Transcript',icon:FileText,onSelect:()=>navigate(`/transcripts?student=${encodeURIComponent(student)}`)},{label:'Finance',icon:WalletCards,onSelect:()=>navigate(`/finance/analysis?student=${encodeURIComponent(student)}`)})}else if(view==='programmes'){actions.push({label:'Courses',icon:BookOpen,onSelect:()=>navigate(`/academics/courses?q=${value('programme_code')}`)},{label:'Enrolments',icon:GraduationCap,onSelect:()=>navigate(`/students/enrolments?q=${value('name')}`)})}else if(view==='courses'){actions.push({label:'Offerings',icon:BookOpen,onSelect:()=>navigate(`/registration/offerings?q=${value('name')}`)},{label:'Results',icon:Award,onSelect:()=>navigate(`/results?q=${value('name')}`)})}else if(view==='cohorts'){actions.push({label:'Enrolments',icon:Users,onSelect:()=>navigate(`/students/enrolments?q=${value('name')}`)},{label:'Registrations',icon:ClipboardCheck,onSelect:()=>navigate(`/registration/courses?q=${value('name')}`)})}else if(['calendar','semesters','academic-years'].includes(view)){actions.push({label:'Registrations',icon:CalendarDays,onSelect:()=>navigate(`/registration?q=${value('name')}`)},{label:'Results',icon:Award,onSelect:()=>navigate(`/results?q=${value('name')}`)})}else if(view==='fee-structures'){actions.push({label:'Invoices',icon:FileBadge,onSelect:()=>navigate(`/finance/invoices?q=${value('academic_semester')}`)})}return actions.slice(0,3)}
+  return <section className="records-page"><div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div></div><div className="records-summary card"><span className="records-summary-icon"><Icon size={24}/></span><div><strong>50</strong><span>default rows per page · maximum 2,000</span></div><span className="source-chip">Native paginated data</span></div><DataWorkbench schema={schema} loadPage={loadPage} actions={actionsFor}/></section>
+}

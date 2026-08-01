@@ -53,22 +53,6 @@ function fuzzyScore(query: string, values: unknown[]) {
   return score + pointer * 2
 }
 
-function deskOrigin() {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return import.meta.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space'
-  }
-  return window.location.origin
-}
-
-const deskSlugs: Record<string, string> = {
-  Student: 'student', 'University Member': 'university-member', Course: 'course',
-  'Academic Programme': 'academic-programme', 'Academic Transcript': 'academic-transcript',
-}
-
-function openDesk(doctype: keyof typeof deskSlugs, name: unknown) {
-  window.open(`${deskOrigin()}/app/${deskSlugs[doctype]}/${encodeURIComponent(String(name))}`, '_blank', 'noopener,noreferrer')
-}
-
 async function loadSearchData(): Promise<SearchData> {
   const requests = await Promise.allSettled([
     fetchList('Student', ['name', 'student_name', 'student_number', 'student_email_id', 'status'], undefined, 1000),
@@ -111,7 +95,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       if (!score) continue
       const actions: SearchAction[] = [
         { label: 'View complete student profile', icon: Eye, run: route(`/students/profile/${encodeURIComponent(String(student.name))}`) },
-        { label: 'Open full student record', icon: IdCard, run: () => openDesk('Student', student.name) },
+        { label: 'Open full student record', icon: IdCard, run: route(`/students/profile/${encodeURIComponent(String(student.name))}`) },
         { label: 'View student finance', icon: CreditCard, run: route(`/finance?q=${encodeURIComponent(String(student.name))}`) },
       ]
       actions.push({ label: transcript ? 'View student transcript' : 'Search student transcript', icon: transcript ? FileBadge2 : FileText, run: route(`/transcripts?student=${encodeURIComponent(String(student.name))}`) })
@@ -124,7 +108,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       const score = fuzzyScore(query, [member.full_name, member.member_number, member.name, member.user, member.employee, member.member_type])
       if (!score) continue
       rows.push({ id: `member-${member.name}`, kind, title: String(member.full_name ?? member.name), reference: String(member.member_number ?? member.name), primaryDetail: type, secondaryDetail: String(member.user ?? member.employee ?? 'University member'), status: String(member.status ?? 'Active'), score: score + 10, actions: [
-        { label: `View ${kind.toLowerCase()} details`, icon: Eye, run: () => openDesk('University Member', member.name) },
+        { label: `View ${kind.toLowerCase()} details`, icon: Eye, run: route(`/registration?q=${encodeURIComponent(String(member.full_name ?? member.name))}`) },
         { label: 'View teaching and registration', icon: BookOpen, run: route(`/registration?q=${encodeURIComponent(String(member.full_name ?? member.name))}`) },
       ] })
     }
@@ -133,7 +117,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       const score = fuzzyScore(query, [course.course_code, course.course_name, course.name, course.academic_unit, course.study_level])
       if (!score) continue
       rows.push({ id: `course-${course.name}`, kind: 'Course', title: String(course.course_name ?? course.name), reference: String(course.course_code ?? course.name), primaryDetail: String(course.academic_unit ?? 'Academic unit not assigned'), secondaryDetail: `${Number(course.credit_units ?? 0)} credit units · Level ${String(course.study_level ?? '—')}`, status: String(course.status ?? 'Active'), score, actions: [
-        { label: 'View course details', icon: Eye, run: () => openDesk('Course', course.name) },
+        { label: 'View course details', icon: Eye, run: route(`/academics/courses?q=${encodeURIComponent(String(course.course_code ?? course.name))}`) },
         { label: 'View course registrations', icon: BookOpen, run: route(`/registration?q=${encodeURIComponent(String(course.course_code ?? course.name))}`) },
         { label: 'View course results', icon: Award, run: route(`/results?q=${encodeURIComponent(String(course.course_code ?? course.name))}`) },
       ] })
@@ -143,7 +127,7 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       const score = fuzzyScore(query, [programme.programme_code, programme.programme_name, programme.name, programme.award_type, programme.academic_unit])
       if (!score) continue
       rows.push({ id: `programme-${programme.name}`, kind: 'Programme', title: String(programme.programme_name ?? programme.name), reference: String(programme.programme_code ?? programme.name), primaryDetail: String(programme.academic_unit ?? 'Academic unit not assigned'), secondaryDetail: String(programme.award_type ?? 'Academic programme'), status: String(programme.status ?? 'Active'), score, actions: [
-        { label: 'View programme details', icon: Eye, run: () => openDesk('Academic Programme', programme.name) },
+        { label: 'View programme details', icon: Eye, run: route(`/academics?q=${encodeURIComponent(String(programme.programme_code ?? programme.name))}`) },
         { label: 'Open academic structure', icon: GraduationCap, run: route(`/academics?q=${encodeURIComponent(String(programme.programme_code ?? programme.name))}`) },
       ] })
     }
@@ -153,10 +137,10 @@ export function GlobalSearch({ mobile = false, onNavigate }: { mobile?: boolean;
       if (!score) continue
       const actions: SearchAction[] = [
         { label: 'View student transcript', icon: Eye, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
-        { label: 'Open official transcript record', icon: IdCard, run: () => openDesk('Academic Transcript', transcript.name) },
+        { label: 'Open official transcript record', icon: IdCard, run: route(`/transcripts/register?q=${encodeURIComponent(String(transcript.name))}`) },
         { label: 'Open student transcript', icon: FileBadge2, run: route(`/transcripts?student=${encodeURIComponent(String(transcript.student ?? transcript.name))}`) },
       ]
-      if (transcript.generated_pdf) actions.push({ label: 'Open generated transcript PDF', icon: FileText, run: () => window.open(`${deskOrigin()}${String(transcript.generated_pdf)}`, '_blank', 'noopener,noreferrer') })
+      if (transcript.generated_pdf) actions.push({ label: 'Open generated transcript PDF', icon: FileText, run: () => window.open(new URL(String(transcript.generated_pdf), window.location.origin), '_blank', 'noopener,noreferrer') })
       rows.push({ id: `transcript-${transcript.name}`, kind: 'Transcript', title: `Transcript · ${String(transcript.student ?? transcript.name)}`, reference: String(transcript.verification_number ?? transcript.name), primaryDetail: String(transcript.academic_programme ?? 'Programme not assigned'), secondaryDetail: String(transcript.transcript_type ?? 'Academic transcript'), status: String(transcript.status ?? 'Draft'), score: score + 6, actions })
     }
 

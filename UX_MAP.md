@@ -2970,3 +2970,96 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 ├── Modal/drawer conversion remains governed by Phase 0 link classification
 └── Phase 2/3 will map each table/form into DataWorkbench and native record surfaces
 ```
+
+## Phase 2 implementation overlay — native Data Workbench
+
+```text
+[COMPONENT:C-DATA-WORKBENCH] DataWorkbench(schema, loadPage, actions)
+├── [MODEL:M-WORKBENCH-SCHEMA]
+│   ├── entity + title + description
+│   ├── columns[]: field | label | optional renderer
+│   ├── searchFields[] [server allowlisted]
+│   ├── defaultSort
+│   ├── allowImport
+│   └── quickFilters[]
+├── [QUERY:Q-WORKBENCH] URL-serialized state
+│   ├── q: debounced server text search
+│   ├── filters: advanced filter JSON
+│   ├── sort + order
+│   ├── page + pageSize: 25 | 50 | 100 | 2000
+│   ├── columns: selected ordered fields
+│   ├── density: compact | comfortable | spacious
+│   └── primary + tab + subtab preserved from ApplicationShell
+├── [API:A-FETCH-LIST-PAGE] fetchListPage
+│   ├── limit_start = (page - 1) × pageSize
+│   ├── limit_page_length = pageSize [default 50]
+│   ├── order_by = allowlisted field + direction
+│   ├── filters = AND filters
+│   ├── or_filters = server-side text search across searchFields
+│   ├── AbortSignal cancellation
+│   └── hasNext from returned page length
+├── [TOOLBAR:T-WORKBENCH]
+│   ├── [INPUT:I-SERVER-SEARCH] debounced search
+│   ├── [BUTTON:B-FILTERS] advanced filter builder
+│   ├── [BUTTON:B-COLUMNS] visibility + order manager
+│   ├── [SELECT:S-DENSITY] compact | comfortable | spacious
+│   ├── [GROUP:G-EXPORT]
+│   │   ├── current page CSV
+│   │   ├── selected rows CSV
+│   │   └── all filtered CSV [bounded at 10,000]
+│   ├── [BUTTON:B-IMPORT] import wizard or disabled permission state
+│   ├── [BUTTON:B-SAVE-VIEW] save URL state to localStorage
+│   └── [BUTTON:B-LOAD-VIEW] restore named saved view
+├── [FILTERS:F-WORKBENCH]
+│   ├── quick chips: Active | Draft | Completed where status exists
+│   └── advanced rows: field | operator | value | remove
+├── [TABLE:TB-WORKBENCH]
+│   ├── caption for screen readers
+│   ├── select-all checkbox
+│   ├── sortable column headers
+│   ├── selected-row checkboxes
+│   ├── native rendered values/status pills
+│   └── [COLUMN:COL-ACTIONS]
+│       ├── [BUTTON:B-VIEW] native Record Drawer
+│       └── up to two contextual native route actions
+├── [BAR:BR-BULK] selected count | export selection | clear
+├── [PAGINATION:P-WORKBENCH]
+│   ├── Previous
+│   ├── current page + returned row count
+│   ├── page-size selector 25 | 50 | 100 | 2000
+│   └── Next [disabled when hasNext=false]
+├── [DRAWER:D-RECORD] native read-only record details
+│   ├── entity + record identity
+│   ├── schema columns as definition list
+│   └── close button/backdrop
+├── [MODAL:M-IMPORT-WIZARD]
+│   ├── CSV selection
+│   ├── 10 MiB size validation
+│   ├── selected file summary
+│   └── validation-before-commit contract
+├── [STATE:ST-WORKBENCH]
+│   ├── loading skeleton
+│   ├── empty
+│   ├── error + retry
+│   └── stale response ignored by request sequence
+└── [RESPONSIVE:R-WORKBENCH]
+    ├── horizontally scrollable semantic table
+    ├── stacked toolbar/filter builder/pagination on mobile
+    ├── full-width mobile record drawer
+    └── labelled controls and icon buttons
+
+[ROUTE-MIGRATION:RM-PHASE-2]
+├── /students → Student Directory
+├── /students/applications → Applications
+├── /students/cohorts → Cohorts
+├── /academics → Programmes
+├── /finance/invoices → Invoices
+├── /results → Results
+└── all remaining administrator RecordsPage views use the same native workbench contract
+
+[DESK-LINK-REMOVAL:DLR-PHASE-2]
+├── Generic record Details → native Record Drawer
+├── Manage full records → removed
+├── Global Search student/course/programme/transcript actions → native routes
+└── normal-user ERPNext Desk navigation remaining in React source: none
+```

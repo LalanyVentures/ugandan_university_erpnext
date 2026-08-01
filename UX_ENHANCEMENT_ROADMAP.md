@@ -474,27 +474,27 @@ Exit criteria:
 
 ### Phase 2 — Data Workbench and pagination
 
-- [ ] Build `DataWorkbench` with entity schema input.
-- [ ] Implement server-side text search.
-- [ ] Implement quick filter chips.
-- [ ] Implement advanced filter builder.
-- [ ] Implement URL query serialization.
-- [ ] Implement saved views.
-- [ ] Implement column picker/order/density.
-- [ ] Implement sorting.
-- [ ] Implement cursor/offset pagination with page sizes 25, 50, 100, 2000.
-- [ ] Implement row selection and bulk action bar.
-- [ ] Implement export current page, selection, and all filtered records.
-- [ ] Implement import wizard framework, initially disabled where schema does not permit import.
-- [ ] Implement native row action menu and Record Drawer.
-- [ ] Implement query cancellation/debouncing and stale-response protection.
-- [ ] Add table accessibility and mobile behaviour.
+- [x] Build `DataWorkbench` with entity schema input.
+- [x] Implement server-side text search.
+- [x] Implement quick filter chips.
+- [x] Implement advanced filter builder.
+- [x] Implement URL query serialization.
+- [x] Implement saved views.
+- [x] Implement column picker/order/density.
+- [x] Implement sorting.
+- [x] Implement cursor/offset pagination with page sizes 25, 50, 100, 2000.
+- [x] Implement row selection and bulk action bar.
+- [x] Implement export current page, selection, and all filtered records.
+- [x] Implement import wizard framework, initially disabled where schema does not permit import.
+- [x] Implement native row action menu and Record Drawer.
+- [x] Implement query cancellation/debouncing and stale-response protection.
+- [x] Add table accessibility and mobile behaviour.
 
 Exit criteria:
 
-- [ ] Student Directory, Applications, Programmes, Cohorts, Invoices, and Results use native pagination.
-- [ ] No list loads the full dataset by default.
-- [ ] Every migrated table has filters, search, export controls, and page-size selector.
+- [x] Student Directory, Applications, Programmes, Cohorts, Invoices, and Results use native pagination.
+- [x] No list loads the full dataset by default.
+- [x] Every migrated table has filters, search, export controls, and page-size selector.
 
 ### Phase 3 — Tree Explorer and Global Search
 

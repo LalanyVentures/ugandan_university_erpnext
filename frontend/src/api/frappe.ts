@@ -8,6 +8,17 @@ export type UniversitySession = {
 
 export type FrappeRow = Record<string, unknown>
 
+export type ListFilter = { field: string; operator: '=' | '!=' | 'like' | 'in' | '>' | '>=' | '<' | '<='; value: string }
+export type ListPageQuery = {
+  search?: string
+  searchFields?: string[]
+  filters?: ListFilter[]
+  page?: number
+  pageSize?: 25 | 50 | 100 | 2000
+  sortField?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
 export type UniversityApiContract = {
   ok: true
   appSlug: string
@@ -154,11 +165,29 @@ export const authApi = {
   },
 }
 
-export async function fetchList(doctype: string, fields: string[], filters?: unknown, limit = 1000): Promise<FrappeRow[]> {
+export async function fetchList(doctype: string, fields: string[], filters?: unknown, limit = 50): Promise<FrappeRow[]> {
   const query = new URLSearchParams({ fields: JSON.stringify(fields), limit_page_length: String(limit), order_by: 'modified desc' })
   if (filters) query.set('filters', JSON.stringify(filters))
   const payload = await jsonRequest<{ data: FrappeRow[] }>(`/api/resource/${encodeURIComponent(doctype)}?${query}`)
   return payload.data ?? []
+}
+
+export async function fetchListPage(doctype: string, fields: string[], query: ListPageQuery = {}, signal?: AbortSignal): Promise<{ rows: FrappeRow[]; page: number; pageSize: number; hasNext: boolean }> {
+  const page = Math.max(1, Number(query.page ?? 1))
+  const pageSize = [25, 50, 100, 2000].includes(Number(query.pageSize)) ? Number(query.pageSize) : 50
+  const params = new URLSearchParams({
+    fields: JSON.stringify(fields),
+    limit_start: String((page - 1) * pageSize),
+    limit_page_length: String(pageSize),
+    order_by: `${query.sortField && fields.includes(query.sortField) ? query.sortField : 'modified'} ${query.sortOrder === 'asc' ? 'asc' : 'desc'}`,
+  })
+  const filters = (query.filters ?? []).map(filter => [doctype, filter.field, filter.operator, filter.operator === 'in' ? filter.value.split(',').map(value => value.trim()).filter(Boolean) : filter.value])
+  if (filters.length) params.set('filters', JSON.stringify(filters))
+  const search = String(query.search ?? '').trim()
+  if (search && query.searchFields?.length) params.set('or_filters', JSON.stringify(query.searchFields.map(field => [doctype, field, 'like', `%${search}%`])))
+  const payload = await jsonRequest<{ data: FrappeRow[] }>(`/api/resource/${encodeURIComponent(doctype)}?${params}`, { signal })
+  const rows = payload.data ?? []
+  return { rows, page, pageSize, hasNext: rows.length === pageSize }
 }
 
 export async function fetchDocument(doctype: string, name: string): Promise<FrappeRow> {

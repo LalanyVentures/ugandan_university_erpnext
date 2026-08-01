@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Award, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, ExternalLink, FileBadge, FileText, GraduationCap, Library, Plus, Receipt, Search, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
+import { Award, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileText, GraduationCap, Library, Receipt, Search, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchList, type FrappeRow } from '../../../../api/frappe'
 import { InvoiceTable } from '../dashboard/DashboardPage'
@@ -23,7 +23,7 @@ type SectionConfig = {
   invoiceTable?: boolean
 }
 
-const config: Record<RecordView, SectionConfig> = {
+export const recordViewConfig: Record<RecordView, SectionConfig> = {
   students: { eyebrow:'ADMISSIONS & RECORDS', title:'Student Directory', description:'Find every student and open a complete identity, academic, finance and results profile.', doctype:'Student', fields:['name','student_name','student_number','gender','student_email_id','status'], icon:Users, columns:[['student_name','Student'],['student_number','Student Number'],['gender','Gender'],['status','Status'],['student_email_id','Email']] },
   applications: { eyebrow:'ADMISSIONS PIPELINE', title:'University Applications', description:'Review applicants, programme choices and admission decisions.', doctype:'University Application', fields:['name','application_number','applicant_name','academic_programme','academic_year','application_date','status','student'], icon:ClipboardCheck, columns:[['applicant_name','Applicant'],['application_number','Application'],['academic_programme','Programme'],['academic_year','Year'],['status','Status']] },
   enrolments: { eyebrow:'STUDENT ACADEMIC RECORD', title:'Programme Enrolments', description:'Monitor programme placement, curricula, cohorts and expected completion.', doctype:'Student Programme Enrolment', fields:['name','student','academic_programme','programme_curriculum','academic_year','student_cohort','admission_date','status','expected_completion_date'], icon:GraduationCap, columns:[['student','Student'],['academic_programme','Programme'],['student_cohort','Cohort'],['academic_year','Admission Year'],['status','Status'],['expected_completion_date','Expected Completion']] },
@@ -57,18 +57,8 @@ const config: Record<RecordView, SectionConfig> = {
   'settings-grading': { eyebrow:'ACADEMIC POLICY', title:'Grading Schemes', description:'Configure grade bands used by results and transcripts.', doctype:'Grading Scheme', fields:['name','scheme_name','description','status'], icon:Award, columns:[['scheme_name','Scheme'],['description','Description'],['status','Status']] },
 }
 
-function deskOrigin() {
-  return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? import.meta.env.VITE_FRAPPE_URL || 'https://erp-university.jdd.arthlabs.space'
-    : window.location.origin
-}
-
-function deskSlug(doctype: string) {
-  return doctype.toLowerCase().replace(/\s+/g, '-')
-}
-
 export function RecordsPage({ view }: { view: RecordView }) {
-  const item = config[view]
+  const item = recordViewConfig[view]
   const Icon = item.icon
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -78,7 +68,7 @@ export function RecordsPage({ view }: { view: RecordView }) {
 
   useEffect(() => {
     setLoading(true)
-    fetchList(item.doctype, item.fields, view === 'readiness' ? { clearance_type: 'Graduation' } : undefined, 1000)
+    fetchList(item.doctype, item.fields, view === 'readiness' ? { clearance_type: 'Graduation' } : undefined, 50)
       .then(setRows).catch(() => setRows([])).finally(() => setLoading(false))
   }, [item, view])
   useEffect(() => setQuery(searchParams.get('q') ?? ''), [searchParams])
@@ -111,12 +101,11 @@ export function RecordsPage({ view }: { view: RecordView }) {
     } else if (view === 'transcript-register') {
       actions.push({label:'Transcript',icon:FileText,run:()=>navigate(`/transcripts?student=${value('student')}`)})
     }
-    actions.push({label:'Details',icon:ExternalLink,run:()=>window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}/${encodeURIComponent(String(row.name))}`,'_blank','noopener,noreferrer')})
     return actions.slice(0,4)
   }
 
   return <section className="records-page">
-    <div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div><button className="primary-button" onClick={() => window.open(`${deskOrigin()}/app/${deskSlug(item.doctype)}`, '_blank', 'noopener,noreferrer')}><Plus size={16}/>Manage full records</button></div>
+    <div className="page-intro"><div><span className="eyebrow">{item.eyebrow}</span><h1><Icon size={28}/>{item.title}</h1><p>{item.description}</p></div></div>
     <div className="records-summary card"><span className="records-summary-icon"><Icon size={24}/></span><div><strong>{rows.length}</strong><span>{item.doctype} records available</span></div><span className="source-chip">Live university data</span></div>
     <article className="card records-table-card">
       <div className="table-toolbar"><div><h3>{item.title}</h3><p>Search and review live university records.</p></div><label className="search-input"><Search size={16}/><input value={query} onChange={event => { const next=event.target.value; setQuery(next); setSearchParams(next ? {q:next} : {}, {replace:true}) }} placeholder={`Search ${item.title.toLowerCase()}`} /></label></div>
