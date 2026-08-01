@@ -4,6 +4,8 @@ This is the canonical UX architecture for the current React frontend in `fronten
 It is intentionally one continuous tree. Routes use React `HashRouter`, so `/students`
 appears as `#/students` inside the active JDD artifact URL.
 
+Sidebar implementation update (2026-08-02): desktop width is persisted per browser, drag-resizable from 220–420 px, resettable by double-click, and collapses to a 72 px icon rail. Its six fixed utility actions are Dashboard, Explorer, Collapse/Expand, Narrower, Wider, and Sign out. The dock uses three columns when wide, two when narrow, and one when collapsed. Role-specific navigation remains the source of truth and scrolls independently above the dock.
+
 ```text
 UNIVERSITY PLATFORM UX MAP 2.0 [ROOT:UX-AWU]
 ├── [SPEC:UX-DOCUMENT] Document contract
