@@ -1,23 +1,10 @@
-import { useState, type ReactNode } from 'react'
-import { Bell, LogOut, MoreHorizontal, UserCircle2, X } from 'lucide-react'
-import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { authApi, type UniversitySession } from '../../../api/frappe'
-import { financeNavigation } from '../roleConfig'
-
-const active = (path: string, location: string) => location === path || (path !== '/finance' && location.startsWith(path))
+import { type ReactNode } from 'react'
+import { ApplicationShell } from '../../../components/ApplicationShell'
+import { contextualNavigationFor, navigationForPortal, viewNavigationFor } from '../../../components/navigationRegistry'
+import { type UniversitySession } from '../../../api/frappe'
+import { useLocation } from 'react-router-dom'
 
 export function FinanceShell({ session, onLogout, children }: { session: UniversitySession; onLogout: () => void; children: ReactNode }) {
-  const location = useLocation(), navigate = useNavigate(), [more, setMore] = useState(false)
-  const current = financeNavigation.find(item => active(item.path, location.pathname)) ?? financeNavigation[0]
-  const mobile = financeNavigation.filter(item => ['/finance', '/finance/students', '/finance/payments', '/finance/analysis'].includes(item.path))
-  async function logout() { await authApi.logout().catch(() => undefined); onLogout(); navigate('/login', { replace: true }) }
-  return <div className="app-shell role-shell role-shell-finance">
-    <div className="desktop-sidebar-cap"><div className="desktop-sidebar-cap-mark"><img src="/awu-logo.png" alt="Ankole Western University"/></div></div>
-    <header className="topbar card desktop-topbar"><div className="student-topbar-context"><span className="eyebrow">FINANCE OFFICE PORTAL</span><strong>{current.label}</strong></div><div className="topbar-actions"><button className="topbar-icon-button"><Bell size={18}/></button><button className="topbar-user-chip"><span className="topbar-user-avatar">{session.initials}</span><span className="topbar-user-copy"><strong>{session.fullName}</strong><small>Finance Officer</small></span></button></div></header>
-    <aside className="sidebar desktop-sidebar"><div className="sidebar-heading"><img src="/awu-logo.png" alt=""/><span><strong>AWU</strong><small>Finance Portal</small></span></div><nav className="nav-list">{financeNavigation.map(item => <NavLink key={item.path} to={item.path} end={item.path === '/finance'} className={() => active(item.path, location.pathname) ? 'nav-item nav-item-active' : 'nav-item'}><item.icon size={18}/><span>{item.label}</span></NavLink>)}</nav><div className="sidebar-actions"><button className="sidebar-icon-button"><UserCircle2 size={17}/></button><button className="sidebar-icon-button" onClick={logout}><LogOut size={17}/></button></div></aside>
-    <header className="mobile-header card"><div className="mobile-header-brand"><div className="brand-mark"><img src="/awu-logo.png" alt="Ankole Western University"/></div><div><p>Finance Portal</p><strong>{current.label}</strong></div></div><button className="mobile-icon-button"><Bell size={18}/></button></header>
-    <section className="workspace"><main className="page-stack">{children}</main></section>
-    <nav className="mobile-bottom-nav card">{mobile.map(item => <NavLink key={item.path} to={item.path} end={item.path === '/finance'} className={() => active(item.path, location.pathname) ? 'bottom-nav-item bottom-nav-item-active' : 'bottom-nav-item'}><item.icon size={18}/><span>{item.label.replace('Finance ', '').replace('Student ', '').replace('Payment ', '')}</span></NavLink>)}<button className={more ? 'bottom-nav-item bottom-nav-item-active' : 'bottom-nav-item'} onClick={() => setMore(!more)}><MoreHorizontal size={18}/><span>More</span></button></nav>
-    {more ? <div className="mobile-more-overlay mobile-more-overlay-open"><button className="mobile-more-backdrop" onClick={() => setMore(false)}/><section className="mobile-more-sheet card"><div className="mobile-more-sheet-header"><div><span className="eyebrow">FINANCE OFFICE</span><h2>More financial services</h2></div><button className="mobile-icon-button" onClick={() => setMore(false)}><X size={18}/></button></div><div className="mobile-more-list">{financeNavigation.filter(item => !mobile.includes(item)).map(item => <NavLink key={item.path} to={item.path} className="mobile-more-item" onClick={() => setMore(false)}><item.icon size={18}/><span>{item.label}</span></NavLink>)}<button className="mobile-more-item ghost-danger" onClick={logout}><LogOut size={18}/><span>Sign out</span></button></div></section></div> : null}
-  </div>
+  const location = useLocation(), role = 'finance' as const
+  return <ApplicationShell session={session} onLogout={onLogout} navigation={navigationForPortal(role)} subtabs={contextualNavigationFor(role, location.pathname)} subSubtabs={viewNavigationFor(role, location.pathname)} portalLabel="AWU Finance Office" profilePath="/finance" roleKey={role}>{children}</ApplicationShell>
 }

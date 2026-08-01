@@ -8,6 +8,15 @@ export type UniversitySession = {
 
 export type FrappeRow = Record<string, unknown>
 
+export type UniversityApiContract = {
+  ok: true
+  appSlug: string
+  entities: Record<string, { label: string; doctype: string; fields: { read: string[] }; searchFields: string[]; actions: string[]; relations: string[] }>
+  limits: { defaultPageSize: number; maxPageSize: number; allowedPageSizes: number[]; exportAsyncThreshold: number; maxImportBytes: number }
+  errors: Record<string, string>
+  auditEvents: string[]
+}
+
 let launchToken = new URLSearchParams(window.location.search).get('launchToken')
 const appPathMatch = window.location.pathname.match(/\/app-api\/apps\/([^/]+)\//)
 const appSlug = appPathMatch ? decodeURIComponent(appPathMatch[1]) : null
@@ -24,6 +33,11 @@ function jddAuthUrl(action: 'login' | 'session' | 'logout' | 'bootstrap') {
 function requestUrl(url: string) {
   if (!isJddRuntime() || !url.startsWith('/api/')) return url
   return `/app-api/apps/${encodeURIComponent(appSlug!)}/erpnext${url}`
+}
+
+export async function fetchUniversityApiContract(): Promise<UniversityApiContract> {
+  if (!isJddRuntime() || appSlug !== 'university-platform') throw new Error('The University API contract is only available in the JDD University runtime.')
+  return jsonRequest<UniversityApiContract>(`/app-api/apps/${encodeURIComponent(appSlug)}/university/contract`)
 }
 
 function clearLaunchToken() {

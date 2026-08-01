@@ -15,6 +15,7 @@ import { FacultyApp } from './roles/faculty-head/FacultyApp'
 import { RegistrarApp } from './roles/registrar/RegistrarApp'
 import { FinanceApp } from './roles/finance/FinanceApp'
 import { portalRoleFor } from './roles/admin/roleConfig'
+import { ShellStatePanel } from './components/ShellStatePanel'
 
 export default function App() {
   const [session, setSession] = useState<UniversitySession | null>(null)
@@ -31,7 +32,7 @@ export default function App() {
   useEffect(openSession, [])
 
   if (loading) {
-    return <main className="app-loading"><div className="brand-mark"><img src="/awu-logo.png" alt="Ankole Western University" /></div><p>Opening the AWU academic workspace…</p></main>
+    return <main className="app-loading"><ShellStatePanel variant="loading" title="Opening the AWU workspace" /></main>
   }
 
   if (!session) {
