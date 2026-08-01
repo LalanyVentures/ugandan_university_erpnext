@@ -1251,6 +1251,102 @@ def get_finance_portal_data():
 
 
 @frappe.whitelist()
+def save_finance_fee_structure(values, activate=0):
+	"""Create one allowlisted fee-structure version and optionally activate it."""
+	_assert_finance_officer()
+	values = _json_value(values, {})
+	required = {"structure_name", "academic_programme", "academic_year", "effective_from", "fee_lines"}
+	if any(not values.get(field) for field in required):
+		frappe.throw("Structure name, programme, academic year, effective date and fee lines are required.")
+	lines = values.get("fee_lines") or []
+	if not isinstance(lines, list) or not 1 <= len(lines) <= 100:
+		frappe.throw("A fee structure must contain between 1 and 100 fee lines.")
+	clean_lines = []
+	for line in lines:
+		item = line.get("item")
+		if not item or not frappe.db.exists("Item", item):
+			frappe.throw(f"Fee item {item or '(blank)'} does not exist.")
+		quantity, rate = float(line.get("quantity") or 0), float(line.get("rate") or 0)
+		if quantity <= 0 or rate < 0:
+			frappe.throw("Fee-line quantities must be positive and rates cannot be negative.")
+		clean_lines.append({key: line.get(key) for key in
+			("item", "description", "income_account", "cost_center", "mandatory")} | {"quantity": quantity, "rate": rate})
+	doc = frappe.get_doc({"doctype": "University Fee Structure", "structure_name": values["structure_name"],
+		"academic_programme": values["academic_programme"], "academic_year": values["academic_year"],
+		"academic_semester": values.get("academic_semester"), "currency": values.get("currency") or "UGX",
+		"effective_from": values["effective_from"], "effective_to": values.get("effective_to"),
+		"status": "Active" if int(activate or 0) else "Draft", "fee_lines": clean_lines})
+	doc.insert(ignore_permissions=True)
+	if int(activate or 0):
+		doc.flags.ignore_permissions = True
+		doc.submit()
+	_record_governed_event("University Fee Structure", doc.name,
+		"Finance: Activate fee structure" if int(activate or 0) else "Finance: Create fee structure",
+		values.get("reason"), "finance-fee-builder")
+	return doc.name
+
+
+@frappe.whitelist()
+def import_finance_records(kind, rows, reason):
+	"""Import only allowlisted fee structures or pre-approved sponsorship awards."""
+	_assert_finance_officer()
+	rows = _json_value(rows, [])
+	reason = (reason or "").strip()
+	if kind not in {"fee_structures", "approved_sponsorships"}:
+		frappe.throw("Only fee structures and approved sponsorships may be imported.", frappe.PermissionError)
+	if not reason:
+		frappe.throw("An import reason or approval reference is required.")
+	if not isinstance(rows, list) or not 1 <= len(rows) <= 2000:
+		frappe.throw("The import must contain between 1 and 2,000 rows.")
+	created = []
+	if kind == "fee_structures":
+		groups = {}
+		for row in rows:
+			allowed = {"structure_name", "academic_programme", "academic_year", "academic_semester",
+				"currency", "effective_from", "effective_to", "item", "description", "quantity", "rate", "mandatory"}
+			if set(row) - allowed:
+				frappe.throw("The fee-structure file contains unsupported columns.")
+			key = (row.get("structure_name"), row.get("academic_programme"), row.get("academic_year"),
+				row.get("academic_semester"), row.get("effective_from"), row.get("effective_to"), row.get("currency") or "UGX")
+			groups.setdefault(key, []).append({"item": row.get("item"), "description": row.get("description"),
+				"quantity": row.get("quantity"), "rate": row.get("rate"),
+				"mandatory": str(row.get("mandatory", "1")).lower() in {"1", "true", "yes"}})
+		for key, fee_lines in groups.items():
+			structure_name, programme, year, semester, effective_from, effective_to, currency = key
+			created.append(save_finance_fee_structure({"structure_name": structure_name,
+				"academic_programme": programme, "academic_year": year, "academic_semester": semester,
+				"effective_from": effective_from, "effective_to": effective_to, "currency": currency,
+				"fee_lines": fee_lines, "reason": reason}, 0))
+	else:
+		allowed = {"student", "sponsor", "academic_programme", "academic_year", "coverage_type",
+			"coverage_percentage", "coverage_amount", "approval_reference"}
+		for row in rows:
+			if set(row) - allowed:
+				frappe.throw("The sponsorship file contains unsupported columns.")
+			if not all(row.get(field) for field in ("student", "sponsor", "academic_year", "coverage_type", "approval_reference")):
+				frappe.throw("Student, sponsor, academic year, coverage type and approval reference are required.")
+			if not frappe.db.exists("Student", row["student"]) or not frappe.db.exists("Customer", row["sponsor"]):
+				frappe.throw("Every sponsorship must reference an existing student and sponsor customer.")
+			doc = frappe.get_doc({"doctype": "Sponsorship Award", **{field: row.get(field) for field in allowed},
+				"status": "Approved"})
+			doc.insert(ignore_permissions=True)
+			_record_governed_event("Sponsorship Award", doc.name, "Finance: Import approved sponsorship",
+				reason, "finance-controlled-import")
+			created.append(doc.name)
+	return {"created": created, "count": len(created)}
+
+
+@frappe.whitelist()
+def log_finance_export(report, selection_count=0):
+	"""Audit a finance report export without accepting tenant or record authority from the browser."""
+	_assert_finance_officer()
+	if report not in {"ageing", "collections", "outstanding_balances", "sponsorships"}:
+		frappe.throw("This finance report is not available.")
+	return _record_governed_event("Sales Invoice", "__aggregate__", f"Finance: Export {report}",
+		f"Exported {min(max(int(selection_count or 0), 0), 2000)} scoped rows", "finance-report-export").name
+
+
+@frappe.whitelist()
 def create_finance_invoice(student, university_fee_structure):
 	"""Create one reviewable draft invoice from an active submitted fee structure."""
 	_assert_finance_officer()
@@ -1280,6 +1376,8 @@ def create_finance_invoice(student, university_fee_structure):
 	invoice = frappe.get_doc(values)
 	invoice.flags.ignore_permissions = True
 	invoice.insert()
+	_record_governed_event("Sales Invoice", invoice.name, "Finance: Create draft invoice",
+		f"Fee structure {university_fee_structure}", "finance-billing")
 	return invoice.name
 
 
@@ -1291,6 +1389,8 @@ def submit_finance_invoice(invoice_name):
 		frappe.throw("Only a draft student fee invoice may be submitted here.")
 	invoice.flags.ignore_permissions = True
 	invoice.submit()
+	_record_governed_event("Sales Invoice", invoice.name, "Finance: Submit invoice",
+		"Confirmed student charge", "finance-billing")
 	return invoice.name
 
 
@@ -1309,6 +1409,8 @@ def review_financial_clearance(clearance_name):
 		clearance.cleared_by = frappe.session.user
 		clearance.cleared_on = frappe.utils.now()
 	clearance.save(ignore_permissions=True)
+	_record_governed_event("Student Clearance", clearance.name, "Finance: Review clearance",
+		f"Outstanding amount {outstanding}", "finance-clearance")
 	return {"name": clearance.name, "financial_status": clearance.financial_status,
 		"status": clearance.status, "outstanding_amount": outstanding}
 
@@ -1326,6 +1428,8 @@ def review_sponsorship_award(award_name, decision, approval_reference=None):
 	award.status = decision
 	award.approval_reference = approval_reference or award.approval_reference
 	award.save(ignore_permissions=True)
+	_record_governed_event("Sponsorship Award", award.name, f"Finance: {decision} sponsorship",
+		approval_reference, "finance-sponsorship")
 	return award.name
 
 

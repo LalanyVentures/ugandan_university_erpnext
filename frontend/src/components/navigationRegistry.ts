@@ -68,6 +68,10 @@ export function viewNavigationFor(role: PortalRole, pathname: string): readonly 
     const labels = pathname.includes('/admissions') ? ['Submitted','Under review','Accepted','Rejected'] : pathname.includes('/registration') || pathname.includes('/courses') ? ['Pending approval','Registered','Conflicts','History'] : pathname.includes('/results') || pathname.includes('/batches') ? ['Faculty approved','Ready to publish','Published','Returned'] : pathname.includes('/transcripts') ? ['Faculty certified','Ready to issue','Issued','Revoked'] : pathname.includes('/clearance') ? ['Blocked','Ready','Cleared','History'] : ['All records','Needs attention','Complete']
     return labels.map(label=>({label,path:current.path,icon:current.icon}))
   }
+  if (role === 'finance') {
+    const labels=pathname.includes('/invoices')?['Current period','Draft','Overdue','Paid','Arrears bands']:pathname.includes('/sponsorships')?['Current period','Draft','Approved','Active','Exhausted']:pathname.includes('/clearance')?['Current period','Pending','Outstanding','Cleared']:pathname.includes('/payments')||pathname.includes('/reconciliation')?['Current period','Allocated','Part allocated','Unallocated']:['Current period','All accounts','Needs attention']
+    return labels.map(label=>({label,path:current.path,icon:current.icon}))
+  }
   return [
     { label: 'All', path: current.path, icon: current.icon },
     { label: 'Active', path: current.path, icon: current.icon },

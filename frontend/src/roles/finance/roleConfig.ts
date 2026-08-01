@@ -1,4 +1,4 @@
-import { BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, FileSpreadsheet, HandCoins, LayoutDashboard, ReceiptText, ShieldCheck, UsersRound } from 'lucide-react'
+import { BadgeDollarSign, ChartNoAxesCombined, CircleDollarSign, FileSpreadsheet, HandCoins, LayoutDashboard, ReceiptText, ShieldCheck, Upload, UsersRound } from 'lucide-react'
 
 export const financePrimaryNavigation = ['Overview', 'Students', 'Fees & Payments', 'Clearance'] as const
 export const financeStudentTabs = ['Student Directory', 'Student Profile'] as const
@@ -14,4 +14,5 @@ export const financeNavigation = [
   { label: 'Financial Analysis', path: '/finance/analysis', icon: ChartNoAxesCombined },
   { label: 'Sponsorships', path: '/finance/sponsorships', icon: HandCoins },
   { label: 'Financial Clearance', path: '/finance/clearance', icon: ShieldCheck },
+  { label: 'Reports & Imports', path: '/finance/operations', icon: Upload },
 ] as const

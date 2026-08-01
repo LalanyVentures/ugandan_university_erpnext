@@ -3458,3 +3458,151 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
     │   └── document | student | programme | type | status | verification | issue date | registrar
     └── exports respect current institution scope/completeness filters
 ```
+
+## Phase 9 implementation overlay — Finance experience enhancement
+
+```text
+[PORTAL:P-FINANCE-PHASE-9] AWU Finance Office
+├── [SHELL:C-FINANCE-SHELL] Shared ApplicationShell
+│   ├── [NAV:N-FINANCE-SIDEBAR]
+│   │   ├── Finance Overview → /finance
+│   │   ├── Student Accounts → /finance/students
+│   │   ├── Fee Structures → /finance/structures
+│   │   ├── Student Billing → /finance/invoices
+│   │   ├── Payment Receipts → /finance/payments
+│   │   ├── Reconciliation → /finance/reconciliation
+│   │   ├── Financial Analysis → /finance/analysis
+│   │   ├── Sponsorships → /finance/sponsorships
+│   │   ├── Financial Clearance → /finance/clearance
+│   │   └── Reports & Imports → /finance/operations
+│   ├── [NAV:N-FINANCE-CONTEXTUAL-SUBTABS] route-aware finance sections
+│   └── [NAV:N-FINANCE-SUB-SUB-TABS]
+│       ├── Billing: Current period | Draft | Overdue | Paid | Arrears bands
+│       ├── Payments: Current period | Allocated | Part allocated | Unallocated
+│       ├── Sponsorships: Current period | Draft | Approved | Active | Exhausted
+│       └── Clearance: Current period | Pending | Outstanding | Cleared
+├── [FILTER:C-FINANCE-SCOPE-BAR] persistent current-view scope
+│   ├── [SEARCH:I-FINANCE-SCOPE-SEARCH] account and finance record text
+│   ├── [SELECT:I-FINANCE-PERIOD] academic semester/year
+│   ├── [SELECT:I-FINANCE-PROGRAMME] academic programme
+│   ├── [SELECT:I-FINANCE-COHORT] student cohort
+│   ├── [SELECT:I-FINANCE-INVOICE-STATUS] Draft | Unpaid | Overdue | Partly Paid | Paid
+│   ├── [SELECT:I-FINANCE-ARREARS] none | below 500k | 500k–2m | 2m+
+│   ├── [DATE:I-FINANCE-DUE-BEFORE] invoice due-date ceiling
+│   ├── [SELECT:I-FINANCE-SPONSOR] sponsor customer
+│   ├── [SELECT:I-FINANCE-SPONSORSHIP-STATUS] Draft | Approved | Active | Exhausted | Cancelled
+│   ├── [SELECT:I-FINANCE-CLEARANCE-STATUS] Pending | Outstanding | Cleared
+│   ├── [BUTTON:B-FINANCE-FEE-BUILDER] → [DIALOG:D-FEE-STRUCTURE-BUILDER]
+│   └── [BUTTON:B-FINANCE-CLEAR-SCOPE] restore unfiltered finance payload
+├── [SEARCH:S-FINANCE-GLOBAL]
+│   ├── [RESULT-GROUP:NAVIGATION] all finance pages including Reports & Imports
+│   ├── [RESULT-GROUP:RECORDS] students | structures | invoices | payments | sponsorships | clearance
+│   ├── [RESULT-GROUP:TREE] equivalent finance hierarchy destination
+│   └── source: server-scoped get_finance_portal_data; no browser tenant override
+├── [TREE:T-FINANCE-EXPLORER] Finance
+│   ├── Fee Structures
+│   │   └── [RECORD:R-FEE-STRUCTURE] version | period | programme | status
+│   └── Student Accounts
+│       └── [RECORD:R-FINANCE-STUDENT] student name | number | programme
+│           ├── Invoices
+│           │   └── [RECORD:R-STUDENT-INVOICE] state | assessed | outstanding
+│           ├── Payments & Allocations
+│           │   └── [RECORD:R-PAYMENT]
+│           │       └── [RECORD:R-ALLOCATION] invoice reference | allocated amount
+│           ├── Sponsorships
+│           │   └── [RECORD:R-SPONSORSHIP] sponsor | coverage | state
+│           └── Financial Clearance
+│               └── [RECORD:R-FINANCE-CLEARANCE] period | financial state | overall state
+├── [PAGE:P-FINANCE-ACCOUNTS] Student Accounts
+│   ├── [METRIC:M-ACCOUNTS] total accounts | fully paid | partly paid | outstanding
+│   └── [TABLE:T-FINANCE-ACCOUNTS]
+│       ├── [COLUMN] Student
+│       ├── [COLUMN] Programme
+│       ├── [COLUMN] Assessed
+│       ├── [COLUMN] Paid
+│       ├── [COLUMN] Balance to Pay
+│       ├── [COLUMN] Account Status
+│       └── [ACTIONS]
+│           ├── [BUTTON:B-ACCOUNT-DRAWER] → [DRAWER:D-STUDENT-ACCOUNT]
+│           ├── [BUTTON:B-ACCOUNT-ANALYSIS] → /finance/analysis?student=:id
+│           ├── [BUTTON:B-ACCOUNT-RECEIPTS] → /finance/payments?q=:student
+│           └── [BUTTON:B-ACCOUNT-BILL] → /finance/invoices?student=:id
+├── [DRAWER:D-STUDENT-ACCOUNT] complete account context
+│   ├── [TAB:T-ACCOUNT-SUMMARY]
+│   │   ├── [METRIC] assessed
+│   │   ├── [METRIC] paid
+│   │   ├── [METRIC] outstanding
+│   │   └── [METRIC] allocated
+│   ├── [TAB:T-ACCOUNT-INVOICES]
+│   │   └── invoice | semester | total | outstanding | state
+│   ├── [TAB:T-ACCOUNT-PAYMENTS]
+│   │   └── receipt | amount | allocation references | unallocated
+│   ├── [TAB:T-ACCOUNT-SPONSORSHIPS]
+│   │   └── sponsor | coverage | amount/percentage | state
+│   └── [TAB:T-ACCOUNT-CLEARANCE]
+│       └── period | financial state | academic state | overall clearance
+├── [DIALOG:D-FEE-STRUCTURE-BUILDER] versioned charge schedule
+│   ├── [FORM:F-FEE-STRUCTURE-HEADER]
+│   │   ├── structure/version name
+│   │   ├── programme
+│   │   ├── academic year and semester
+│   │   ├── effective from/to
+│   │   └── currency = UGX default
+│   ├── [TABLE:T-FEE-LINES]
+│   │   ├── item code
+│   │   ├── description
+│   │   ├── quantity
+│   │   ├── rate
+│   │   ├── mandatory
+│   │   └── [BUTTON:B-REMOVE-FEE-LINE]
+│   ├── [BUTTON:B-ADD-FEE-LINE]
+│   ├── [TEXTAREA:I-FEE-VERSION-REASON] required audit reason
+│   ├── [CHECKBOX:I-FEE-ACTIVATE] submit and activate immediately
+│   └── [BUTTON:B-SAVE-FEE-STRUCTURE]
+│       ├── role check: Finance Officer/Accounts role
+│       ├── 1–100 line allowlist
+│       ├── ERPNext Item reference validation
+│       └── immutable University Audit Event
+├── [PAGE:P-FINANCE-BILLING] Student Invoices
+│   ├── [FORM:F-CREATE-INVOICE]
+│   │   ├── Student account
+│   │   ├── Active submitted fee structure
+│   │   └── [BUTTON:B-CREATE-DRAFT-INVOICE] controlled create_finance_invoice
+│   └── [TABLE:T-FINANCE-INVOICES]
+│       ├── Invoice | Student | Period/Structure | Assessed | Paid | Balance | Status
+│       └── [BUTTON:B-SUBMIT-INVOICE] draft only; confirmation; audited server submit
+├── [PAGE:P-FINANCE-RECONCILIATION] Payments & Allocations
+│   └── [TABLE:T-FINANCE-ALLOCATIONS]
+│       ├── Payment | Student | Reference | Received | Allocated | Unallocated | Coverage
+│       └── [BUTTON:B-OPEN-RECEIPT] → /finance/payments?q=:payment
+│           └── read-only receipt/allocation context; no unrestricted mutation
+├── [PAGE:P-FINANCE-SPONSORSHIP] Sponsorship Decisions
+│   └── [WORKFLOW:W-SPONSORSHIP] Approved | Active | Cancelled
+│       ├── approval reference required
+│       └── every decision writes University Audit Event
+├── [PAGE:P-FINANCE-CLEARANCE] Financial Clearance
+│   └── [WORKFLOW:W-FINANCE-CLEARANCE]
+│       ├── server recalculates submitted invoice balance
+│       ├── browser cannot provide authoritative outstanding amount
+│       └── review result writes University Audit Event
+└── [PAGE:P-FINANCE-OPERATIONS] Reports and Approved Imports
+    ├── [CARD:C-FINANCE-EXPORTS]
+    │   ├── [BUTTON:B-EXPORT-AGEING] invoice | due date | amount | days | band
+    │   ├── [BUTTON:B-EXPORT-COLLECTIONS] payment | reference | received | allocated | unallocated
+    │   ├── [BUTTON:B-EXPORT-OUTSTANDING] student | programme | assessed | paid | outstanding
+    │   └── [BUTTON:B-EXPORT-SPONSORSHIPS] sponsor | coverage | state | approval reference
+    └── [CARD:C-FINANCE-IMPORT]
+        ├── [SELECT:I-FINANCE-IMPORT-KIND]
+        │   ├── Fee structures
+        │   └── Approved sponsorships
+        ├── [BUTTON:B-FINANCE-DOWNLOAD-TEMPLATE] exact allowlisted CSV columns
+        ├── [INPUT:I-FINANCE-CSV] CSV only; maximum 10 MiB in browser
+        ├── [TEXTAREA:I-FINANCE-IMPORT-REASON] required immutable audit context
+        └── [BUTTON:B-FINANCE-IMPORT]
+            ├── exact header validation in browser and server
+            ├── maximum 2,000 rows
+            ├── existing Student/Customer/Item references required
+            ├── sponsorship status forced to Approved
+            ├── fee structures imported as reviewable Draft versions
+            └── no payment, allocation, invoice or clearance bulk mutation
+```

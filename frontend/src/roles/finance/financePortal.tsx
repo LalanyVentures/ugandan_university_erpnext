@@ -1,35 +1,7 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { callMethod, type FrappeRow } from '../../api/frappe'
-
-export type FinancePortalData = {
-  officer: FrappeRow
-  university: FrappeRow
-  students: FrappeRow[]
-  enrolments: FrappeRow[]
-  fee_structures: FrappeRow[]
-  invoices: FrappeRow[]
-  payments: FrappeRow[]
-  sponsorships: FrappeRow[]
-  clearance: FrappeRow[]
-  semesters: FrappeRow[]
-}
-type FinanceState = { data: FinancePortalData | null; loading: boolean; error: string; refresh: () => void }
-const FinanceContext = createContext<FinanceState | null>(null)
-const method = 'ugandan_university_education.ugandan_university_education.api.get_finance_portal_data'
-
-export function FinancePortalProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<FinancePortalData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  function refresh() {
-    setLoading(true); setError('')
-    callMethod<FinancePortalData>(method).then(setData).catch(cause => setError(cause instanceof Error ? cause.message : 'Unable to load the finance workspace.')).finally(() => setLoading(false))
-  }
-  useEffect(refresh, [])
-  return <FinanceContext.Provider value={{ data, loading, error, refresh }}>{children}</FinanceContext.Provider>
-}
-export function useFinancePortal() {
-  const value = useContext(FinanceContext)
-  if (!value) throw new Error('useFinancePortal must be used inside FinancePortalProvider')
-  return value
-}
+import{createContext,useContext,useEffect,useMemo,useState,type ReactNode}from'react';import{callMethod,type FrappeRow}from'../../api/frappe'
+export type FinancePortalData={officer:FrappeRow;university:FrappeRow;students:FrappeRow[];enrolments:FrappeRow[];fee_structures:FrappeRow[];invoices:FrappeRow[];payments:FrappeRow[];sponsorships:FrappeRow[];clearance:FrappeRow[];semesters:FrappeRow[]}
+export type FinanceScope={search:string;semester:string;programme:string;cohort:string;invoiceStatus:string;dueBefore:string;arrears:string;sponsor:string;sponsorshipStatus:string;clearanceStatus:string}
+type State={data:FinancePortalData|null;allData:FinancePortalData|null;scope:FinanceScope;setScope:(patch:Partial<FinanceScope>)=>void;loading:boolean;error:string;refresh:()=>void};const Context=createContext<State|null>(null),method='ugandan_university_education.ugandan_university_education.api.get_finance_portal_data',initial:FinanceScope={search:'',semester:'',programme:'',cohort:'',invoiceStatus:'',dueBefore:'',arrears:'',sponsor:'',sponsorshipStatus:'',clearanceStatus:''}
+function filter(data:FinancePortalData,scope:FinanceScope):FinancePortalData{const match=(row:FrappeRow)=>!scope.search||Object.values(row).some(value=>String(value??'').toLowerCase().includes(scope.search.toLowerCase())),studentScope=data.students.filter(row=>(!scope.programme||String(row.academic_programme)===scope.programme)&&match(row)),studentNames=new Set(studentScope.map(row=>String(row.name))),enrolments=data.enrolments.filter(row=>(!scope.programme||String(row.academic_programme)===scope.programme)&&(!scope.cohort||String(row.student_cohort)===scope.cohort)&&studentNames.has(String(row.student))),enrolmentStudents=new Set(enrolments.map(row=>String(row.student))),students=studentScope.filter(row=>!scope.cohort||enrolmentStudents.has(String(row.name))),allowedStudents=new Set(students.map(row=>String(row.name))),semester=(row:FrappeRow)=>!scope.semester||String(row.academic_semester??row.academic_year)===scope.semester,invoiceStatus=(row:FrappeRow)=>!scope.invoiceStatus||String(row.status)===scope.invoiceStatus,arrears=(row:FrappeRow)=>{const amount=Number(row.outstanding_amount??0);return!scope.arrears||(scope.arrears==='none'?amount===0:scope.arrears==='low'?amount>0&&amount<500000:scope.arrears==='medium'?amount>=500000&&amount<2000000:amount>=2000000)},due=(row:FrappeRow)=>!scope.dueBefore||!row.due_date||String(row.due_date)<=scope.dueBefore,belongs=(row:FrappeRow)=>!allowedStudents.size&&!scope.programme&&!scope.cohort||allowedStudents.has(String(row.student));return{...data,students,enrolments,fee_structures:data.fee_structures.filter(row=>(!scope.programme||String(row.academic_programme)===scope.programme)&&semester(row)&&match(row)),invoices:data.invoices.filter(row=>belongs(row)&&semester(row)&&invoiceStatus(row)&&arrears(row)&&due(row)&&match(row)),payments:data.payments.filter(row=>belongs(row)&&semester(row)&&match(row)),sponsorships:data.sponsorships.filter(row=>belongs(row)&&(!scope.sponsor||String(row.sponsor)===scope.sponsor)&&(!scope.sponsorshipStatus||String(row.status)===scope.sponsorshipStatus)&&semester(row)&&match(row)),clearance:data.clearance.filter(row=>belongs(row)&&(!scope.clearanceStatus||String(row.financial_status??row.status)===scope.clearanceStatus)&&semester(row)&&match(row)),semesters:data.semesters.filter(match)}}
+export function FinancePortalProvider({children}:{children:ReactNode}){const[allData,setAllData]=useState<FinancePortalData|null>(null),[scope,setScopeState]=useState(initial),[loading,setLoading]=useState(true),[error,setError]=useState('');function refresh(){setLoading(true);setError('');callMethod<FinancePortalData>(method).then(setAllData).catch(cause=>setError(cause instanceof Error?cause.message:'Unable to load the finance workspace.')).finally(()=>setLoading(false))}function setScope(patch:Partial<FinanceScope>){setScopeState(current=>({...current,...patch}))}useEffect(refresh,[]);const data=useMemo(()=>allData?filter(allData,scope):null,[allData,scope]);return <Context.Provider value={{data,allData,scope,setScope,loading,error,refresh}}>{children}</Context.Provider>}
+export function useFinancePortal(){const value=useContext(Context);if(!value)throw new Error('useFinancePortal must be used inside FinancePortalProvider');return value}

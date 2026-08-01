@@ -612,19 +612,19 @@ Exit criteria:
 
 ### Phase 9 — Finance experience enhancement
 
-- [ ] Explorer scope: fee structures → student accounts → invoices → payments → allocations → sponsorships → clearance.
-- [ ] Add sub-sub-tabs for academic period, invoice state, arrears band, sponsorship state, clearance state.
-- [ ] Build student-account drawer: invoices, allocations, balance calculation, sponsorship context, clearance status.
-- [ ] Build fee-structure builder and version/activate workflow.
-- [ ] Build invoice create/submit flow where JDD policy permits it.
-- [ ] Build payment allocation/receipt view; do not expose unrestricted financial mutation.
-- [ ] Add filters for semester, programme, cohort, invoice status, due date, arrears band, sponsor.
-- [ ] Add export for ageing, collections, outstanding balances, sponsorship reports.
-- [ ] Add import for fee structures and approved sponsorships only.
+- [x] Explorer scope: fee structures → student accounts → invoices → payments → allocations → sponsorships → clearance.
+- [x] Add sub-sub-tabs for academic period, invoice state, arrears band, sponsorship state, clearance state.
+- [x] Build student-account drawer: invoices, allocations, balance calculation, sponsorship context, clearance status.
+- [x] Build fee-structure builder and version/activate workflow.
+- [x] Build invoice create/submit flow where JDD policy permits it.
+- [x] Build payment allocation/receipt view; do not expose unrestricted financial mutation.
+- [x] Add filters for semester, programme, cohort, invoice status, due date, arrears band, sponsor.
+- [x] Add export for ageing, collections, outstanding balances, sponsorship reports.
+- [x] Add import for fee structures and approved sponsorships only.
 
 Exit criteria:
 
-- [ ] Finance users manage scoped account workflows natively with immutable audit records.
+- [x] Finance users manage scoped account workflows natively with immutable audit records.
 
 ### Phase 10 — Primary and Secondary adoption
 

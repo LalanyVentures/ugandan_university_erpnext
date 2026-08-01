@@ -12,6 +12,7 @@ import { FinanceReconciliationPage } from './pages/payments/FinanceReconciliatio
 import { FinanceSponsorshipsPage } from './pages/sponsorships/FinanceSponsorshipsPage'
 import { FinanceClearancePage } from './pages/clearance/FinanceClearancePage'
 import { FinancePageState } from './pages/FinanceCommon'
+import { FinanceOperationsPage } from './pages/operations/FinanceOperationsPage'
 
 function FinanceAnalysisRoute() {
   return <FinancePageState>{data => <FinancialAnalysisPage financeMode source={{ students: data.students, invoices: data.invoices, feeStructures: data.fee_structures }}/>}</FinancePageState>
@@ -28,6 +29,7 @@ export function FinanceApp({ session, onLogout }: { session: UniversitySession; 
     <Route path="/finance/analysis" element={<FinanceAnalysisRoute/>}/>
     <Route path="/finance/sponsorships" element={<FinanceSponsorshipsPage/>}/>
     <Route path="/finance/clearance" element={<FinanceClearancePage/>}/>
+    <Route path="/finance/operations" element={<FinanceOperationsPage/>}/>
     <Route path="*" element={<Navigate to="/finance" replace/>}/>
   </Routes></FinanceShell></FinancePortalProvider>
 }
