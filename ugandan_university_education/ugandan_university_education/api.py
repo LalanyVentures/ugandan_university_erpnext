@@ -1,6 +1,10 @@
 import frappe
+import base64
+import hmac
 import hashlib
 import json
+import os
+import time
 
 from ugandan_university_education.services.transcript import build_transcript_data, can_view_transcript
 from ugandan_university_education.services.workflows import (
@@ -21,6 +25,42 @@ def has_app_permission(user=None):
         {"Academics User", "Registrar", "Faculty Head", "Instructor", "Accounts User", "Accounts Manager", "Student"}
         .intersection(frappe.get_roles(user))
     )
+
+
+def _get_jdd_portal_identity(identity=None, signature=None):
+	"""Validate the short-lived identity assertion added by the JDD ERPNext proxy."""
+	identity = identity or frappe.get_request_header("X-JDD-Portal-Identity")
+	signature = signature or frappe.get_request_header("X-JDD-Portal-Signature")
+	if not identity and not signature:
+		return None
+
+	secret = frappe.conf.get("jdd_portal_assertion_secret") or os.environ.get("JDD_PORTAL_ASSERTION_SECRET")
+	if not secret or not identity or not signature:
+		frappe.throw("The portal identity assertion is incomplete.", frappe.PermissionError)
+
+	expected = hmac.new(str(secret).encode("utf-8"), str(identity).encode("utf-8"), hashlib.sha256).hexdigest()
+	if not hmac.compare_digest(expected, str(signature)):
+		frappe.throw("The portal identity assertion is invalid.", frappe.PermissionError)
+
+	try:
+		payload = json.loads(base64.urlsafe_b64decode(f"{identity}{'=' * (-len(identity) % 4)}").decode("utf-8"))
+	except (ValueError, TypeError, UnicodeDecodeError, json.JSONDecodeError):
+		frappe.throw("The portal identity assertion is malformed.", frappe.PermissionError)
+
+	now = int(time.time())
+	if (
+		payload.get("version") != 1
+		or payload.get("app") != "university-platform"
+		or payload.get("site") != frappe.local.site
+		or payload.get("path") != "/api/method/ugandan_university_education.ugandan_university_education.api.get_student_portal_data"
+		or not payload.get("businessId")
+		or not payload.get("memberId")
+		or not payload.get("user")
+		or int(payload.get("expiresAt") or 0) < now
+		or int(payload.get("issuedAt") or 0) > now + 30
+	):
+		frappe.throw("The portal identity assertion has expired or is not valid for this request.", frappe.PermissionError)
+	return payload
 
 
 @frappe.whitelist()
@@ -390,16 +430,25 @@ def get_student_info():
 
 
 @frappe.whitelist()
-def get_student_portal_data():
+def get_student_portal_data(jdd_portal_identity=None, jdd_portal_signature=None):
 	"""Return only the academic and finance records owned by the signed-in student."""
 	if frappe.session.user == "Guest":
 		frappe.throw("Please sign in to access the student portal.", frappe.PermissionError)
+	portal_identity = _get_jdd_portal_identity(jdd_portal_identity, jdd_portal_signature)
+	student_user = portal_identity.get("user") if portal_identity else frappe.session.user
 	student = frappe.db.get_value(
-		"Student", {"student_email_id": frappe.session.user},
+		"Student", {"user": student_user},
 		["name", "student_name", "student_number", "first_name", "middle_name", "last_name",
 			"gender", "date_of_birth", "nationality", "student_email_id", "customer", "status"],
 		as_dict=True,
 	)
+	if not student:
+		student = frappe.db.get_value(
+			"Student", {"student_email_id": student_user},
+			["name", "student_name", "student_number", "first_name", "middle_name", "last_name",
+				"gender", "date_of_birth", "nationality", "student_email_id", "customer", "status"],
+			as_dict=True,
+		)
 	if not student:
 		frappe.throw("This user account is not linked to a Student record.", frappe.DoesNotExistError)
 
