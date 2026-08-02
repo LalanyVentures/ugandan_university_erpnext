@@ -118,6 +118,7 @@ export const authApi = {
       }
       const session = payload.session ?? payload.message ?? payload
       if (!session.user || session.user === 'Guest') throw new Error('Not signed in')
+      clearLaunchToken()
       return toSession(session.user, session.roles ?? [])
     }
     const payload = await jsonRequest<{ message: { user: string; roles: string[] } }>('/api/method/ugandan_university_education.ugandan_university_education.api.get_user_info')
