@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "slug": "university-platform",
   "name": "University Platform",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "framework": "react-vite",
   "buildCommand": "npm run build:jdd",
   "outputDirectory": "dist",
