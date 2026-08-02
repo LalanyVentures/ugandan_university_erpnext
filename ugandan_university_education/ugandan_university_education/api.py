@@ -63,6 +63,14 @@ def _get_jdd_portal_identity(identity=None, signature=None):
 	return payload
 
 
+def _log_student_portal(event, **details):
+	"""Write safe diagnostics without logging passwords, tokens, or assertions."""
+	frappe.logger("university_portal", allow_site=True).info(json.dumps({
+		"event": event,
+		**details,
+	}, sort_keys=True, default=str))
+
+
 @frappe.whitelist()
 def get_user_info():
     return {"user": frappe.session.user, "roles": frappe.get_roles(frappe.session.user)}
@@ -436,6 +444,14 @@ def get_student_portal_data(jdd_portal_identity=None, jdd_portal_signature=None)
 		frappe.throw("Please sign in to access the student portal.", frappe.PermissionError)
 	portal_identity = _get_jdd_portal_identity(jdd_portal_identity, jdd_portal_signature)
 	student_user = portal_identity.get("user") if portal_identity else frappe.session.user
+	_log_student_portal(
+		"student_portal_request",
+		frappe_user=frappe.session.user,
+		assertion_present=bool(portal_identity),
+		asserted_user=student_user,
+		business_id=portal_identity.get("businessId") if portal_identity else None,
+		member_id=portal_identity.get("memberId") if portal_identity else None,
+	)
 	student = frappe.db.get_value(
 		"Student", {"user": student_user},
 		["name", "student_name", "student_number", "first_name", "middle_name", "last_name",
@@ -450,7 +466,19 @@ def get_student_portal_data(jdd_portal_identity=None, jdd_portal_signature=None)
 			as_dict=True,
 		)
 	if not student:
+		_log_student_portal(
+			"student_portal_mapping_failed",
+			frappe_user=frappe.session.user,
+			asserted_user=student_user,
+			lookup_fields=["user", "student_email_id"],
+		)
 		frappe.throw("This user account is not linked to a Student record.", frappe.DoesNotExistError)
+	_log_student_portal(
+		"student_portal_mapping_succeeded",
+		frappe_user=frappe.session.user,
+		asserted_user=student_user,
+		student=student.name,
+	)
 
 	enrolments = frappe.get_all("Student Programme Enrolment", filters={"student": student.name},
 		fields=["name", "academic_programme", "programme_curriculum", "academic_year", "student_cohort",
