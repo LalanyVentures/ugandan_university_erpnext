@@ -7,6 +7,10 @@ export type UniversitySession = {
 }
 
 export type FrappeRow = Record<string, unknown>
+export type PrivateAttachment = {
+  name:string; file_name:string; file_size:number; attached_to_doctype:string
+  attached_to_name:string; attached_to_field?:string; download_endpoint:string
+}
 
 export type ListFilter = { field: string; operator: '=' | '!=' | 'like' | 'in' | '>' | '>=' | '<' | '<='; value: string }
 export type ListPageQuery = {
@@ -236,6 +240,19 @@ export async function callMethod<T>(method: string, args?: Record<string, string
   const query = new URLSearchParams(args ?? {})
   const payload = await jsonRequest<{ message: T }>(`/api/method/${method}${query.size ? `?${query}` : ''}`)
   return payload.message
+}
+
+export async function uploadPrivateAttachment(method:string, target:{doctype:string;name:string;fieldname?:string}, file:File):Promise<PrivateAttachment>{
+  const body=new FormData(); body.append('file',file); body.append('doctype',target.doctype); body.append('name',target.name)
+  if(target.fieldname)body.append('fieldname',target.fieldname)
+  const payload=await jsonRequest<{message:PrivateAttachment}>(`/api/method/${method}`,{method:'POST',body})
+  return payload.message
+}
+
+export async function listPrivateAttachments(method:string,target:{doctype:string;name:string;fieldname?:string}):Promise<PrivateAttachment[]>{
+  const args=new URLSearchParams({doctype:target.doctype,name:target.name});if(target.fieldname)args.set('fieldname',target.fieldname)
+  const payload=await jsonRequest<{message:PrivateAttachment[]}>(`/api/method/${method}?${args}`)
+  return payload.message??[]
 }
 
 export function ugx(value: unknown) {

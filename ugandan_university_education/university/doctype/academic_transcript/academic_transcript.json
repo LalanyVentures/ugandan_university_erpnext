@@ -19,6 +19,6 @@
     {"fieldname": "generated_pdf", "label": "Generated PDF", "fieldtype": "Attach"},
     {"fieldname": "revocation_reason", "label": "Revocation Reason", "fieldtype": "Small Text"}
   ],
-  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Student", "read": 1}],
+  "permissions": [{"role": "System Manager", "read": 1, "write": 1, "create": 1, "delete": 1}, {"role": "Academics User", "read": 1, "write": 1, "create": 1}, {"role": "Faculty Head", "read": 1, "report": 1, "export": 1}, {"role": "Registrar", "read": 1, "write": 1, "create": 1, "report": 1, "export": 1}, {"role": "Student", "read": 1}],
   "track_changes": 1
 }

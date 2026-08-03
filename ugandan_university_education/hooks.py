@@ -136,13 +136,15 @@ after_install = "ugandan_university_education.install.after_install"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Student Course Result": "ugandan_university_education.api.report_permissions.student_course_result_query",
+	"Academic Transcript": "ugandan_university_education.api.report_permissions.academic_transcript_query",
+}
+
+has_permission = {
+	"Student Course Result": "ugandan_university_education.api.report_permissions.can_access_student_course_result",
+	"Academic Transcript": "ugandan_university_education.api.report_permissions.can_access_academic_transcript",
+}
 
 # DocType Class
 # ---------------

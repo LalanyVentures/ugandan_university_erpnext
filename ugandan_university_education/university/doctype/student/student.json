@@ -7,6 +7,7 @@
   "fields": [
     {"fieldname": "student_number", "label": "Student Number", "fieldtype": "Data", "reqd": 1, "unique": 1},
     {"fieldname": "student_name", "label": "Student Name", "fieldtype": "Data", "read_only": 1},
+    {"fieldname": "student_photo", "label": "Student Photo", "fieldtype": "Attach Image", "no_copy": 1},
     {"fieldname": "first_name", "label": "First Name", "fieldtype": "Data", "reqd": 1},
     {"fieldname": "middle_name", "label": "Middle Name", "fieldtype": "Data"},
     {"fieldname": "last_name", "label": "Last Name", "fieldtype": "Data", "reqd": 1},

@@ -2,14 +2,23 @@
   "schemaVersion": 1,
   "slug": "university-platform",
   "name": "University Platform",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "framework": "react-vite",
   "buildCommand": "npm run build:jdd",
   "outputDirectory": "dist",
   "entryFile": "index.html",
   "integrationCode": "erpnext",
   "authenticationMode": "application-session",
-  "sharedLinkRoles": ["System Manager"],
+  "sharedLinkRoles": [
+    "System Manager",
+    "Registrar",
+    "Academics User",
+    "Faculty Head",
+    "Instructor",
+    "Accounts Manager",
+    "Accounts User",
+    "Student"
+  ],
   "displayModes": ["full-page", "dashboard-frame"],
   "requestedScopes": ["schema:read", "records:read", "records:write", "commands:run"]
 }

@@ -1,9 +1,10 @@
 {
  "doctype":"DocType","name":"University Member","module": "University","engine":"InnoDB","allow_rename":1,
- "autoname":"field:member_number","field_order":["member_number","full_name","member_type","user","employee","status"],
+ "autoname":"field:member_number","field_order":["member_number","full_name","profile_photo","member_type","user","employee","status"],
  "fields":[
   {"fieldname":"member_number","fieldtype":"Data","label":"Member Number","reqd":1,"unique":1,"in_list_view":1},
   {"fieldname":"full_name","fieldtype":"Data","label":"Full Name","reqd":1,"in_list_view":1},
+  {"fieldname":"profile_photo","fieldtype":"Attach Image","label":"Profile Photo","no_copy":1},
   {"fieldname":"member_type","fieldtype":"Select","label":"Member Type","options":"Student\nLecturer\nStaff\nExternal","reqd":1},
   {"fieldname":"user","fieldtype":"Link","label":"Frappe User","options":"User"},
   {"fieldname":"employee","fieldtype":"Link","label":"Employee","options":"Employee"},

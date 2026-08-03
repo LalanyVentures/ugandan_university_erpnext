@@ -519,7 +519,7 @@ def get_student_portal_data(jdd_portal_identity=None, jdd_portal_signature=None)
 	attendance = frappe.get_all("Student Attendance", filters={"student": student.name, "docstatus": ["<", 2]},
 		fields=["name", "course_registration", "timetable_entry", "attendance_date", "status", "remarks"],
 		order_by="attendance_date desc", limit_page_length=1000)
-	results = frappe.get_all("Student Course Result", filters={"student": student.name, "is_published": 1},
+	results = frappe.get_all("Student Course Result", filters={"student": student.name, "is_approved": 1, "is_published": 1},
 		fields=["name", "course_registration", "academic_semester", "course", "credit_units", "coursework_mark",
 			"examination_mark", "final_mark", "grade", "grade_point", "include_in_gpa", "result_status", "remarks"],
 		order_by="academic_semester desc")
