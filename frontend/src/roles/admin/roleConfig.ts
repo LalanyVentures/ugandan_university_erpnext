@@ -1,4 +1,4 @@
-import { Award, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileCheck2, GraduationCap, LayoutDashboard, Library, ListChecks, Receipt, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
+import { Award, BarChart3, BookOpen, Building2, CalendarDays, ClipboardCheck, CreditCard, FileBadge, FileCheck2, GraduationCap, LayoutDashboard, Library, ListChecks, Receipt, ScrollText, Settings, ShieldCheck, UserRoundCheck, Users, WalletCards } from 'lucide-react'
 import { facultyHeadAcademicTabs, facultyHeadPrimaryNavigation, facultyHeadResultTabs } from '../faculty-head/roleConfig'
 import { financePrimaryNavigation, financeStudentTabs, financeTabs } from '../finance/roleConfig'
 import { lecturerPrimaryNavigation, lecturerRegistrationTabs, lecturerResultTabs, lecturerStudentTabs } from '../lecturer/roleConfig'
@@ -17,6 +17,7 @@ export const adminNavigation = [
   { label: 'Results', path: '/results', icon: Award },
   { label: 'Transcripts', path: '/transcripts', icon: FileBadge },
   { label: 'Clearance', path: '/clearance', icon: ShieldCheck },
+  { label: 'Audit Logs', path: '/audit-logs', icon: ScrollText },
 ] as const
 
 export type PortalRole = 'administrator' | 'registrar' | 'faculty-head' | 'lecturer' | 'finance' | 'student' | 'staff'
@@ -32,7 +33,7 @@ export function portalRoleFor(roles: string[]): PortalRole {
 }
 
 const primaryByRole: Record<PortalRole, readonly string[]> = {
-  administrator: ['Overview','Students','Academic Structure','Registration','Fees & Payments','Results','Transcripts','Clearance'],
+  administrator: ['Overview','Students','Academic Structure','Registration','Fees & Payments','Results','Transcripts','Clearance','Audit Logs'],
   registrar: registrarPrimaryNavigation,
   'faculty-head': facultyHeadPrimaryNavigation,
   lecturer: lecturerPrimaryNavigation,

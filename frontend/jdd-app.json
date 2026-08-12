@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "slug": "university-platform",
   "name": "University Platform",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "framework": "react-vite",
   "buildCommand": "npm run build:jdd",
   "outputDirectory": "dist",
@@ -20,5 +20,20 @@
     "Student"
   ],
   "displayModes": ["full-page", "dashboard-frame"],
-  "requestedScopes": ["schema:read", "records:read", "records:write", "commands:run"]
+  "requestedScopes": ["schema:read", "records:read", "records:write", "commands:run"],
+  "releaseDetails": {
+    "title": "University administrator audit logs",
+    "summary": "AWU administrators can now investigate the newest business-scoped application activity from a native dashboard page.",
+    "sections": [
+      { "heading": "Governance and accountability", "icon": "security", "summary": "The audit view uses JDD as the authoritative cross-application event store.", "items": [
+        { "title": "Tenant-safe access", "description": "The authenticated session fixes the university business, application and ERPNext instance scope." },
+        { "title": "Readable grouped columns", "description": "Actor, activity, runtime and result details are compact without losing investigation context." }
+      ], "subsections": [] },
+      { "heading": "Investigation tools", "icon": "data", "summary": "Administrators can work efficiently through large histories.", "items": [
+        { "title": "Newest-first records", "description": "Recent events are shown first with server-side pagination." },
+        { "title": "URL-backed filters", "description": "Search, category, outcome, page and page size can be bookmarked and revisited." }
+      ], "subsections": [] }
+    ],
+    "callout": { "tone": "info", "title": "JDD update required", "description": "Deploy the matching JDD runtime endpoint before opening Audit Logs." }
+  }
 }

@@ -3697,3 +3697,20 @@ Implementation status: complete. This overlay supersedes every earlier `[PROPOSE
 │   └── Manage full records, Open ERPNext and duplicate Desk-only shortcuts
 └── remaining normal-user ERPNext Desk links: 0
 ```
+
+# Administrator Audit Logs (v0.3.8)
+
+```text
+University Platform
+└── Sidebar [NAVIGATION]
+    └── Audit Logs [LINK: /audit-logs] [ADMINISTRATOR ONLY]
+        ├── Security metrics [METRICS: total | successful | failed | actors]
+        ├── Connected filters [FORM: search | category | outcome | page size]
+        ├── Business audit table [TABLE: newest first]
+        │   ├── When [GROUPED COLUMN]
+        │   ├── Actor & access [GROUPED COLUMN]
+        │   ├── Activity & resource [GROUPED COLUMN]
+        │   ├── Runtime context [GROUPED COLUMN]
+        │   └── Result [GROUPED COLUMN]
+        └── Pagination [BUTTONS: previous | next] [URL: page,pageSize,q,category,outcome]
+```

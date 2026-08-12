@@ -39,6 +39,7 @@ export function contextualNavigationFor(role: PortalRole, pathname: string): rea
 }
 
 export function viewNavigationFor(role: PortalRole, pathname: string): readonly ShellNavItem[] {
+  if (pathname === '/audit-logs') return []
   const navigation = registry[role]
   const current = currentItem(navigation, pathname)
   if (!current) return []

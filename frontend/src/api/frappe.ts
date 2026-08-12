@@ -258,3 +258,7 @@ export async function listPrivateAttachments(method:string,target:{doctype:strin
 export function ugx(value: unknown) {
   return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX', maximumFractionDigits: 0 }).format(Number(value ?? 0))
 }
+
+export type ApplicationAuditEvent={id:string;actorName:string;actorUsername:string;actorRole:string;sessionType:string;eventCategory:string;eventType:string;action:string;resourceType:string;resourceId:string;requestMethod:string;responseStatus:number;outcome:string;errorCode:string;durationMs:number;instanceIdentifier:string;releaseVersion:string;occurredAt:string}
+export type ApplicationAuditPage={rows:ApplicationAuditEvent[];total:number;page:number;pageSize:number;summary:{total:number;succeeded:number;failed:number;actors:number};facets:{categories:string[]};context:{businessId:string;organizationId:string;appSlug:string;instanceIdentifier:string}}
+export async function fetchApplicationAuditPage(filters:Record<string,string|number|undefined>={}):Promise<ApplicationAuditPage>{if(!appSlug)throw new Error('Application audit logs are available through JDD runtime.');const query=new URLSearchParams();Object.entries(filters).forEach(([key,value])=>{if(value!==undefined&&String(value).trim())query.set(key,String(value))});return jsonRequest<ApplicationAuditPage>(`/app-api/apps/${encodeURIComponent(appSlug)}/audit?${query}`)}

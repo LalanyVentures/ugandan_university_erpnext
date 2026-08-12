@@ -16,6 +16,7 @@ import { RegistrarApp } from './roles/registrar/RegistrarApp'
 import { FinanceApp } from './roles/finance/FinanceApp'
 import { portalRoleFor } from './roles/admin/roleConfig'
 import { ShellStatePanel } from './components/ShellStatePanel'
+import { ApplicationAuditLog } from './components/ApplicationAuditLog'
 
 export default function App() {
   const [session, setSession] = useState<UniversitySession | null>(null)
@@ -99,6 +100,7 @@ export default function App() {
         <Route path="/settings/years" element={<RecordsPage view="academic-years" />} />
         <Route path="/settings/semesters" element={<RecordsPage view="semesters" />} />
         <Route path="/settings/grading" element={<RecordsPage view="settings-grading" />} />
+        <Route path="/audit-logs" element={<ApplicationAuditLog />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AdminShell>
