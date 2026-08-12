@@ -7,6 +7,7 @@ import os
 import time
 
 from ugandan_university_education.services.transcript import build_transcript_data, can_view_transcript
+from ugandan_university_education.audit import record_jdd_audit_event
 from ugandan_university_education.services.workflows import (
 	build_invoice_items,
 	calculate_gpa,
@@ -99,10 +100,16 @@ AUDITED_ENTITIES = {
 def _record_governed_event(entity_type, entity_name, action, reason=None, source="university-workflow"):
 	"""Persist one redacted server-authoritative workflow decision."""
 	reason = (reason or "").strip() or "Confirmed through native registrar workflow"
-	return frappe.get_doc({"doctype": "University Audit Event", "entity_type": entity_type,
+	doc = frappe.get_doc({"doctype": "University Audit Event", "entity_type": entity_type,
 		"entity_name": entity_name, "action": action, "reason": reason, "actor": frappe.session.user,
 		"event_time": frappe.utils.now(), "metadata_json": json.dumps({"source": source}, sort_keys=True),
 	}).insert(ignore_permissions=True)
+	category = "finance" if entity_type in {"Sales Invoice", "Payment Entry", "Sponsorship Award", "University Fee Structure"} else "workflow"
+	if entity_type == "Academic Transcript": category = "transcript"
+	elif entity_type == "Student Clearance": category = "clearance"
+	record_jdd_audit_event("university.workflow-governed", category, "transition", entity_type, entity_name,
+		metadata={"decision": action, "source": source})
+	return doc
 
 
 def _assert_academic_administrator():
@@ -716,6 +723,8 @@ def save_lecturer_attendance(entries):
 		})
 		doc.save(ignore_permissions=True)
 		saved.append(doc.name)
+	record_jdd_audit_event("university.attendance-saved", "attendance", "update", "Student Attendance",
+		metadata={"count": len(saved)})
 	return saved
 
 
@@ -786,6 +795,8 @@ def save_lecturer_marks(course_assessment, marks):
 		result.is_published = 0
 		result.save(ignore_permissions=True)
 		saved.append(result.name)
+	record_jdd_audit_event("university.marks-saved", "academic-result", "update", "Student Course Result",
+		metadata={"courseAssessment": course_assessment, "count": len(saved)})
 	return saved
 
 
@@ -815,6 +826,8 @@ def submit_lecturer_results(course_offering):
 		"status": "Submitted", "submitted_by": frappe.session.user,
 		"items": [{"student_course_result": row.name, "review_status": "Pending"} for row in results],
 	}).insert(ignore_permissions=True)
+	record_jdd_audit_event("university.results-submitted", "workflow", "submit", "Result Approval Batch", batch.name,
+		metadata={"courseOffering": course_offering, "resultCount": len(results)})
 	return batch.name
 
 
@@ -1018,6 +1031,8 @@ def review_faculty_result_batch(batch_name, decision, comment=None):
 		"entity_name": batch.name, "action": "Approve results" if decision == "Approved" else "Return results",
 		"reason": comment, "actor": frappe.session.user, "event_time": frappe.utils.now(),
 		"metadata_json": json.dumps({"source": "faculty-result-drawer"}, sort_keys=True)}).insert(ignore_permissions=True)
+	record_jdd_audit_event("university.result-batch-reviewed", "workflow", "review", "Result Approval Batch", batch.name,
+		metadata={"decision": decision, "itemCount": len(batch.items)})
 	return batch.name
 
 
@@ -1692,6 +1707,8 @@ def save_student_course_result(result_name, mark_rows):
 		if field in result.meta.get_valid_columns():
 			setattr(result, field, value)
 	result.save()
+	record_jdd_audit_event("university.result-updated", "academic-result", "update", "Student Course Result", result.name,
+		metadata={"markCount": len(mark_rows or [])})
 	return result.name
 
 
@@ -1711,6 +1728,8 @@ def approve_result_batch(batch_name, approval_stage=None):
 	batch.status = "Approved"
 	batch.approved_by = frappe.session.user
 	batch.save()
+	record_jdd_audit_event("university.result-batch-approved", "workflow", "approve", "Result Approval Batch", batch.name,
+		metadata={"itemCount": len(batch.items), "approvalStage": batch.approval_stage})
 	return batch.name
 
 
@@ -1738,6 +1757,8 @@ def prepare_transcript(transcript_name):
 	transcript.source_result_version = frappe.utils.now()
 	transcript.source_result_checksum = checksum
 	transcript.save()
+	record_jdd_audit_event("university.transcript-prepared", "transcript", "generate", "Academic Transcript", transcript.name,
+		metadata={"student": transcript.student, "resultCount": len(results)})
 	return data
 
 
