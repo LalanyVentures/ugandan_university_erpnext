@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "slug": "university-platform",
   "name": "University Platform",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "framework": "react-vite",
   "buildCommand": "npm run build:jdd",
   "outputDirectory": "dist",
@@ -22,16 +22,16 @@
   "displayModes": ["full-page", "dashboard-frame"],
   "requestedScopes": ["schema:read", "records:read", "records:write", "commands:run"],
   "releaseDetails": {
-    "title": "University administrator audit logs",
-    "summary": "AWU administrators can now investigate the newest business-scoped application activity from a native dashboard page.",
+    "title": "Dashboard watchlist contrast fix",
+    "summary": "University dashboard watchlist rows now keep labels, details and statuses readable across themes and browsers.",
     "sections": [
-      { "heading": "Governance and accountability", "icon": "security", "summary": "The audit view uses JDD as the authoritative cross-application event store.", "items": [
-        { "title": "Tenant-safe access", "description": "The authenticated session fixes the university business, application and ERPNext instance scope." },
-        { "title": "Readable grouped columns", "description": "Actor, activity, runtime and result details are compact without losing investigation context." }
+      { "heading": "Watchlist readability", "icon": "interface", "summary": "The dashboard watchlist is readable in every supported browser.", "items": [
+        { "title": "Explicit light rows", "description": "Watchlist items define their own background, border and text colours instead of relying on native defaults." },
+        { "title": "Clear status context", "description": "Item titles, supporting counts and status badges maintain contrast inside the hero panel." }
       ], "subsections": [] },
-      { "heading": "Investigation tools", "icon": "data", "summary": "Administrators can work efficiently through large histories.", "items": [
-        { "title": "Newest-first records", "description": "Recent events are shown first with server-side pagination." },
-        { "title": "URL-backed filters", "description": "Search, category, outcome, page and page size can be bookmarked and revisited." }
+      { "heading": "Shared dashboard styling", "icon": "data", "summary": "The same contrast-safe treatment is used across the application dashboard watchlist.", "items": [
+        { "title": "Stable layout", "description": "Spacing, alignment and status placement remain consistent on desktop and mobile widths." },
+        { "title": "No functional change", "description": "Existing watchlist links and status logic remain unchanged." }
       ], "subsections": [] }
     ],
     "callout": { "tone": "info", "title": "JDD update required", "description": "Deploy the matching JDD runtime endpoint before opening Audit Logs." }
