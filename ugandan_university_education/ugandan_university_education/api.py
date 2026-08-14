@@ -7,7 +7,7 @@ import os
 import time
 
 from ugandan_university_education.services.transcript import build_transcript_data, can_view_transcript
-from ugandan_university_education.audit import record_jdd_audit_event
+from .audit import record_jdd_audit_event
 from ugandan_university_education.services.workflows import (
 	build_invoice_items,
 	calculate_gpa,
